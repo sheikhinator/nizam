@@ -6,18 +6,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Unzip project
+      - name: Unzip project (to extracted/)
         run: |
-          unzip -o nizam-android.zip
-          echo "Contents after unzip:"
-          ls -la
+          unzip -o nizam-android.zip -d extracted
+          echo "Contents of extracted/ top-level:"
+          ls -la extracted || true
 
-      - name: Find and print Kotlin DB files and imports
+      - name: Find and print Kotlin DB files and imports (from extracted/)
         run: |
-          echo "Searching for NizamDatabase.kt and printing top of file(s):"
-          find . -type f -name 'NizamDatabase.kt' -print -exec sed -n '1,200p' {} \; || true
-          echo "Also printing any imports containing 'Article' or 'NewsDao' (for all .kt files):"
-          grep -R --line-number --no-messages -E "import .*Article|import .*NewsDao" || true
+          echo "Searching for NizamDatabase.kt inside extracted/ and printing top of file(s):"
+          find extracted -type f -name 'NizamDatabase.kt' -print -exec sed -n '1,200p' {} \; || true
+
+          echo "Also printing any imports containing 'Article' or 'NewsDao' in extracted/:"
+          grep -R --line-number --no-messages -E "import .*Article|import .*NewsDao" extracted || true
 
       - uses: actions/setup-java@v4
         with:
@@ -28,17 +29,17 @@ jobs:
 
       - name: Make Gradle wrapper executable (if present)
         run: |
-          if [ -f nizam/gradlew ]; then
-            chmod +x nizam/gradlew
-          elif [ -f gradlew ]; then
-            chmod +x gradlew
+          if [ -f extracted/nizam/gradlew ]; then
+            chmod +x extracted/nizam/gradlew
+          elif [ -f extracted/gradlew ]; then
+            chmod +x extracted/gradlew
           else
-            echo "Warning: gradlew not found"
-            ls -la || true
+            echo "Warning: gradlew not found in extracted/"
+            ls -la extracted || true
           fi
 
       - name: Build debug APK (using Gradle wrapper if available)
-        working-directory: nizam
+        working-directory: extracted/nizam
         run: |
           if [ -f ./gradlew ]; then
             ./gradlew assembleDebug --no-daemon --stacktrace
@@ -49,5 +50,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: nizam-debug-apk
-          path: nizam/app/build/outputs/apk/debug/app-debug.apk
+          path: extracted/nizam/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
