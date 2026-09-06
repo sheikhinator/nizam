@@ -5,19 +5,47 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Unzip project
-        run: unzip -o nizam-android.zip
+        run: |
+          unzip -o nizam-android.zip
+          echo "Contents after unzip:"
+          ls -la
+
+      - name: Find and print Kotlin DB files and imports
+        run: |
+          echo "Searching for NizamDatabase.kt and printing top of file(s):"
+          find . -type f -name 'NizamDatabase.kt' -print -exec sed -n '1,200p' {} \; || true
+          echo "Also printing any imports containing 'Article' or 'NewsDao' (for all .kt files):"
+          grep -R --line-number --no-messages -E "import .*Article|import .*NewsDao" || true
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+
       - uses: android-actions/setup-android@v3
-      - uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.7'
-      - name: Build debug APK
+
+      - name: Make Gradle wrapper executable (if present)
+        run: |
+          if [ -f nizam/gradlew ]; then
+            chmod +x nizam/gradlew
+          elif [ -f gradlew ]; then
+            chmod +x gradlew
+          else
+            echo "Warning: gradlew not found"
+            ls -la || true
+          fi
+
+      - name: Build debug APK (using Gradle wrapper if available)
         working-directory: nizam
-        run: gradle assembleDebug --no-daemon --stacktrace
+        run: |
+          if [ -f ./gradlew ]; then
+            ./gradlew assembleDebug --no-daemon --stacktrace
+          else
+            gradle assembleDebug --no-daemon --stacktrace
+          fi
+
       - uses: actions/upload-artifact@v4
         with:
           name: nizam-debug-apk
