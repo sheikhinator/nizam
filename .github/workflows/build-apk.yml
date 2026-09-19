@@ -16,8 +16,8 @@ jobs:
         run: |
           echo "=== repo root ==="
           ls -la
-          echo "=== every zip found ==="
-          find . -name "*.zip" -not -path "./.git/*" -printf "%T@ %p\n" | sort -rn
+          echo "=== zips found ==="
+          find . -name "*.zip" -not -path "./.git/*" -printf "%T@ %p\n" | sort -rn || true
 
       - name: Unzip the newest zip into a clean folder
         run: |
@@ -31,8 +31,6 @@ jobs:
           fi
           echo "Using: $ZIP"
           unzip -o -q "$ZIP" -d _build
-          echo "=== extracted ==="
-          find _build -maxdepth 2 -type d
 
       - name: Locate the Gradle project
         id: proj
@@ -55,8 +53,30 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Prepare Android SDK
+        run: |
+          set -e
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          echo "ANDROID_HOME=$SDK" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$SDK" >> $GITHUB_ENV
+
+          SDKMANAGER=$(find "$SDK/cmdline-tools" -name sdkmanager -type f | head -n 1)
+          echo "sdkmanager: $SDKMANAGER"
+
+          echo "=== platforms already installed ==="
+          ls "$SDK/platforms" 2>/dev/null || echo "(none)"
+          echo "=== build-tools already installed ==="
+          ls "$SDK/build-tools" 2>/dev/null || echo "(none)"
+
+          if [ -n "$SDKMANAGER" ]; then
+            yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
+            if [ ! -d "$SDK/platforms/android-34" ]; then
+              echo "Installing platform 34..."
+              "$SDKMANAGER" "platforms;android-34" "build-tools;34.0.0" "platform-tools" || true
+            fi
+          fi
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -70,8 +90,8 @@ jobs:
       - name: Show compile errors only
         if: failure()
         run: |
-          echo "=================== ERRORS ==================="
-          grep -E "^e: |error:" /tmp/build.log | head -n 60 || echo "No 'error:' lines — see full log above."
+          echo "==================== ERRORS ===================="
+          grep -E "^e: |error:" /tmp/build.log | head -n 60 || echo "No 'error:' lines found — see the full log above."
 
       - name: Upload build log
         if: always()
