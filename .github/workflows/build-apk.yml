@@ -85,6 +85,20 @@ jobs:
 
       - name: Build debug APK
         working-directory: ${{ steps.proj.outputs.dir }}
+        env:
+          ATLAS_KEY_GEMINI: ${{ secrets.ATLAS_KEY_GEMINI }}
+          ATLAS_KEY_OPENROUTER: ${{ secrets.ATLAS_KEY_OPENROUTER }}
+          ATLAS_KEY_CUSTOM: ${{ secrets.ATLAS_KEY_CUSTOM }}
+          ATLAS_KEY_CUSTOM_URL: ${{ secrets.ATLAS_KEY_CUSTOM_URL }}
+          ATLAS_KEY_CUSTOM_MODEL: ${{ secrets.ATLAS_KEY_CUSTOM_MODEL }}
+          ATLAS_KEY_FAST: ${{ secrets.ATLAS_KEY_FAST }}
+          ATLAS_KEY_FAST_URL: ${{ secrets.ATLAS_KEY_FAST_URL }}
+          ATLAS_KEY_FAST_MODEL: ${{ secrets.ATLAS_KEY_FAST_MODEL }}
+          ATLAS_KEY_HADITH: ${{ secrets.ATLAS_KEY_HADITH }}
+          ATLAS_KEY_TMDB: ${{ secrets.ATLAS_KEY_TMDB }}
+          ATLAS_KEY_OMDB: ${{ secrets.ATLAS_KEY_OMDB }}
+          ATLAS_KEY_JAMENDO: ${{ secrets.ATLAS_KEY_JAMENDO }}
+          ATLAS_KEY_HF: ${{ secrets.ATLAS_KEY_HF }}
         run: |
           set -o pipefail
           gradle assembleDebug --no-daemon --stacktrace 2>&1 | tee /tmp/build.log
