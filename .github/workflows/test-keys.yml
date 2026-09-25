@@ -1,0 +1,66 @@
+name: Test API keys
+
+# Checks every API key saved as a repository secret against its real service, the way Atlas calls it.
+# Keys are never printed — only which service answered and how. Run it from Actions › Test API keys › Run workflow.
+on:
+  workflow_dispatch:
+  push:
+    paths: [".github/workflows/test-keys.yml"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GEMINI: ${{ secrets.ATLAS_KEY_GEMINI }}
+      OPENROUTER: ${{ secrets.ATLAS_KEY_OPENROUTER }}
+      CUSTOM: ${{ secrets.ATLAS_KEY_CUSTOM }}
+      CUSTOM_URL: ${{ secrets.ATLAS_KEY_CUSTOM_URL }}
+      CUSTOM_MODEL: ${{ secrets.ATLAS_KEY_CUSTOM_MODEL }}
+      FAST: ${{ secrets.ATLAS_KEY_FAST }}
+      FAST_URL: ${{ secrets.ATLAS_KEY_FAST_URL }}
+      FAST_MODEL: ${{ secrets.ATLAS_KEY_FAST_MODEL }}
+      HADITH: ${{ secrets.ATLAS_KEY_HADITH }}
+      TMDB: ${{ secrets.ATLAS_KEY_TMDB }}
+      OMDB: ${{ secrets.ATLAS_KEY_OMDB }}
+      JAMENDO: ${{ secrets.ATLAS_KEY_JAMENDO }}
+      HF: ${{ secrets.ATLAS_KEY_HF }}
+      TOMTOM: ${{ secrets.ATLAS_KEY_TOMTOM }}
+    steps:
+      - name: Test every key
+        run: |
+          set +e
+          pass=0; fail=0; skip=0
+          report() { # name, http code, body file, ok-when
+            local name="$1" code="$2" body="$3"
+            if [ "$code" = "200" ]; then echo "✅ $name — works"; pass=$((pass+1))
+            else echo "❌ $name — HTTP $code: $(head -c 300 "$body" | tr '\n' ' ')"; fail=$((fail+1)); fi
+          }
+          none() { echo "⏭  $1 — no secret set"; skip=$((skip+1)); }
+
+          chat() { # name, base url, key, model
+            local name="$1" url="${2%/}" key="$3" model="$4"
+            local extra=""
+            case "$model" in *gpt-oss*) extra=',"reasoning_effort":"low","include_reasoning":false';; esac
+            code=$(curl -s -m 60 -o /tmp/r.json -w "%{http_code}" "$url/chat/completions" \
+              -H "Authorization: Bearer $key" -H "Content-Type: application/json" \
+              -d "{\"model\":\"$model\",\"messages\":[{\"role\":\"user\",\"content\":\"Reply with the single word: ready\"}],\"max_tokens\":3000$extra}")
+            report "$name ($model)" "$code" /tmp/r.json
+            [ "$code" = "200" ] && echo "   reply: $(python3 -c 'import json;d=json.load(open("/tmp/r.json"));print((d["choices"][0]["message"].get("content") or "(EMPTY — reasoning used every token)")[:80])')"
+          }
+
+          [ -n "$GEMINI" ] && { code=$(curl -s -m 60 -o /tmp/r.json -w "%{http_code}" \
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$GEMINI" \
+            -H "Content-Type: application/json" -d '{"contents":[{"parts":[{"text":"Reply with: ready"}]}]}'); report "Gemini" "$code" /tmp/r.json; } || none "Gemini"
+          [ -n "$OPENROUTER" ] && chat "OpenRouter" "https://openrouter.ai/api/v1" "$OPENROUTER" "meta-llama/llama-3.3-70b-instruct:free" || none "OpenRouter"
+          [ -n "$CUSTOM" ] && chat "Custom provider" "${CUSTOM_URL:-https://api.groq.com/openai/v1}" "$CUSTOM" "${CUSTOM_MODEL:-llama-3.3-70b-versatile}" || none "Custom provider"
+          [ -n "$FAST" ] && chat "Fast lane" "$FAST_URL" "$FAST" "$FAST_MODEL" || none "Fast lane"
+          [ -n "$HADITH" ] && { code=$(curl -s -m 30 -o /tmp/r.json -w "%{http_code}" "https://hadithapi.com/api/books?apiKey=$HADITH"); report "Hadith API" "$code" /tmp/r.json; } || none "Hadith API"
+          [ -n "$TMDB" ] && { code=$(curl -s -m 30 -o /tmp/r.json -w "%{http_code}" "https://api.themoviedb.org/3/configuration?api_key=$TMDB"); report "TMDB" "$code" /tmp/r.json; } || none "TMDB"
+          [ -n "$OMDB" ] && { code=$(curl -s -m 30 -o /tmp/r.json -w "%{http_code}" "https://www.omdbapi.com/?i=tt0111161&apikey=$OMDB"); report "OMDb" "$code" /tmp/r.json; } || none "OMDb"
+          [ -n "$JAMENDO" ] && { code=$(curl -s -m 30 -o /tmp/r.json -w "%{http_code}" "https://api.jamendo.com/v3.0/tracks/?client_id=$JAMENDO&limit=1"); report "Jamendo" "$code" /tmp/r.json; } || none "Jamendo"
+          [ -n "$HF" ] && { code=$(curl -s -m 30 -o /tmp/r.json -w "%{http_code}" -H "Authorization: Bearer $HF" "https://huggingface.co/api/whoami-v2"); report "Hugging Face" "$code" /tmp/r.json; } || none "Hugging Face"
+          [ -n "$TOMTOM" ] && { code=$(curl -s -m 30 -o /tmp/r.png -w "%{http_code}" "https://api.tomtom.com/traffic/map/4/tile/flow/relative0/10/590/376.png?key=$TOMTOM"); report "TomTom traffic" "$code" /tmp/r.png; } || none "TomTom traffic"
+
+          echo; echo "Passed $pass · failed $fail · not set $skip"
+          echo "### API keys: $pass working, $fail failing, $skip not set" >> "$GITHUB_STEP_SUMMARY"
+          [ "$fail" = "0" ]
