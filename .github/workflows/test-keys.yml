@@ -49,11 +49,12 @@ jobs:
           }
 
           [ -n "$GEMINI" ] && { code=$(curl -s -m 60 -o /tmp/r.json -w "%{http_code}" \
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$GEMINI" \
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key=$GEMINI" \
             -H "Content-Type: application/json" -d '{"contents":[{"parts":[{"text":"Reply with: ready"}]}]}'); report "Gemini" "$code" /tmp/r.json; } || none "Gemini"
           [ -n "$OPENROUTER" ] && chat "OpenRouter" "https://openrouter.ai/api/v1" "$OPENROUTER" "meta-llama/llama-3.3-70b-instruct:free" || none "OpenRouter"
           [ -n "$CUSTOM" ] && chat "Custom provider" "${CUSTOM_URL:-https://api.groq.com/openai/v1}" "$CUSTOM" "${CUSTOM_MODEL:-llama-3.3-70b-versatile}" || none "Custom provider"
           [ -n "$FAST" ] && chat "Fast lane" "$FAST_URL" "$FAST" "$FAST_MODEL" || none "Fast lane"
+          chat "Pollinations (no key)" "https://text.pollinations.ai/openai" "" "openai"
           [ -n "$HADITH" ] && { code=$(curl -s -m 30 -o /tmp/r.json -w "%{http_code}" "https://hadithapi.com/api/books?apiKey=$HADITH"); report "Hadith API" "$code" /tmp/r.json; } || none "Hadith API"
           [ -n "$TMDB" ] && { code=$(curl -s -m 30 -o /tmp/r.json -w "%{http_code}" "https://api.themoviedb.org/3/configuration?api_key=$TMDB"); report "TMDB" "$code" /tmp/r.json; } || none "TMDB"
           [ -n "$OMDB" ] && { code=$(curl -s -m 30 -o /tmp/r.json -w "%{http_code}" "https://www.omdbapi.com/?i=tt0111161&apikey=$OMDB"); report "OMDb" "$code" /tmp/r.json; } || none "OMDb"
