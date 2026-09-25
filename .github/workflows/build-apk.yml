@@ -99,6 +99,7 @@ jobs:
           ATLAS_KEY_OMDB: ${{ secrets.ATLAS_KEY_OMDB }}
           ATLAS_KEY_JAMENDO: ${{ secrets.ATLAS_KEY_JAMENDO }}
           ATLAS_KEY_HF: ${{ secrets.ATLAS_KEY_HF }}
+          ATLAS_KEY_TOMTOM: ${{ secrets.ATLAS_KEY_TOMTOM }}
         run: |
           set -o pipefail
           gradle assembleDebug --no-daemon --stacktrace 2>&1 | tee /tmp/build.log
