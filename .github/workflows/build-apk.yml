@@ -4,6 +4,9 @@ on:
   push:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -139,3 +142,20 @@ jobs:
           name: nizam-debug-apk
           path: ${{ steps.apk.outputs.path }}
           if-no-files-found: error
+
+      # Every good build is published as a GitHub Release, so the APK downloads with one tap
+      # from the repo's Releases page (the GitHub mobile app doesn't show build artifacts).
+      - name: Publish APK as a release
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          cp "${{ steps.apk.outputs.path }}" Atlas.apk
+          TAG="build-${{ github.run_number }}"
+          gh release create "$TAG" Atlas.apk \
+            --repo "${{ github.repository }}" \
+            --target "${{ github.sha }}" \
+            --title "Atlas build ${{ github.run_number }}" \
+            --notes "Built from ${{ github.ref_name }} at ${GITHUB_SHA::7}. Download Atlas.apk below and install it over the previous version." \
+            --latest
