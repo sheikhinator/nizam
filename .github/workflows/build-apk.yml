@@ -161,7 +161,7 @@ jobs:
             --latest
 
       - name: Screenshots of the main screens
-        if: success()
+        if: success() && contains(github.event.head_commit.message, '[shots]')
         continue-on-error: true
         working-directory: ${{ steps.proj.outputs.dir }}
         env:
