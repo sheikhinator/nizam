@@ -81,6 +81,20 @@ jobs:
             [ -d "$SDK/build-tools/35.0.0" ] || "$SDKMANAGER" "build-tools;35.0.0" "platform-tools" || true
           fi
 
+      - name: Probe library versions
+        continue-on-error: true
+        run: |
+          for a in appfunctions/appfunctions xr/projected/projected; do
+            echo "== $a"; curl -s "https://dl.google.com/android/maven2/androidx/$a/maven-metadata.xml" | grep -o "<version>[^<]*" | tr '\n' ' '; echo
+          done
+          for v in 1.0.0-alpha01 1.0.0-alpha02 1.0.0-alpha03 1.0.0-alpha04 1.0.0-alpha05 1.0.0-alpha06 1.0.0-alpha07 1.0.0-alpha08 1.0.0-alpha09 1.0.0-alpha10; do
+            curl -s -o /tmp/a.aar "https://dl.google.com/android/maven2/androidx/appfunctions/appfunctions/$v/appfunctions-$v.aar" && echo "-- $v: $(unzip -p /tmp/a.aar META-INF/com/android/build/gradle/aar-metadata.properties 2>/dev/null | tr '\n' ' ')"
+            unzip -l /tmp/a.aar 2>/dev/null | grep -q classes.jar && unzip -p /tmp/a.aar classes.jar > /tmp/c.jar && unzip -l /tmp/c.jar | grep -o "AppFunctionServiceEntryPoint[^ ]*\|androidx/appfunctions/AppFunctionService.class" | sort -u | tr '\n' ' '; echo
+          done
+          for v in 1.0.0-alpha05 1.0.0-alpha06 1.0.0-alpha07 1.0.0-alpha08 1.0.0-alpha09; do
+            curl -s -o /tmp/x.aar "https://dl.google.com/android/maven2/androidx/xr/projected/projected/$v/projected-$v.aar" && echo "-- xr $v: $(unzip -p /tmp/x.aar META-INF/com/android/build/gradle/aar-metadata.properties 2>/dev/null | tr '\n' ' ')"
+          done
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
