@@ -81,6 +81,24 @@ jobs:
             [ -d "$SDK/build-tools/35.0.0" ] || "$SDKMANAGER" "build-tools;35.0.0" "platform-tools" || true
           fi
 
+      - name: Dump library APIs
+        continue-on-error: true
+        run: |
+          mkdir -p /tmp/d && cd /tmp/d
+          get() { curl -sfL -o "$2" "https://dl.google.com/android/maven2/$1" && echo "got $1" || echo "MISSING $1"; }
+          get androidx/appfunctions/appfunctions/1.0.0-alpha08/appfunctions-1.0.0-alpha08.aar af.aar
+          get androidx/appfunctions/appfunctions-service/1.0.0-alpha08/appfunctions-service-1.0.0-alpha08.aar afs.aar
+          get androidx/xr/projected/projected/1.0.0-alpha09/projected-1.0.0-alpha09.aar xr.aar
+          get androidx/health/connect/connect-client/1.1.0-alpha12/connect-client-1.1.0-alpha12.aar hc.aar
+          for f in af afs xr hc; do
+            [ -f $f.aar ] || continue
+            mkdir -p $f && unzip -o -q $f.aar classes.jar -d $f || continue
+            echo "######## $f"
+            CL=$(unzip -l $f/classes.jar | awk '{print $4}' | grep '\.class$' | grep -v '\$' | sed 's/\.class$//')
+            case $f in hc) CL=$(echo "$CL" | grep -E 'records/metadata/Metadata$');; esac
+            for c in $CL; do javap -cp $f/classes.jar "$c" 2>/dev/null | grep -v '^Compiled'; done
+          done
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
