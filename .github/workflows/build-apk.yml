@@ -75,16 +75,16 @@ jobs:
 
           if [ -n "$SDKMANAGER" ]; then
             yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
-            if [ ! -d "$SDK/platforms/android-34" ]; then
-              echo "Installing platform 34..."
-              "$SDKMANAGER" "platforms;android-34" "build-tools;34.0.0" "platform-tools" || true
-            fi
+            for P in 34 35 36; do
+              [ -d "$SDK/platforms/android-$P" ] || "$SDKMANAGER" "platforms;android-$P" || true
+            done
+            [ -d "$SDK/build-tools/35.0.0" ] || "$SDKMANAGER" "build-tools;35.0.0" "platform-tools" || true
           fi
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.7'
+          gradle-version: '8.14.3'
 
       - name: Build debug APK
         working-directory: ${{ steps.proj.outputs.dir }}
