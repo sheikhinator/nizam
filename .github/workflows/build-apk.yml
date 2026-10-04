@@ -159,3 +159,19 @@ jobs:
             --title "Atlas build ${{ github.run_number }}" \
             --notes "Built from ${{ github.ref_name }} at ${GITHUB_SHA::7}. Download Atlas.apk below and install it over the previous version." \
             --latest
+
+      - name: Screenshots of the main screens
+        if: success()
+        continue-on-error: true
+        working-directory: ${{ steps.proj.outputs.dir }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gradle testDebugUnitTest --tests 'com.nizam.app.Shots' --no-daemon 2>&1 | tail -n 40
+          echo "=== failures ==="
+          grep -h -A6 "<failure" app/build/test-results/testDebugUnitTest/*.xml 2>/dev/null | head -n 120 || true
+          ls app/build/shots || true
+          if ls app/build/shots/*.png >/dev/null 2>&1; then
+            (cd app/build/shots && zip -q "$GITHUB_WORKSPACE/shots.zip" *.png)
+            gh release upload "build-${{ github.run_number }}" "$GITHUB_WORKSPACE/shots.zip" --repo "${{ github.repository }}" --clobber
+          fi
