@@ -19,18 +19,20 @@ jobs:
           echo "=== zips found ==="
           find . -name "*.zip" -not -path "./.git/*" -printf "%T@ %p\n" | sort -rn || true
 
-      - name: Unzip the newest zip into a clean folder
+      - name: Unzip atlas-android-42.zip into a clean folder
         run: |
           set -e
           rm -rf _build
           mkdir -p _build
-          ZIP=$(find . -name "*.zip" -not -path "./.git/*" -printf "%T@ %p\n" | sort -rn | head -n 1 | cut -d' ' -f2-)
-          if [ -z "$ZIP" ]; then
-            echo "::error::No .zip file found in the repository."
+          ZIP="atlas-android-42.zip"
+          if [ ! -f "$ZIP" ]; then
+            echo "::error::$ZIP not found in the repository."
             exit 1
           fi
           echo "Using: $ZIP"
           unzip -o -q "$ZIP" -d _build
+          # The zip may store files with no permission bits; make them readable.
+          chmod -R u+rwX _build
 
       - name: Locate the Gradle project
         id: proj
@@ -81,7 +83,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.7'
+          gradle-version: '8.13'
 
       - name: Build debug APK
         working-directory: ${{ steps.proj.outputs.dir }}
