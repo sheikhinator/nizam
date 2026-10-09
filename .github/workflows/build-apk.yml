@@ -78,10 +78,37 @@ jobs:
             fi
           fi
 
+      - name: Fetch emulator cores
+        run: |
+          set -e
+          DIR="${{ steps.proj.outputs.dir }}/app/src/main/jniLibs/arm64-v8a"
+          mkdir -p "$DIR"
+          for core in gambatte mgba fceumm snes9x mupen64plus_next_gles3 melonds pcsx_rearmed ppsspp genesis_plus_gx mednafen_pce_fast stella handy mednafen_wswan; do
+            if curl -fsSL --retry 3 "https://buildbot.libretro.com/nightly/android/latest/arm64-v8a/${core}_libretro_android.so.zip" -o "/tmp/${core}.zip"; then
+              unzip -o -q "/tmp/${core}.zip" -d "/tmp/core_${core}"
+              cp "/tmp/core_${core}/${core}_libretro_android.so" "$DIR/lib${core}_libretro_android.so"
+              echo "core ok: $core"
+            else
+              echo "::warning::could not fetch core $core"
+            fi
+          done
+          ls -la "$DIR"
+
+      - name: Fetch PSP support files
+        run: |
+          # the PSP emulator needs its own fonts, on-screen atlas and per-game compatibility list; without them games can crash on open
+          ASSETS="${{ steps.proj.outputs.dir }}/app/src/main/assets"
+          mkdir -p "$ASSETS"
+          if curl -fsSL --retry 3 "https://buildbot.libretro.com/assets/system/PPSSPP.zip" -o "$ASSETS/PPSSPP.zip"; then
+            echo "PSP support files ok"
+          else
+            echo "::warning::could not fetch PSP support files"
+          fi
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.7'
+          gradle-version: '8.13'
 
       - name: Build debug APK
         working-directory: ${{ steps.proj.outputs.dir }}
