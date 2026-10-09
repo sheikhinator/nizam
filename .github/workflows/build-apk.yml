@@ -94,6 +94,17 @@ jobs:
           done
           ls -la "$DIR"
 
+      - name: Fetch PSP support files
+        run: |
+          # the PSP emulator needs its own fonts, on-screen atlas and per-game compatibility list; without them games can crash on open
+          ASSETS="${{ steps.proj.outputs.dir }}/app/src/main/assets"
+          mkdir -p "$ASSETS"
+          if curl -fsSL --retry 3 "https://buildbot.libretro.com/assets/system/PPSSPP.zip" -o "$ASSETS/PPSSPP.zip"; then
+            echo "PSP support files ok"
+          else
+            echo "::warning::could not fetch PSP support files"
+          fi
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
