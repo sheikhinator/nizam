@@ -179,6 +179,8 @@ class AtlasWorker(context: Context, params: WorkerParameters) : CoroutineWorker(
     override suspend fun doWork(): Result {
         val container = (applicationContext as? NizamApplication)?.container ?: return Result.success()
         val settings = container.settingsRepository
+        // unfinished Chief work (a build being watched, an interrupted job) keeps moving even when the app is closed
+        runCatching { com.nizam.app.feature.chief.ChiefRunner.tick(applicationContext) }
         if (!settings.notificationsOn.first()) return Result.success()
 
         val now = LocalTime.now().let { it.hour + it.minute / 60.0 }

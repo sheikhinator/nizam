@@ -6,6 +6,8 @@ import org.json.JSONObject
 
 /** What the screen shows as Chief works, like the steps in a coding session. */
 sealed class Step {
+    data class User(val text: String) : Step()
+    data class Note(val text: String) : Step()
     data class Say(val text: String) : Step()
     data class Tool(val name: String, val detail: String, val result: String) : Step()
     data class Cost(val job: Double, val month: Double) : Step()
@@ -15,7 +17,8 @@ sealed class Step {
  * Chief's loop: Claude reads and edits a copy of the app's code through a handful of tools, inside a
  * spending limit and a step limit. It never pushes anything: the user approves first.
  */
-class ChiefAgent(private val c: Context, private val ws: Workspace, private val onStep: (Step) -> Unit) {
+class ChiefAgent(private val c: Context, private val ws: Workspace, private val onStep: (Step) -> Unit,
+                 private val onSave: (List<Msg>, Double) -> Unit = { _, _ -> }) {
     companion object {
         private const val MAX_STEPS = 28
 
@@ -53,73 +56,69 @@ Rules:
             .also { arr -> arr.getJSONObject(arr.length() - 1).put("cache_control", JSONObject().put("type", "ephemeral")) }
     }
 
-    private fun msg(role: String, text: String) = JSONObject().put("role", role).put("content", JSONArray().put(JSONObject().put("type", "text").put("text", text)))
-
-    private fun exec(name: String, input: JSONObject): Pair<String, String> = when (name) {
-        "list_dir" -> input.optString("path") to ws.list(input.optString("path"))
-        "read_file" -> input.optString("path") to ws.read(input.optString("path"), input.optInt("start_line", 0).takeIf { it > 0 }, input.optInt("end_line", 0).takeIf { it > 0 })
-        "search_code" -> input.optString("pattern") to ws.search(input.optString("pattern"), input.optString("path").ifBlank { null })
-        "edit_file" -> input.optString("path") to ws.edit(input.optString("path"), input.optString("old_text"), input.optString("new_text"))
-        "create_file" -> input.optString("path") to ws.create(input.optString("path"), input.optString("content"))
-        else -> name to "Unknown tool."
-    }
-
-    /** Keep only the freshest tool results in full; older ones shrink so a long job stays cheap. */
-    private fun compact(messages: JSONArray) {
-        val lastTwo = (messages.length() - 3).coerceAtLeast(0)
-        for (i in 0 until lastTwo) {
-            val content = messages.getJSONObject(i).optJSONArray("content") ?: continue
-            for (j in 0 until content.length()) {
-                val b = content.getJSONObject(j)
-                if (b.optString("type") == "tool_result") {
-                    val t = b.optString("content")
-                    if (t.length > 500) b.put("content", t.take(400) + "\n…(shortened)")
-                }
-            }
+    private fun exec(call: Call): Pair<String, String> {
+        val input = call.input
+        return when (call.name) {
+            "list_dir" -> input.optString("path") to ws.list(input.optString("path"))
+            "read_file" -> input.optString("path") to ws.read(input.optString("path"), input.optInt("start_line", 0).takeIf { it > 0 }, input.optInt("end_line", 0).takeIf { it > 0 })
+            "search_code" -> input.optString("pattern") to ws.search(input.optString("pattern"), input.optString("path").ifBlank { null })
+            "edit_file" -> input.optString("path") to ws.edit(input.optString("path"), input.optString("old_text"), input.optString("new_text"))
+            "create_file" -> input.optString("path") to ws.create(input.optString("path"), input.optString("content"))
+            else -> call.name to "Unknown tool."
         }
     }
 
-    /** Runs one request. Returns Claude's final summary, or why it stopped. */
-    suspend fun run(history: List<Pair<String, String>>, user: String): String {
-        val key = ChiefStore.claudeKey(c)
-        if (key.isBlank()) return "Add your Anthropic key first."
-        val model = ChiefStore.model(c)
-        val messages = JSONArray()
-        history.takeLast(6).forEach { (role, text) -> messages.put(msg(role, text.take(2000))) }
-        messages.put(msg("user", user))
+    /** Keep only the freshest tool results in full; older ones shrink so a long job stays cheap. */
+    private fun compact(history: MutableList<Msg>) {
+        for (i in 0 until (history.size - 3).coerceAtLeast(0)) {
+            val m = history[i]
+            if (m is Msg.Results) history[i] = Msg.Results(m.items.map { (id, t) -> id to if (t.length > 500) t.take(400) + "\n...(shortened)" else t })
+        }
+    }
+
+    /**
+     * Runs the conversation to the end. [history] already holds the request; it is extended in place.
+     * If the first AI fails (out of credit, limit, outage) the next connected AI carries on from the same point.
+     */
+    suspend fun run(history: MutableList<Msg>, startCost: Double = 0.0): String {
+        val brains = Brains.chain(c)
+        if (brains.isEmpty()) return "Add your Anthropic key (or connect another AI) first."
         val tools = tools()
-        var job = 0.0
-        var summary = ""
-        for (step in 0 until MAX_STEPS) {
-            if (ChiefStore.overBudget(c)) return "I stopped because this month's spending limit is reached. You can raise it in Chief settings."
-            if (job >= ChiefStore.jobCap(c)) return "I stopped because this job reached its spending limit. Say continue if you want me to carry on."
-            val reply = Claude.call(key, model, SYSTEM, messages, tools)
-            val cost = Claude.cost(model, reply.usage)
-            job += cost; ChiefStore.addSpend(c, cost); onStep(Step.Cost(job, ChiefStore.spent(c)))
-            messages.put(JSONObject().put("role", "assistant").put("content", reply.content))
-            val results = JSONArray()
-            var finished = false
-            for (i in 0 until reply.content.length()) {
-                val b = reply.content.getJSONObject(i)
-                when (b.optString("type")) {
-                    "text" -> if (b.optString("text").isNotBlank()) onStep(Step.Say(b.optString("text")))
-                    "tool_use" -> {
-                        val name = b.optString("name"); val input = b.optJSONObject("input") ?: JSONObject()
-                        if (name == "finish") {
-                            summary = input.optString("summary"); finished = true
-                            results.put(JSONObject().put("type", "tool_result").put("tool_use_id", b.optString("id")).put("content", "ok"))
-                        } else {
-                            val (detail, out) = runCatching { exec(name, input) }.getOrElse { input.optString("path") to "That failed: ${it.message}" }
-                            onStep(Step.Tool(name, detail, out))
-                            results.put(JSONObject().put("type", "tool_result").put("tool_use_id", b.optString("id")).put("content", out))
-                        }
-                    }
+        var bi = 0
+        var job = startCost
+        var steps = 0
+        while (steps < MAX_STEPS) {
+            if (ChiefStore.overBudget(c) && brains[bi] is ClaudeBrain) return "I stopped because this month's spending limit is reached. You can raise it in Chief settings."
+            if (job >= ChiefStore.jobCap(c) && brains[bi] is ClaudeBrain) return "I stopped because this job reached its spending limit. Say continue if you want me to carry on."
+            val turn = try {
+                brains[bi].turn(SYSTEM, history, tools)
+            } catch (e: kotlinx.coroutines.CancellationException) { throw e }
+            catch (e: Exception) {
+                if (bi < brains.lastIndex) {
+                    val failed = brains[bi].name
+                    bi++
+                    onStep(Step.Note("$failed did not answer (${e.message.orEmpty().take(90)}). Continuing with ${brains[bi].name}."))
+                    continue
                 }
+                throw e
             }
-            if (finished) return summary.ifBlank { "Done." }
-            if (results.length() == 0) return reply.content.let { arr -> (0 until arr.length()).map { arr.getJSONObject(it) }.filter { it.optString("type") == "text" }.joinToString("\n") { it.optString("text") } }.ifBlank { "Done." }
-            messages.put(JSONObject().put("role", "user").put("content", results))
-            compact(messages)
+            steps++
+            job += turn.cost; ChiefStore.addSpend(c, turn.cost); onStep(Step.Cost(job, ChiefStore.spent(c)))
+            if (turn.text.isNotBlank()) onStep(Step.Say(turn.text))
+            history += Msg.Asst(turn.text, turn.calls)
+            if (turn.calls.isEmpty()) { onSave(history, job); return turn.text.ifBlank { "Done." } }
+            val results = ArrayList<Pair<String, String>>()
+            var summary: String? = null
+            for (call in turn.calls) {
+                if (call.name == "finish") { summary = call.input.optString("summary"); results += call.id to "ok"; continue }
+                val (detail, out) = runCatching { exec(call) }.getOrElse { call.input.optString("path") to "That failed: ${it.message}" }
+                onStep(Step.Tool(call.name, detail, out))
+                results += call.id to out
+            }
+            history += Msg.Results(results)
+            compact(history)
+            onSave(history, job)
+            if (summary != null) return (summary.ifBlank { "Done." }) + if (bi > 0) "\n\n(Finished with ${brains[bi].name} because the first AI was not available. Please read the changes carefully before approving.)" else ""
         }
         return "I reached the step limit for one job. Here is where I got to; say continue and I will pick up."
     }

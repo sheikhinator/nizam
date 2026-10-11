@@ -104,11 +104,13 @@ object Updater {
 
     suspend fun latest(c: Context): Info? = withContext(Dispatchers.IO) {
         val beta = Labs.on(c, "beta_updates")
-        val arr = JSONArray(com.nizam.app.net.Http.getJson(API, mapOf("Accept" to "application/vnd.github+json")))
+        // with a GitHub token saved in Chief, this also works if the repository is private
+        val token = com.nizam.app.feature.chief.ChiefStore.githubToken(c)
+        val arr = JSONArray(com.nizam.app.net.Http.getJson(API, mapOf("Accept" to "application/vnd.github+json") + (if (token.isBlank()) emptyMap() else mapOf("Authorization" to "Bearer $token"))))
         (0 until arr.length()).map { arr.getJSONObject(it) }.filter { !it.optBoolean("draft") }.mapNotNull { r ->
             val asset = r.optJSONArray("assets")?.let { a -> (0 until a.length()).map { a.getJSONObject(it) }.firstOrNull { it.optString("name").endsWith(".apk") } } ?: return@mapNotNull null
             val t = Instant.parse(r.optString("published_at")).toEpochMilli()
-            if (!beta && System.currentTimeMillis() - t < 24 * 3_600_000L) null else Info(r.optString("tag_name"), t, asset.optString("browser_download_url"), r.optString("body").take(400), asset.optLong("size"))
+            if (!beta && System.currentTimeMillis() - t < 24 * 3_600_000L) null else Info(r.optString("tag_name"), t, if (token.isBlank()) asset.optString("browser_download_url") else asset.optString("url"), r.optString("body").take(400), asset.optLong("size"))
         }.maxByOrNull { it.published }
     }
 
@@ -116,6 +118,18 @@ object Updater {
 
     suspend fun download(c: Context, i: Info, progress: (Int) -> Unit): File = withContext(Dispatchers.IO) {
         val f = File(File(c.cacheDir, "update").apply { mkdirs() }, "Atlas.apk")
+        if (i.url.contains("api.github.com")) {
+            // private repository: the asset API needs the token, and the redirect to storage must not carry it (OkHttp handles that)
+            val token = com.nizam.app.feature.chief.ChiefStore.githubToken(c)
+            val req = okhttp3.Request.Builder().url(i.url).header("Accept", "application/octet-stream").header("Authorization", "Bearer $token").build()
+            okhttp3.OkHttpClient.Builder().readTimeout(120, java.util.concurrent.TimeUnit.SECONDS).build().newCall(req).execute().use { resp ->
+                if (!resp.isSuccessful) throw IllegalStateException("GitHub ${resp.code} while downloading the update.")
+                val total = resp.body!!.contentLength().takeIf { it > 0 } ?: i.size
+                resp.body!!.byteStream().use { input -> f.outputStream().use { out -> val buf = ByteArray(1 shl 16); var done = 0L
+                    while (true) { val n = input.read(buf); if (n < 0) break; out.write(buf, 0, n); done += n; if (total > 0) progress((done * 100 / total).toInt()) } } }
+            }
+            return@withContext f
+        }
         val conn = (URL(i.url).openConnection() as HttpURLConnection).apply { instanceFollowRedirects = true; connectTimeout = 20_000; readTimeout = 60_000 }
         val total = conn.contentLengthLong.takeIf { it > 0 } ?: i.size
         conn.inputStream.use { input -> f.outputStream().use { out -> val buf = ByteArray(1 shl 16); var done = 0L

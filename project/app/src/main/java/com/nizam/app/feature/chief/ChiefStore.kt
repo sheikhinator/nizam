@@ -53,5 +53,21 @@ object ChiefStore {
         val a = JSONObject(p(c).getString("pending", null) ?: return emptyList()).getJSONArray("files")
         (0 until a.length()).map { a.getJSONObject(it) }.map { Workspace.Change(it.getString("path"), if (it.isNull("orig")) null else it.getString("orig"), it.getString("content")) }
     }.getOrDefault(emptyList())
+    // a job in progress, so it can continue after the app closes or an AI runs out
+    fun saveJob(c: Context, request: String, history: List<Msg>, cost: Double, changes: Collection<Workspace.Change>) {
+        val arr = JSONArray()
+        changes.forEach { arr.put(JSONObject().put("path", it.path).put("content", it.content).put("orig", it.original ?: JSONObject.NULL)) }
+        p(c).edit().putString("job", JSONObject().put("request", request).put("cost", cost).put("history", MsgJson.toJson(history)).put("files", arr).toString()).apply()
+    }
+    fun hasJob(c: Context) = p(c).getString("job", null) != null
+    fun clearJob(c: Context) = p(c).edit().remove("job").apply()
+    class SavedJob(val request: String, val cost: Double, val history: MutableList<Msg>, val files: List<Workspace.Change>)
+    fun job(c: Context): SavedJob? = runCatching {
+        val o = JSONObject(p(c).getString("job", null) ?: return null)
+        val a = o.getJSONArray("files")
+        SavedJob(o.optString("request"), o.optDouble("cost", 0.0), MsgJson.fromJson(o.getJSONArray("history")),
+            (0 until a.length()).map { a.getJSONObject(it) }.map { Workspace.Change(it.getString("path"), if (it.isNull("orig")) null else it.getString("orig"), it.getString("content")) })
+    }.getOrNull()
+
     fun clearPending(c: Context) = p(c).edit().remove("pending").apply()
 }
