@@ -327,7 +327,7 @@ object Nx {
             listOf("Profit" to "sale - cost", "Markup %" to "(sale - cost) / cost * 100", "Margin %" to "(sale - cost) / sale * 100")),
         CalcSpec("savegoal", "Savings plan", "How much a month to reach a goal", Icons.Outlined.Savings, Hub.Money, "save goal monthly plan",
             listOf(F("goal", "Goal", K.NUMBER, default = "10 lakh"), F("have", "Saved so far", K.NUMBER, default = "1 lakh"), F("months", "Months", K.NUMBER, default = "24"), F("ret", "Return % / year", K.NUMBER, default = "0")),
-            listOf("Still needed" to "goal - have", "Per month" to "if(gt(ret,0), (goal - have*(1+ret/1200)^months) * (ret/1200) / ((1+ret/1200)^months - 1), (goal - have)/months)")),
+            listOf("Still needed" to "goal - have", "Per month" to "if(gt(ret,0), (goal - have*(1+ret/1200)^months) * (ret/1200) / ((1+ret/1200)^months - 1 + (1 - gt(ret,0))), (goal - have)/months)")),
         CalcSpec("rentup", "Rent increase", "Where rent goes with yearly increases", Icons.Outlined.Home, Hub.Home, "rent increase 10 percent agreement",
             listOf(F("rent", "Rent now", K.NUMBER, default = "60000"), F("pct", "Increase % per year", K.NUMBER, default = "10"), F("yrs", "Years", K.NUMBER, default = "3")),
             listOf("Rent then" to "grow(rent, pct, yrs)", "Paid over the period" to "rent*12*((1+pct/100)^yrs - 1)/(pct/100)")),

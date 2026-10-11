@@ -65,7 +65,7 @@ object PrayerClock {
         }.coerceIn(0, 24 * 60 - 1)
     }
 
-    fun hm(m: Int) = LocalTime.of(m / 60, m % 60).toString()
+    fun hm(m: Int): String { val n = ((m % 1440) + 1440) % 1440; return LocalTime.of(n / 60, n % 60).toString() }
 }
 
 object Mega6 {

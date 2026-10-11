@@ -166,7 +166,8 @@ object Calc {
             if (eat('(')) { val v = expr(); if (!eat(')')) throw Err("Missing )"); return v }
             val st = i
             if (i < s.length && (s[i].isDigit() || s[i] == '.')) {
-                while (i < s.length && (s[i].isDigit() || s[i] == '.' || s[i] == ',' || s[i] == '_')) i++
+                while (i < s.length && (s[i].isDigit() || s[i] == '.' || s[i] == '_' ||
+                    (s[i] == ',' && i + 3 < s.length + 0 && s[i + 1].isDigit() && s[i + 2].isDigit() && s[i + 3].isDigit() && !(i + 4 < s.length && s[i + 4].isDigit())))) i++
                 var n = s.substring(st, i).replace(",", "").replace("_", "").toDoubleOrNull() ?: throw Err("Bad number")
                 ws()
                 // Pakistani and short scales: 5k, 2.5lakh, 3crore, 1m

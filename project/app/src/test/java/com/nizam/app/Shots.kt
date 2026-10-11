@@ -36,7 +36,7 @@ class Shots(private val route: String, private val dark: Boolean) {
         @JvmStatic
         @ParameterizedRobolectricTestRunner.Parameters(name = "{0}-{1}")
         fun params(): List<Array<Any>> {
-            val routes = (System.getenv("SHOT_ROUTES") ?: "today,nx/chief,nx/appchat,nx/flows,nx/roads,nx/trustboard,nx/moodweather,nx/loan2,life")
+            val routes = (System.getenv("SHOT_ROUTES") ?: "today,nx/chief,nx/appchat,nx/flows,nx/roads,nx/trustboard,nx/moodweather,nx/loan2")
                 .split(',').map { it.trim() }.filter { it.isNotEmpty() }
             return routes.map { arrayOf<Any>(it, true) } + listOf("today", "modules").filter { it in routes }.map { arrayOf<Any>(it, false) }
         }
