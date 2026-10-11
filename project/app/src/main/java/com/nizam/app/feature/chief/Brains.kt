@@ -91,13 +91,26 @@ class OpenAiBrain(override val name: String, private val url: String, private va
     }
 }
 
-/** The order to try: Claude first when a key is set, then the other connected AIs. */
+/** The order to try: Claude first when a key is set, then every other AI the app already has connected. */
 object Brains {
-    fun chain(c: Context): List<Brain> {
+    suspend fun chain(c: Context): List<Brain> {
         val out = ArrayList<Brain>()
         val key = ChiefStore.claudeKey(c)
         if (key.isNotBlank()) out += ClaudeBrain(key, ChiefStore.model(c))
+        // providers added in the provider list
         Providers.endpoints(c).filter { !it.url.contains("anthropic.com") }.forEach { e -> out += OpenAiBrain(e.name, e.url, e.key, e.model) }
+        // the app's main AI keys (Gemini, OpenRouter, custom, fast lane), each tried in turn
+        val settings = (c.applicationContext as? com.nizam.app.NizamApplication)?.container?.settingsRepository
+        if (settings != null) {
+            val seen = HashSet<String>()
+            runCatching { com.nizam.app.net.Router.endpoints(settings, c, com.nizam.app.net.Router.Lane.ACT) }.getOrDefault(emptyList()).forEach { e ->
+                if (e.kind == "LOCAL" || e.key.isBlank() && e.kind == "GEMINI") return@forEach
+                val label = e.name + " " + e.model
+                if (!seen.add(label) || seen.size > 6) return@forEach
+                val url = if (e.kind == "GEMINI") "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions" else e.url
+                out += OpenAiBrain(label.trim(), url, e.key, e.model)
+            }
+        }
         return out
     }
 }

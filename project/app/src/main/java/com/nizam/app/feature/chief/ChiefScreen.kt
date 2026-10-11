@@ -100,6 +100,8 @@ fun ChiefScreen(container: com.nizam.app.AppContainer) {
         if (showSetup) Column(Modifier.fillMaxWidth().padding(vertical = 8.dp).background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), RoundedCornerShape(14.dp)).padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text("Setup", fontWeight = FontWeight.SemiBold)
+            Text("A Claude Pro or Max subscription does not include API credit: the API is billed separately. Add a few dollars at console.anthropic.com under Billing, or leave the key empty and Chief will use the other AIs you have already connected (they are weaker at code, so you will review changes carefully).",
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text("Your Anthropic key pays for Claude's work. Your GitHub token lets it save changes and build the app. Both are kept encrypted on this phone.",
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             OutlinedTextField(claudeKey, { claudeKey = it }, label = { Text(if (ChiefStore.claudeKey(c).isBlank()) "Anthropic API key" else "Anthropic key saved (type to replace)") },

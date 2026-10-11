@@ -1,1 +1,1 @@
-Flows: build your own automations (triggers, steps, AI, connected apps, relay channels), describe one in words and the AI drafts it, anything that acts outside the phone waits for your OK. Connect any app that has a web API.
+Chief now falls back to the AI keys you already use in Atlas when Claude has no API credit, and explains that Claude Pro does not include API credit.

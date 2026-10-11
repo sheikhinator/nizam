@@ -97,7 +97,8 @@ Rules:
                 if (bi < brains.lastIndex) {
                     val failed = brains[bi].name
                     bi++
-                    onStep(Step.Note("$failed did not answer (${e.message.orEmpty().take(90)}). Continuing with ${brains[bi].name}."))
+                    val why = if (e.message.orEmpty().contains("credit balance", true)) "its credit is empty" else e.message.orEmpty().take(90)
+                    onStep(Step.Note("$failed did not answer ($why). Continuing with ${brains[bi].name}."))
                     continue
                 }
                 throw e
