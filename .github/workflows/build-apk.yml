@@ -9,6 +9,8 @@ permissions:
 
 jobs:
   build:
+    # atlas/live is moved forward by the engineer's own pushes (which build) and by plain syncs (which don't need a second build)
+    if: github.ref != 'refs/heads/atlas/live' || startsWith(github.event.head_commit.message, 'Chief:')
     runs-on: ubuntu-latest
 
     steps:

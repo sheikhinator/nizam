@@ -66,7 +66,7 @@ private fun diffLines(orig: String?, now: String): List<String> {
 }
 
 @Composable
-fun ChiefScreen() {
+fun ChiefScreen(container: com.nizam.app.AppContainer) {
     val c = LocalContext.current
     val scope = rememberCoroutineScope()
     var tick by remember { mutableIntStateOf(0) }
@@ -131,8 +131,18 @@ fun ChiefScreen() {
 
         LazyColumn(Modifier.weight(1f).fillMaxWidth(), state = listState, verticalArrangement = Arrangement.spacedBy(8.dp)) {
             if (lines.isEmpty()) item {
-                Text("Tell me what to add or fix. For example: \"On the Today screen, show my next prayer bigger\" or \"The Budget Doctor result is too long\".",
-                    style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(vertical = 12.dp))
+                Column(Modifier.padding(vertical = 12.dp)) {
+                    Text("Tell me what to add or fix. For example: \"On the Today screen, show my next prayer bigger\" or \"The Budget Doctor result is too long\".",
+                        style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    TextButton(onClick = { scope.launch {
+                        status = "Checking the app…"; busy = true
+                        val findings = runCatching { com.nizam.app.feature.nx.SelfCheck.run(container) }.getOrDefault(emptyList())
+                        val report = findings.joinToString("\n") { "[${it.level}] ${it.area}: ${it.text}" }
+                        val crash = com.nizam.app.feature.safe.CrashGuard.report(c).take(1500)
+                        input = "Please look at the app's own self-check below and fix anything you safely can in the code. If there is nothing to fix in the code, say so.\n\n$report\n\nRecent crashes:\n$crash"
+                        busy = false
+                    } }) { Text("Let Chief check the app and fix problems") }
+                }
             }
             items(lines.size) { i ->
                 when (val l = lines[i]) {
@@ -236,6 +246,6 @@ fun ChiefScreen() {
 object ChiefSpecs {
     val all: List<Spec> = listOf(
         ScreenSpec("chief", "Chief", "Talk to Claude to add, fix or change anything in this app", Icons.Outlined.Handyman, Hub.Tools,
-            "claude chief engineer build update fix change add feature developer code assistant github") { _, _ -> ChiefScreen() },
+            "claude chief engineer build update fix change add feature developer code assistant github") { container, _ -> ChiefScreen(container) },
     )
 }
