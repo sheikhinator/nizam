@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/stack_root" android:layout_width="match_parent" android:layout_height="match_parent">
+    <StackView android:id="@+id/stack_view" android:layout_width="match_parent" android:layout_height="match_parent"
+        android:loopViews="true" />
+    <TextView android:id="@+id/stack_empty" android:layout_width="match_parent" android:layout_height="match_parent"
+        android:gravity="center" android:background="@drawable/widget_bg" android:text="Atlas" android:textColor="#EDEFF5" android:textSize="16sp" />
+</FrameLayout>

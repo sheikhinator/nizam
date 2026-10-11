@@ -1,0 +1,1 @@
+-keep class com.nizam.app.data.db.** { *; }

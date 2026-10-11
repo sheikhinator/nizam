@@ -1,0 +1,1147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <uses-permission android:name="android.permission.TRANSMIT_IR" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-feature android:name="android.hardware.consumerir" android:required="false" />
+    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.SET_WALLPAPER" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.NFC" />
+    <uses-feature android:name="android.hardware.nfc" android:required="false" />
+    <uses-feature android:name="android.hardware.bluetooth" android:required="false" />
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+    <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.health.READ_STEPS" />
+    <uses-permission android:name="android.permission.health.READ_SLEEP" />
+    <uses-permission android:name="android.permission.health.READ_SKIN_TEMPERATURE" />
+    <uses-permission android:name="android.permission.health.WRITE_EXERCISE" />
+    <uses-permission android:name="android.permission.health.WRITE_WEIGHT" />
+    <uses-permission android:name="android.permission.health.WRITE_HYDRATION" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+
+
+    <queries>
+        <package android:name="com.google.android.apps.healthdata" />
+    </queries>
+
+    <application
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:name=".NizamApplication"
+        android:enableOnBackInvokedCallback="true"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Atlas">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:supportsPictureInPicture="true"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.Atlas"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="atlas" android:host="open" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="atlas" android:host="tag" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+            </intent-filter>
+
+            <!-- Long-press home / power opens Atlas when it's the default assistant -->
+            <intent-filter>
+                <action android:name="android.intent.action.ASSIST" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <!-- Atlas appears in Android's share sheet -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+            <!-- Atlas appears in the text-selection menu of other apps -->
+            <intent-filter>
+                <action android:name="android.intent.action.PROCESS_TEXT" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".feature.glasses.AtlasGlassesCueActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:requiredDisplayCategory="android.hardware.display.category.XR_PROJECTED">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.XR_PROJECTED_LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <service
+            android:name=".feature.phone.AtlasNotificationListener"
+            android:exported="true"
+            android:label="Atlas"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".feature.phone.AtlasAccessibilityService"
+            android:exported="true"
+            android:label="Atlas screen control"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_config" />
+        </service>
+
+        <service
+            android:name=".feature.phone.AtlasVoiceService"
+            android:exported="true"
+            android:label="Atlas"
+            android:permission="android.permission.BIND_VOICE_INTERACTION">
+            <intent-filter>
+                <action android:name="android.service.voice.VoiceInteractionService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.voice_interaction"
+                android:resource="@xml/voice_interaction" />
+        </service>
+
+        <service
+            android:name=".feature.phone.AtlasSessionService"
+            android:exported="true"
+            android:permission="android.permission.BIND_VOICE_INTERACTION" />
+
+        <service
+            android:name=".feature.phone.AtlasRecognitionService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.speech.RecognitionService" />
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name=".feature.notify.PrayerAlarmReceiver"
+            android:exported="false" />
+
+        <receiver android:name=".feature.jarvis.SalahRestoreReceiver" android:exported="false" />
+
+        <receiver android:name=".feature.widget.AskWidget" android:exported="true" android:label="Ask Atlas">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_ask_info" />
+        </receiver>
+        <receiver android:name=".feature.widget.MoneyWidget" android:exported="true" android:label="Atlas money">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_money_info" />
+        </receiver>
+        <receiver android:name=".feature.widget.MyWidget" android:exported="true" android:label="My Atlas">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_mine_info" />
+        </receiver>
+        <provider android:name="rikka.shizuku.ShizukuProvider" android:authorities="${applicationId}.shizuku"
+            android:multiprocess="false" android:enabled="true" android:exported="true"
+            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
+        <service android:name=".feature.wild.AtlasWallpaper" android:exported="true" android:label="Atlas living wallpaper"
+            android:permission="android.permission.BIND_WALLPAPER">
+            <intent-filter><action android:name="android.service.wallpaper.WallpaperService" /></intent-filter>
+            <meta-data android:name="android.service.wallpaper" android:resource="@xml/wallpaper" />
+        </service>
+        <receiver android:name=".feature.wild.TriggerReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="android.bluetooth.device.action.ACL_CONNECTED" />
+                <action android:name="android.bluetooth.device.action.ACL_DISCONNECTED" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".feature.wild.WatchReceiver" android:exported="false" />
+        <service android:name=".feature.wild.AtlasCallScreening" android:exported="true"
+            android:permission="android.permission.BIND_SCREENING_SERVICE">
+            <intent-filter><action android:name="android.telecom.CallScreeningService" /></intent-filter>
+        </service>
+        <service android:name=".feature.wild.LaptopService" android:exported="false" android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="Local web dashboard the user starts to use Atlas from their own computer" />
+        </service>
+        <receiver android:name=".feature.widget.SmartStackWidget" android:exported="true" android:label="Atlas smart stack">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_stack_info" />
+        </receiver>
+        <service android:name=".feature.widget.SmartStackService" android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+        <receiver android:name=".feature.widget.TodayWidget" android:exported="true" android:label="Atlas today">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_today_info" />
+        </receiver>
+
+        <service android:name=".feature.presence.BubbleService" android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Floating assistant bubble the user shows and hides themselves" />
+        </service>
+
+        <receiver android:name=".feature.platform.PlaceReceiver" android:exported="false" />
+
+        <service android:name=".feature.system.AskAtlasTile" android:exported="true"
+            android:label="Ask Atlas" android:icon="@android:drawable/ic_btn_speak_now"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+        </service>
+        <receiver android:name=".feature.next.LostModeSms" android:exported="true"
+            android:permission="android.permission.BROADCAST_SMS">
+            <intent-filter><action android:name="android.provider.Telephony.SMS_RECEIVED" /></intent-filter>
+        </receiver>
+        <service android:name=".feature.next.AtlasCallCheck" android:exported="true"
+            android:permission="android.permission.BIND_SCREENING_SERVICE">
+            <intent-filter><action android:name="android.telecom.CallScreeningService" /></intent-filter>
+        </service>
+        <service android:name=".feature.autofill.AtlasAutofill" android:exported="true" android:label="Atlas"
+            android:permission="android.permission.BIND_AUTOFILL_SERVICE">
+            <intent-filter><action android:name="android.service.autofill.AutofillService" /></intent-filter>
+        </service>
+        <activity android:name=".feature.wellbeing.PauseActivity" android:exported="false"
+            android:excludeFromRecents="true" android:noHistory="true" android:taskAffinity=""
+            android:launchMode="singleInstance" />
+
+        <receiver android:name=".feature.future.TwinReceiver" android:exported="false" />
+        <receiver android:name=".feature.future.MoneyReceiver" android:exported="false" />
+        <service android:name=".feature.nx.ScreenRecordService" android:exported="false" android:foregroundServiceType="mediaProjection|microphone" />
+        <service android:name=".feature.nx.FirewallVpn" android:exported="false" android:permission="android.permission.BIND_VPN_SERVICE">
+            <intent-filter><action android:name="android.net.VpnService" /></intent-filter>
+        </service>
+        <receiver android:name=".feature.nx.IntruderAdmin" android:exported="true" android:permission="android.permission.BIND_DEVICE_ADMIN">
+            <meta-data android:name="android.app.device_admin" android:resource="@xml/intruder_admin" />
+            <intent-filter><action android:name="android.app.action.DEVICE_ADMIN_ENABLED" /></intent-filter>
+        </receiver>
+        <service android:name=".feature.companion.PetOverlayService" android:exported="false" android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="The user's companion pet floating on screen, shown and hidden by the user" />
+        </service>
+        <service android:name=".feature.apps2.AtlasKeyboard" android:label="Atlas keyboard" android:exported="true"
+            android:permission="android.permission.BIND_INPUT_METHOD">
+            <intent-filter><action android:name="android.view.InputMethod" /></intent-filter>
+            <meta-data android:name="android.view.im" android:resource="@xml/atlas_keyboard" />
+        </service>
+        <service android:name=".feature.nx.LiveSubsService" android:exported="false" android:foregroundServiceType="microphone" />
+        <service android:name=".feature.future.GuardianService" android:exported="false" android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Crash and fall detection the user switches on to alert their emergency contacts" />
+        </service>
+        <service android:name=".feature.future.GameOverlayService" android:exported="false" android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Game mode stats overlay the user switches on themselves" />
+        </service>
+
+        <service android:name=".feature.body.SleepService" android:exported="false" android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Overnight motion sensing for a smart alarm the user arms themselves" />
+        </service>
+        <activity android:name=".feature.future.CircleActivity" android:exported="false"
+            android:theme="@style/Theme.Atlas.Overlay" android:excludeFromRecents="true"
+            android:taskAffinity="com.nizam.app.circle" android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity android:name=".feature.body.WakeActivity" android:exported="false" android:showWhenLocked="true"
+            android:turnScreenOn="true" android:excludeFromRecents="true" android:launchMode="singleTask" />
+
+        <activity android:name=".feature.jarvis.CopilotActivity" android:exported="false"
+            android:theme="@style/Theme.Atlas.Overlay" android:excludeFromRecents="true"
+            android:taskAffinity="com.nizam.app.copilot" android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize" />
+
+        <service android:name=".net.TransferService" android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
+        <service android:name=".feature.music.MusicService" android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+
+        <service android:name=".feature.jarvis.WakeService" android:exported="false"
+            android:foregroundServiceType="microphone" />
+
+        <service android:name=".feature.jarvis.CopilotTile" android:exported="true"
+            android:label="Atlas co-pilot" android:icon="@drawable/ic_launcher_foreground"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <service android:name=".feature.podcasts.PodcastService" android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+
+
+        <activity-alias android:name=".IconAliasGold" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_gold" android:roundIcon="@mipmap/ic_launcher_gold_round"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasCrimson" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_crimson" android:roundIcon="@mipmap/ic_launcher_crimson_round"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasMono" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_mono" android:roundIcon="@mipmap/ic_launcher_mono_round"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasEmerald" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_emerald" android:roundIcon="@mipmap/ic_launcher_emerald_round"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasIvory" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_ivory" android:roundIcon="@mipmap/ic_launcher_ivory_round"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasViolet" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_violet" android:roundIcon="@mipmap/ic_launcher_violet_round"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- icon combos -->
+        <activity-alias android:name=".IconAliasX_coral_midnight" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_coral_midnight" android:roundIcon="@mipmap/ic_launcher_x_coral_midnight"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_coral_black" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_coral_black" android:roundIcon="@mipmap/ic_launcher_x_coral_black"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_coral_charcoal" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_coral_charcoal" android:roundIcon="@mipmap/ic_launcher_x_coral_charcoal"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_coral_navy" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_coral_navy" android:roundIcon="@mipmap/ic_launcher_x_coral_navy"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_coral_wine" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_coral_wine" android:roundIcon="@mipmap/ic_launcher_x_coral_wine"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_coral_forest" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_coral_forest" android:roundIcon="@mipmap/ic_launcher_x_coral_forest"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_coral_cream" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_coral_cream" android:roundIcon="@mipmap/ic_launcher_x_coral_cream"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_coral_white" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_coral_white" android:roundIcon="@mipmap/ic_launcher_x_coral_white"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_gold_midnight" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_gold_midnight" android:roundIcon="@mipmap/ic_launcher_x_gold_midnight"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_gold_black" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_gold_black" android:roundIcon="@mipmap/ic_launcher_x_gold_black"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_gold_charcoal" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_gold_charcoal" android:roundIcon="@mipmap/ic_launcher_x_gold_charcoal"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_gold_navy" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_gold_navy" android:roundIcon="@mipmap/ic_launcher_x_gold_navy"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_gold_wine" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_gold_wine" android:roundIcon="@mipmap/ic_launcher_x_gold_wine"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_gold_forest" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_gold_forest" android:roundIcon="@mipmap/ic_launcher_x_gold_forest"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_crimson_midnight" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_crimson_midnight" android:roundIcon="@mipmap/ic_launcher_x_crimson_midnight"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_crimson_black" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_crimson_black" android:roundIcon="@mipmap/ic_launcher_x_crimson_black"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_crimson_charcoal" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_crimson_charcoal" android:roundIcon="@mipmap/ic_launcher_x_crimson_charcoal"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_crimson_navy" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_crimson_navy" android:roundIcon="@mipmap/ic_launcher_x_crimson_navy"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_crimson_wine" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_crimson_wine" android:roundIcon="@mipmap/ic_launcher_x_crimson_wine"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_crimson_forest" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_crimson_forest" android:roundIcon="@mipmap/ic_launcher_x_crimson_forest"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_crimson_cream" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_crimson_cream" android:roundIcon="@mipmap/ic_launcher_x_crimson_cream"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_crimson_white" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_crimson_white" android:roundIcon="@mipmap/ic_launcher_x_crimson_white"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_white_midnight" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_white_midnight" android:roundIcon="@mipmap/ic_launcher_x_white_midnight"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_white_black" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_white_black" android:roundIcon="@mipmap/ic_launcher_x_white_black"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_white_charcoal" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_white_charcoal" android:roundIcon="@mipmap/ic_launcher_x_white_charcoal"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_white_navy" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_white_navy" android:roundIcon="@mipmap/ic_launcher_x_white_navy"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_white_wine" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_white_wine" android:roundIcon="@mipmap/ic_launcher_x_white_wine"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_white_forest" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_white_forest" android:roundIcon="@mipmap/ic_launcher_x_white_forest"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_emerald_midnight" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_emerald_midnight" android:roundIcon="@mipmap/ic_launcher_x_emerald_midnight"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_emerald_black" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_emerald_black" android:roundIcon="@mipmap/ic_launcher_x_emerald_black"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_emerald_charcoal" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_emerald_charcoal" android:roundIcon="@mipmap/ic_launcher_x_emerald_charcoal"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_emerald_navy" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_emerald_navy" android:roundIcon="@mipmap/ic_launcher_x_emerald_navy"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_emerald_wine" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_emerald_wine" android:roundIcon="@mipmap/ic_launcher_x_emerald_wine"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_emerald_forest" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_emerald_forest" android:roundIcon="@mipmap/ic_launcher_x_emerald_forest"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_violet_midnight" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_violet_midnight" android:roundIcon="@mipmap/ic_launcher_x_violet_midnight"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_violet_black" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_violet_black" android:roundIcon="@mipmap/ic_launcher_x_violet_black"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_violet_charcoal" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_violet_charcoal" android:roundIcon="@mipmap/ic_launcher_x_violet_charcoal"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_violet_navy" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_violet_navy" android:roundIcon="@mipmap/ic_launcher_x_violet_navy"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_violet_wine" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_violet_wine" android:roundIcon="@mipmap/ic_launcher_x_violet_wine"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_violet_forest" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_violet_forest" android:roundIcon="@mipmap/ic_launcher_x_violet_forest"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_sky_midnight" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_sky_midnight" android:roundIcon="@mipmap/ic_launcher_x_sky_midnight"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_sky_black" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_sky_black" android:roundIcon="@mipmap/ic_launcher_x_sky_black"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_sky_charcoal" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_sky_charcoal" android:roundIcon="@mipmap/ic_launcher_x_sky_charcoal"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_sky_navy" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_sky_navy" android:roundIcon="@mipmap/ic_launcher_x_sky_navy"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_sky_wine" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_sky_wine" android:roundIcon="@mipmap/ic_launcher_x_sky_wine"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_sky_forest" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_sky_forest" android:roundIcon="@mipmap/ic_launcher_x_sky_forest"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_teal_midnight" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_teal_midnight" android:roundIcon="@mipmap/ic_launcher_x_teal_midnight"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_teal_black" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_teal_black" android:roundIcon="@mipmap/ic_launcher_x_teal_black"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_teal_charcoal" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_teal_charcoal" android:roundIcon="@mipmap/ic_launcher_x_teal_charcoal"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_teal_navy" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_teal_navy" android:roundIcon="@mipmap/ic_launcher_x_teal_navy"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_teal_wine" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_teal_wine" android:roundIcon="@mipmap/ic_launcher_x_teal_wine"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_teal_forest" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_teal_forest" android:roundIcon="@mipmap/ic_launcher_x_teal_forest"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_rose_midnight" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_rose_midnight" android:roundIcon="@mipmap/ic_launcher_x_rose_midnight"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_rose_black" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_rose_black" android:roundIcon="@mipmap/ic_launcher_x_rose_black"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_rose_charcoal" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_rose_charcoal" android:roundIcon="@mipmap/ic_launcher_x_rose_charcoal"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_rose_navy" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_rose_navy" android:roundIcon="@mipmap/ic_launcher_x_rose_navy"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_rose_wine" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_rose_wine" android:roundIcon="@mipmap/ic_launcher_x_rose_wine"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_rose_forest" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_rose_forest" android:roundIcon="@mipmap/ic_launcher_x_rose_forest"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_rose_white" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_rose_white" android:roundIcon="@mipmap/ic_launcher_x_rose_white"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_orange_midnight" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_orange_midnight" android:roundIcon="@mipmap/ic_launcher_x_orange_midnight"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_orange_black" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_orange_black" android:roundIcon="@mipmap/ic_launcher_x_orange_black"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_orange_charcoal" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_orange_charcoal" android:roundIcon="@mipmap/ic_launcher_x_orange_charcoal"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_orange_navy" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_orange_navy" android:roundIcon="@mipmap/ic_launcher_x_orange_navy"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_orange_wine" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_orange_wine" android:roundIcon="@mipmap/ic_launcher_x_orange_wine"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_orange_forest" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_orange_forest" android:roundIcon="@mipmap/ic_launcher_x_orange_forest"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_lime_midnight" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_lime_midnight" android:roundIcon="@mipmap/ic_launcher_x_lime_midnight"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_lime_black" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_lime_black" android:roundIcon="@mipmap/ic_launcher_x_lime_black"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_lime_charcoal" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_lime_charcoal" android:roundIcon="@mipmap/ic_launcher_x_lime_charcoal"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_lime_navy" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_lime_navy" android:roundIcon="@mipmap/ic_launcher_x_lime_navy"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_lime_wine" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_lime_wine" android:roundIcon="@mipmap/ic_launcher_x_lime_wine"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_lime_forest" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_lime_forest" android:roundIcon="@mipmap/ic_launcher_x_lime_forest"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_silver_midnight" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_silver_midnight" android:roundIcon="@mipmap/ic_launcher_x_silver_midnight"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_silver_black" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_silver_black" android:roundIcon="@mipmap/ic_launcher_x_silver_black"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_silver_charcoal" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_silver_charcoal" android:roundIcon="@mipmap/ic_launcher_x_silver_charcoal"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_silver_navy" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_silver_navy" android:roundIcon="@mipmap/ic_launcher_x_silver_navy"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_silver_wine" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_silver_wine" android:roundIcon="@mipmap/ic_launcher_x_silver_wine"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_silver_forest" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_silver_forest" android:roundIcon="@mipmap/ic_launcher_x_silver_forest"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_black_cream" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_black_cream" android:roundIcon="@mipmap/ic_launcher_x_black_cream"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_black_white" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_black_white" android:roundIcon="@mipmap/ic_launcher_x_black_white"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_navy_cream" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_navy_cream" android:roundIcon="@mipmap/ic_launcher_x_navy_cream"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias android:name=".IconAliasX_navy_white" android:targetActivity=".MainActivity"
+            android:icon="@mipmap/ic_launcher_x_navy_white" android:roundIcon="@mipmap/ic_launcher_x_navy_white"
+            android:label="@string/app_name" android:enabled="false" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- /icon combos -->
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <property
+            android:name="android.app.appfunctions.app_metadata"
+            android:resource="@xml/app_metadata" />
+
+    </application>
+</manifest>

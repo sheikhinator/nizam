@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Plain http is allowed so Atlas can reach an AI server on your own Wi-Fi (Ollama, LM Studio).
+     Every service Atlas talks to on the internet already uses https. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors><certificates src="system" /></trust-anchors>
+    </base-config>
+</network-security-config>

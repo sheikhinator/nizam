@@ -1,0 +1,1 @@
+Chief: talk to Claude inside Atlas to add or fix things. It reads the code, you approve, it builds, and you tap Update now. Needs your Anthropic key and a GitHub token. Also an approvals area in the notification inbox, and the project folder is now stored unpacked so it can be edited from the app.

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AppFunctionAppMetadata xmlns:appfn="http://schemas.android.com/apk/androidx.appfunctions"
+    appfn:description="Atlas reports the number of approvals waiting and can stage a note or PKR expense. System-agent writes always wait in Atlas for your explicit approval; they are not saved automatically."
+    appfn:displayDescription="@string/atlas_app_function_description" />

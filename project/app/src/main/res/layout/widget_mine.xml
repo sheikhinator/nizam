@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mine_root" android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:padding="14dp" android:background="@drawable/widget_bg">
+    <TextView android:id="@+id/mine_head" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="ATLAS" android:textColor="#8C96AC" android:textSize="11sp" android:letterSpacing="0.08" />
+    <TextView android:id="@+id/mine_1" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_marginTop="4dp" android:textColor="#EDEFF5" android:textSize="17sp" android:maxLines="1" />
+    <TextView android:id="@+id/mine_2" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_marginTop="4dp" android:textColor="#4FC3A1" android:textSize="13sp" android:maxLines="1" />
+    <TextView android:id="@+id/mine_3" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_marginTop="3dp" android:textColor="#D4A24C" android:textSize="13sp" android:maxLines="1" />
+    <TextView android:id="@+id/mine_4" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_marginTop="3dp" android:textColor="#B8BFCC" android:textSize="13sp" android:maxLines="2" />
+</LinearLayout>

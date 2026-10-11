@@ -27,6 +27,12 @@ jobs:
           set -e
           rm -rf _build
           mkdir -p _build
+          # the unpacked project folder is the source of truth; the zip is only a fallback
+          if [ -f project/settings.gradle.kts ]; then
+            echo "Using the project folder"
+            cp -a project _build/project
+            exit 0
+          fi
           ZIP=$(find . -name "*.zip" -not -path "./.git/*" -printf "%T@ %p\n" | sort -rn | head -n 1 | cut -d' ' -f2-)
           if [ -z "$ZIP" ]; then
             echo "::error::No .zip file found in the repository."

@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Atlas</string>
+    <string name="accessibility_description">Lets Atlas read the screen and tap, type and scroll inside other apps when you ask it to. It never types into password fields and refuses to operate inside banking, payment or password apps. Every action is logged in Atlas settings.</string>
+    <string name="notification_listener_description">Lets Atlas summarise and reply to your notifications.</string>
+    <string name="atlas_app_function_description">Atlas can report the number of approvals waiting and request a note or PKR expense. These requests wait for your approval before anything is saved.</string>
+    <string name="widget_mine_description">Four lines you choose: prayer, money, tasks, water and more</string>
+    <string name="widget_ask_description">Ask, talk or scan from the home screen</string>
+    <string name="widget_money_description">What you spent today and this month</string>
+    <string name="widget_description">Next prayer, today\'s missions and your streak</string>
+</resources>

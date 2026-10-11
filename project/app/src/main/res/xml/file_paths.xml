@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <cache-path name="vault_cache" path="." />
+    <files-path name="vault_files" path="vault/" />
+    <files-path name="sketches" path="sketches/" />
+    <files-path name="mcp" path="mcp/" />
+    <files-path name="deliverables" path="deliverables/" />
+</paths>
