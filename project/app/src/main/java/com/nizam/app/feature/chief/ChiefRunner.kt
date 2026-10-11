@@ -24,27 +24,30 @@ object ChiefRunner {
     val log = mutableStateListOf<Step>()
     val running = MutableStateFlow(false)
     val costNow = MutableStateFlow(0.0)
+    val status = MutableStateFlow("")
+    private var jobHandle: kotlinx.coroutines.Job? = null
+    private var sessionId: String? = null
     private var workspace: Workspace? = null
     private val conversation = ArrayList<Msg>()
 
     private fun ws(c: Context): Workspace = workspace ?: Workspace(Workspace.dir(c)).also { workspace = it }
 
     /** Starts a request in the background. */
-    fun startJob(c: Context, request: String) {
+    fun startJob(c: Context, request: String, images: List<String> = emptyList()) {
         if (running.value) return
         val app = c.applicationContext
         running.value = true
         log += Step.User(request)
-        scope.launch {
+        jobHandle = scope.launch {
             try {
                 val err = sync(app)
                 if (err != null) { log += Step.Note(err); return@launch }
                 val w = ws(app); w.changes.clear()
-                val history = ArrayList<Msg>(conversation.takeLast(6)); history += Msg.User(request)
+                val history = ArrayList<Msg>(conversation.takeLast(6)); history += Msg.User(request, images)
                 execute(app, w, request, history, 0.0)
             } catch (t: Throwable) {
                 log += Step.Note("That did not work: ${t.message}")
-            } finally { running.value = false }
+            } finally { running.value = false; status.value = ""; runCatching { saveSession(app) } }
         }
     }
 
@@ -54,7 +57,7 @@ object ChiefRunner {
         if (running.value || !ChiefStore.hasJob(app)) return
         val saved = ChiefStore.job(app) ?: run { ChiefStore.clearJob(app); return }
         running.value = true
-        scope.launch {
+        jobHandle = scope.launch {
             try {
                 val err = sync(app)
                 if (err != null) { log += Step.Note(err); return@launch }
@@ -64,13 +67,13 @@ object ChiefRunner {
                 execute(app, w, saved.request, saved.history, saved.cost)
             } catch (t: Throwable) {
                 log += Step.Note("That did not work: ${t.message}")
-            } finally { running.value = false }
+            } finally { running.value = false; status.value = ""; runCatching { saveSession(app) } }
         }
     }
 
     private suspend fun execute(app: Context, w: Workspace, request: String, history: MutableList<Msg>, startCost: Double) {
         val agent = ChiefAgent(app, w, { step ->
-            when (step) { is Step.Cost -> costNow.value = step.month; else -> log += step }
+            when (step) { is Step.Cost -> costNow.value = step.month; is Step.Status -> status.value = step.text; else -> log += step }
         }, { h, cost -> ChiefStore.saveJob(app, request, h, cost, w.changes.values) })
         ChiefStore.saveJob(app, request, history, startCost, w.changes.values)
         val summary = agent.run(history, startCost)
@@ -80,9 +83,60 @@ object ChiefRunner {
         ChiefStore.clearJob(app)
         if (w.changes.isNotEmpty()) {
             ChiefStore.savePending(app, summary, w.changes.values)
-            Notifications.post(app, Notifications.CHANNEL_NUDGE, 7902, "Chief has a change for your OK", summary.take(120))
+            if (ChiefStore.autoBuild(app) && w.allProblems().isEmpty()) {
+                log += Step.Note("Auto-build is on and my own checks found nothing wrong, so I am building it now.")
+                approve(app, summary)
+            } else Notifications.post(app, Notifications.CHANNEL_NUDGE, 7902, "Chief has a change for your OK", summary.take(120))
         }
         tick.value = tick.value + 1
+    }
+
+    /** Stops the current job. The progress is saved, so it can be continued. */
+    fun stop() {
+        jobHandle?.cancel(); running.value = false; status.value = ""
+        log += Step.Note("Stopped. Your progress is saved; say continue to carry on.")
+    }
+
+    // ---- past chats ----
+    private fun sessions(c: Context) = com.nizam.app.feature.next.JsonStore(c, "chief_sessions")
+    private fun stepJson(s: Step): org.json.JSONObject? = when (s) {
+        is Step.User -> org.json.JSONObject().put("k", "u").put("t", s.text)
+        is Step.Say -> org.json.JSONObject().put("k", "s").put("t", s.text)
+        is Step.Note -> org.json.JSONObject().put("k", "n").put("t", s.text)
+        is Step.Tool -> org.json.JSONObject().put("k", "t").put("name", s.name).put("detail", s.detail).put("t", s.result.take(1200)).put("diff", s.diff)
+        else -> null
+    }
+    fun saveSession(c: Context) {
+        val first = log.firstOrNull { it is Step.User } as? Step.User ?: return
+        val arr = org.json.JSONArray(); log.forEach { st -> stepJson(st)?.let { arr.put(it) } }
+        val store = sessions(c)
+        val existing = sessionId?.let { id -> store.all().firstOrNull { it.optString("id") == id } }
+        if (existing != null) store.update(existing.optString("id")) { it.put("steps", arr).put("t", System.currentTimeMillis()) }
+        else sessionId = store.add(org.json.JSONObject().put("t", System.currentTimeMillis()).put("title", first.text.lineSequence().first().take(70)).put("steps", arr)).optString("id")
+        store.all().let { l -> if (l.size > 30) l.sortedBy { it.optLong("t") }.take(l.size - 30).forEach { store.remove(it.optString("id")) } }
+    }
+    fun sessionList(c: Context) = sessions(c).all().sortedByDescending { it.optLong("t") }
+    fun deleteSession(c: Context, id: String) = sessions(c).remove(id)
+    fun newChat(c: Context) {
+        if (running.value) return
+        saveSession(c.applicationContext)
+        log.clear(); conversation.clear(); status.value = ""; sessionId = null
+    }
+    fun openSession(c: Context, id: String) {
+        if (running.value) return
+        val o = sessions(c).all().firstOrNull { it.optString("id") == id } ?: return
+        log.clear(); conversation.clear(); sessionId = id
+        val arr = o.optJSONArray("steps") ?: return
+        var lastUser: String? = null
+        for (i in 0 until arr.length()) {
+            val j = arr.getJSONObject(i)
+            when (j.optString("k")) {
+                "u" -> { log += Step.User(j.optString("t")); lastUser = j.optString("t") }
+                "s" -> { log += Step.Say(j.optString("t")); lastUser?.let { conversation += Msg.User(it); conversation += Msg.Asst(j.optString("t"), emptyList()); lastUser = null } }
+                "n" -> log += Step.Note(j.optString("t"))
+                "t" -> log += Step.Tool(j.optString("name"), j.optString("detail"), j.optString("t"), j.optString("diff"))
+            }
+        }
     }
 
     /** Called by the background worker: keeps unfinished work moving. */

@@ -11,7 +11,7 @@ data class Call(val id: String, val name: String, val input: JSONObject)
 
 /** The conversation in one neutral shape, so any AI provider can continue it. */
 sealed class Msg {
-    data class User(val text: String) : Msg()
+    data class User(val text: String, val images: List<String> = emptyList()) : Msg()
     data class Asst(val text: String, val calls: List<Call>) : Msg()
     data class Results(val items: List<Pair<String, String>>) : Msg()   // (call id, result text)
 }
@@ -123,7 +123,12 @@ class ClaudeBrain(private val key: String, private val model: String) : Brain {
     override suspend fun turn(system: String, history: List<Msg>, tools: JSONArray): Turn {
         val messages = JSONArray()
         for (m in history) when (m) {
-            is Msg.User -> messages.put(JSONObject().put("role", "user").put("content", JSONArray().put(JSONObject().put("type", "text").put("text", m.text))))
+            is Msg.User -> {
+                val blocks = JSONArray()
+                m.images.forEach { blocks.put(JSONObject().put("type", "image").put("source", JSONObject().put("type", "base64").put("media_type", "image/jpeg").put("data", it))) }
+                blocks.put(JSONObject().put("type", "text").put("text", m.text))
+                messages.put(JSONObject().put("role", "user").put("content", blocks))
+            }
             is Msg.Asst -> {
                 val blocks = JSONArray()
                 if (m.text.isNotBlank()) blocks.put(JSONObject().put("type", "text").put("text", m.text))
@@ -155,7 +160,11 @@ class OpenAiBrain(override val name: String, private val url: String, private va
     override suspend fun turn(system: String, history: List<Msg>, tools: JSONArray): Turn {
         val messages = JSONArray().put(JSONObject().put("role", "system").put("content", system))
         for (m in history) when (m) {
-            is Msg.User -> messages.put(JSONObject().put("role", "user").put("content", m.text))
+            is Msg.User -> messages.put(JSONObject().put("role", "user").put("content",
+                if (m.images.isEmpty()) m.text as Any else JSONArray().also { arr ->
+                    arr.put(JSONObject().put("type", "text").put("text", m.text))
+                    m.images.forEach { arr.put(JSONObject().put("type", "image_url").put("image_url", JSONObject().put("url", "data:image/jpeg;base64,$it"))) }
+                }))
             is Msg.Asst -> {
                 val o = JSONObject().put("role", "assistant").put("content", m.text.ifBlank { JSONObject.NULL })
                 if (m.calls.isNotEmpty()) o.put("tool_calls", JSONArray().also { arr ->

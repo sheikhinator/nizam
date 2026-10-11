@@ -8,6 +8,7 @@ internal val SELF_WRAPPED: Set<String> = setOf(
     "joytime",
     "chief",
     "flows",
+    "appchat",
     "adventures",
     "agentbudget",
     "air",

@@ -115,6 +115,32 @@ jobs:
           set -o pipefail
           gradle assembleDebug --no-daemon --stacktrace 2>&1 | tee /tmp/build.log
 
+      - name: Audit every tool and screen
+        if: success() && contains(github.event.head_commit.message, '[audit]')
+        continue-on-error: true
+        working-directory: ${{ steps.proj.outputs.dir }}
+        run: |
+          gradle testDebugUnitTest --tests 'com.nizam.app.SpecLogicAudit' --tests 'com.nizam.app.Audit' --no-daemon --continue 2>&1 | tail -n 25
+          echo "=================== AUDIT REPORT: TOOLS ==================="
+          head -n 150 app/build/audit/tools.txt 2>/dev/null || echo "no tools report"
+          echo "=================== AUDIT REPORT: SCREENS ==================="
+          head -n 400 app/build/audit/screens.txt 2>/dev/null || echo "no screens report"
+
+      - name: Lint for likely crashes
+        if: success() && contains(github.event.head_commit.message, '[lint]')
+        continue-on-error: true
+        working-directory: ${{ steps.proj.outputs.dir }}
+        run: |
+          gradle lintDebug --no-daemon 2>&1 | tail -n 15
+          python3 - <<'PY'
+          import re,glob
+          for f in glob.glob('app/build/reports/lint-results-debug.xml'):
+              t=open(f,encoding='utf8',errors='ignore').read()
+              items=re.findall(r'<issue\s+id="([^"]+)"\s+severity="(Error|Fatal)"[^>]*message="([^"]*)"[\s\S]*?<location\s+file="([^"]+)"(?:\s+line="(\d+)")?',t)
+              print("LINT ERRORS:",len(items))
+              for i,sev,m,fl,ln in items[:150]: print(i,'|',fl.split('com/nizam/app/')[-1],ln,'|',m[:150])
+          PY
+
       - name: Show compile errors only
         if: failure()
         run: |

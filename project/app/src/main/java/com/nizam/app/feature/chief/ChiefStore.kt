@@ -33,6 +33,8 @@ object ChiefStore {
 
     fun smart(c: Context) = p(c).getBoolean("smart", true)
     fun setSmart(c: Context, v: Boolean) = p(c).edit().putBoolean("smart", v).apply()
+    fun autoBuild(c: Context) = p(c).getBoolean("autobuild", false)
+    fun setAutoBuild(c: Context, v: Boolean) = p(c).edit().putBoolean("autobuild", v).apply()
     fun model(c: Context) = if (smart(c)) Claude.SONNET else Claude.HAIKU
 
     /** Last ready-to-install build and the last commit being built, so the screen can pick up after the app is closed. */

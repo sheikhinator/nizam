@@ -36,7 +36,7 @@ class Shots(private val route: String, private val dark: Boolean) {
         @JvmStatic
         @ParameterizedRobolectricTestRunner.Parameters(name = "{0}-{1}")
         fun params(): List<Array<Any>> {
-            val routes = (System.getenv("SHOT_ROUTES") ?: "today,modules,atlashub,hq,search,me,settings,deliverables,islamlib,dailypath,finance,prayer,notes,quran")
+            val routes = (System.getenv("SHOT_ROUTES") ?: "today,nx/chief,nx/appchat,nx/flows,nx/roads,nx/trustboard,nx/moodweather,nx/loan2,life")
                 .split(',').map { it.trim() }.filter { it.isNotEmpty() }
             return routes.map { arrayOf<Any>(it, true) } + listOf("today", "modules").filter { it in routes }.map { arrayOf<Any>(it, false) }
         }
@@ -63,6 +63,6 @@ class Shots(private val route: String, private val dark: Boolean) {
         android.view.PixelCopy.request(rule.activity.window, bmp, { done = true }, android.os.Handler(android.os.Looper.getMainLooper()))
         repeat(50) { if (!done) { org.robolectric.shadows.ShadowLooper.idleMainLooper(); rule.mainClock.advanceTimeBy(16) } }
         val dir = File(System.getProperty("user.dir"), "build/shots").apply { mkdirs() }
-        File(dir, "$route-${if (dark) "dark" else "light"}.png").outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        File(dir, "${route.replace('/', '_')}-${if (dark) "dark" else "light"}.png").outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 }

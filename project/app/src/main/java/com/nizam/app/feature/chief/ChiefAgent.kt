@@ -9,7 +9,8 @@ sealed class Step {
     data class User(val text: String) : Step()
     data class Note(val text: String) : Step()
     data class Say(val text: String) : Step()
-    data class Tool(val name: String, val detail: String, val result: String) : Step()
+    data class Tool(val name: String, val detail: String, val result: String, val diff: String = "") : Step()
+    data class Status(val text: String) : Step()
     data class Cost(val job: Double, val month: Double) : Step()
 }
 
@@ -67,6 +68,9 @@ Extra rules for this session (you are working with limited context):
             .also { arr -> arr.getJSONObject(arr.length() - 1).put("cache_control", JSONObject().put("type", "ephemeral")) }
     }
 
+    private fun diffOf(old: String, new: String): String =
+        (old.lines().take(12).map { "- " + it.take(110) } + new.lines().take(12).map { "+ " + it.take(110) }).joinToString("\n")
+
     private fun exec(call: Call, small: Boolean): Pair<String, String> {
         val input = call.input
         return when (call.name) {
@@ -101,6 +105,7 @@ Extra rules for this session (you are working with limited context):
         var failures = 0
         var fixRounds = 0
         var lastBrain = ""
+        onStep(Step.Status("Thinking (${brains.first().name})"))
         var usedFallback = false
         while (steps < MAX_STEPS) {
             val brain = brains.firstOrNull { Throttle.ready(it.name) && !(it is ClaudeBrain && (ChiefStore.overBudget(c) || job >= ChiefStore.jobCap(c))) }
@@ -155,8 +160,11 @@ Extra rules for this session (you are working with limited context):
                     } else { summary = call.input.optString("summary"); results += call.id to "ok" }
                     continue
                 }
+                onStep(Step.Status(when (call.name) { "read_file" -> "Reading ${call.input.optString("path").substringAfterLast('/')}"; "search_code" -> "Searching for ${call.input.optString("pattern").take(30)}"
+                    "edit_file", "create_file" -> "Editing ${call.input.optString("path").substringAfterLast('/')}"; else -> "Looking around" } + " (${brain.name})"))
                 val (detail, out) = runCatching { exec(call, weak) }.getOrElse { call.input.optString("path") to "That failed: ${it.message}" }
-                onStep(Step.Tool(call.name, detail, out))
+                val diff = if (call.name == "edit_file" && out.startsWith("Edited")) diffOf(call.input.optString("old_text"), call.input.optString("new_text")) else ""
+                onStep(Step.Tool(call.name, detail, out, diff))
                 results += call.id to out
             }
             history += Msg.Results(results)

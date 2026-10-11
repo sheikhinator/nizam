@@ -1,1 +1,1 @@
-Chief gets smarter with your own AI keys: strongest model first, rate-limit aware, repairs broken tool calls, checks its own work before asking you to approve, and remembers which AI works best for code.
+Chief chat redesign with the Claude epoxy badge, Talk to my apps, and an audit rig.
