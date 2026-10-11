@@ -42,6 +42,16 @@ object ChiefStore {
     fun setPhase(c: Context, s: String, detail: String = "") = p(c).edit().putString("phase", s).putString("detail", detail).apply()
     fun detail(c: Context) = p(c).getString("detail", "").orEmpty()
 
+    // which connected AIs have actually worked on code for this person
+    fun brainScore(c: Context, name: String): Int = runCatching { JSONObject(p(c).getString("brainstats", "{}")!!).optJSONArray(name)?.let { it.optInt(0) - 2 * it.optInt(1) } ?: 0 }.getOrDefault(0)
+    fun brainResult(c: Context, name: String, ok: Boolean) {
+        val o = runCatching { JSONObject(p(c).getString("brainstats", "{}")!!) }.getOrDefault(JSONObject())
+        val a = o.optJSONArray(name) ?: JSONArray().put(0).put(0)
+        a.put(if (ok) 0 else 1, a.optInt(if (ok) 0 else 1) + 1)
+        o.put(name, a)
+        p(c).edit().putString("brainstats", o.toString()).apply()
+    }
+
     // the change set waiting for an OK
     fun savePending(c: Context, summary: String, changes: Collection<Workspace.Change>) {
         val arr = JSONArray()

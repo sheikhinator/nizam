@@ -39,7 +39,18 @@ Rules:
 4. Anything that sends data out, spends money, deletes data, or messages other people must ask for the owner's consent in the app.
 5. Do not remove features. If you are unsure what the owner wants, ask one short question instead of guessing.
 6. When finished, call finish with a plain-language summary: what changed, which files, and anything the owner should check on the phone.
+7. Tool results may end with "CHECK FOUND PROBLEMS". Fix every one before you finish.
 """.trimIndent()
+
+        /** Added for AIs that are less sure at code: smaller steps, fewer mistakes. */
+        private val WEAK_ADDENDUM = """
+
+Extra rules for this session (you are working with limited context):
+- Make one tool call per turn and keep every edit small.
+- Before editing, read the exact lines with read_file and copy old_text exactly, including spaces.
+- Never invent a function, class or import name: search_code for it first.
+- After an edit, read those lines again to confirm they are correct.
+- Start with a two-line plan in plain words, then follow it.""".trimIndent()
 
         private fun tool(name: String, desc: String, props: JSONObject, required: List<String>) = JSONObject().put("name", name).put("description", desc)
             .put("input_schema", JSONObject().put("type", "object").put("properties", props).put("required", JSONArray(required)))
@@ -56,11 +67,11 @@ Rules:
             .also { arr -> arr.getJSONObject(arr.length() - 1).put("cache_control", JSONObject().put("type", "ephemeral")) }
     }
 
-    private fun exec(call: Call): Pair<String, String> {
+    private fun exec(call: Call, small: Boolean): Pair<String, String> {
         val input = call.input
         return when (call.name) {
             "list_dir" -> input.optString("path") to ws.list(input.optString("path"))
-            "read_file" -> input.optString("path") to ws.read(input.optString("path"), input.optInt("start_line", 0).takeIf { it > 0 }, input.optInt("end_line", 0).takeIf { it > 0 })
+            "read_file" -> input.optString("path") to ws.read(input.optString("path"), input.optInt("start_line", 0).takeIf { it > 0 }, input.optInt("end_line", 0).takeIf { it > 0 }, small)
             "search_code" -> input.optString("pattern") to ws.search(input.optString("pattern"), input.optString("path").ifBlank { null })
             "edit_file" -> input.optString("path") to ws.edit(input.optString("path"), input.optString("old_text"), input.optString("new_text"))
             "create_file" -> input.optString("path") to ws.create(input.optString("path"), input.optString("content"))
@@ -69,41 +80,64 @@ Rules:
     }
 
     /** Keep only the freshest tool results in full; older ones shrink so a long job stays cheap. */
-    private fun compact(history: MutableList<Msg>) {
-        for (i in 0 until (history.size - 3).coerceAtLeast(0)) {
+    private fun compact(history: MutableList<Msg>, keepFull: Int, limit: Int) {
+        for (i in 0 until (history.size - keepFull).coerceAtLeast(0)) {
             val m = history[i]
-            if (m is Msg.Results) history[i] = Msg.Results(m.items.map { (id, t) -> id to if (t.length > 500) t.take(400) + "\n...(shortened)" else t })
+            if (m is Msg.Results) history[i] = Msg.Results(m.items.map { (id, t) -> id to if (t.length > limit) t.take(limit - 100) + "\n...(shortened)" else t })
         }
     }
 
     /**
      * Runs the conversation to the end. [history] already holds the request; it is extended in place.
-     * If the first AI fails (out of credit, limit, outage) the next connected AI carries on from the same point.
+     * It tries the strongest connected AI first and keeps each inside its limits. When one refuses (no credit, rate limit,
+     * outage) it rests that one and carries on with the next from the same point.
      */
     suspend fun run(history: MutableList<Msg>, startCost: Double = 0.0): String {
         val brains = Brains.chain(c)
         if (brains.isEmpty()) return "Add your Anthropic key (or connect another AI) first."
         val tools = tools()
-        var bi = 0
         var job = startCost
         var steps = 0
+        var failures = 0
+        var fixRounds = 0
+        var lastBrain = ""
+        var usedFallback = false
         while (steps < MAX_STEPS) {
-            if (ChiefStore.overBudget(c) && brains[bi] is ClaudeBrain) return "I stopped because this month's spending limit is reached. You can raise it in Chief settings."
-            if (job >= ChiefStore.jobCap(c) && brains[bi] is ClaudeBrain) return "I stopped because this job reached its spending limit. Say continue if you want me to carry on."
+            val brain = brains.firstOrNull { Throttle.ready(it.name) && !(it is ClaudeBrain && (ChiefStore.overBudget(c) || job >= ChiefStore.jobCap(c))) }
+            if (brain == null) {
+                if (brains.any { it is ClaudeBrain } && (ChiefStore.overBudget(c) || job >= ChiefStore.jobCap(c)) && brains.all { it is ClaudeBrain || !Throttle.ready(it.name) }) {
+                    return if (ChiefStore.overBudget(c)) "I stopped because this month's spending limit is reached. You can raise it in Chief settings." else "I stopped because this job reached its spending limit. Say continue if you want me to carry on."
+                }
+                val wait = Throttle.waitUntil()
+                if (wait in 1..45_000L && failures < 14) { onStep(Step.Note("Every connected AI is resting for a moment. Waiting ${wait / 1000 + 1}s.")); kotlinx.coroutines.delay(wait + 500); failures++; continue }
+                return "None of your connected AIs could answer right now (limits or no credit). Your progress is saved; try again in a few minutes."
+            }
+            if (lastBrain.isNotEmpty() && brain.name != lastBrain) { onStep(Step.Note("Continuing with ${brain.name}.")); usedFallback = true }
+            lastBrain = brain.name
+            val weak = !brain.strong
+            val system = SYSTEM + if (weak) WEAK_ADDENDUM else ""
             val turn = try {
-                brains[bi].turn(SYSTEM, history, tools)
+                if (brain !is ClaudeBrain) Throttle.pace(brain.name, 20)
+                brain.turn(system, history, tools)
             } catch (e: kotlinx.coroutines.CancellationException) { throw e }
             catch (e: Exception) {
-                if (bi < brains.lastIndex) {
-                    val failed = brains[bi].name
-                    bi++
-                    val why = if (e.message.orEmpty().contains("credit balance", true)) "its credit is empty" else e.message.orEmpty().take(90)
-                    onStep(Step.Note("$failed did not answer ($why). Continuing with ${brains[bi].name}."))
-                    continue
+                failures++
+                ChiefStore.brainResult(c, brain.name, false)
+                val msg = e.message.orEmpty()
+                val rest = Throttle.restFor(msg)
+                Throttle.cool(brain.name, rest)
+                val why = when {
+                    msg.contains("credit balance", true) -> "its credit is empty"
+                    rest >= 3_600_000L -> "its key was refused"
+                    rest <= 75_000L -> "it hit a limit"
+                    else -> msg.take(80)
                 }
-                throw e
+                onStep(Step.Note("${brain.name} did not answer ($why)."))
+                if (failures >= 14) return "The connected AIs kept failing, so I stopped. Your progress is saved."
+                continue
             }
             steps++
+            ChiefStore.brainResult(c, brain.name, true)
             job += turn.cost; ChiefStore.addSpend(c, turn.cost); onStep(Step.Cost(job, ChiefStore.spent(c)))
             if (turn.text.isNotBlank()) onStep(Step.Say(turn.text))
             history += Msg.Asst(turn.text, turn.calls)
@@ -111,15 +145,24 @@ Rules:
             val results = ArrayList<Pair<String, String>>()
             var summary: String? = null
             for (call in turn.calls) {
-                if (call.name == "finish") { summary = call.input.optString("summary"); results += call.id to "ok"; continue }
-                val (detail, out) = runCatching { exec(call) }.getOrElse { call.input.optString("path") to "That failed: ${it.message}" }
+                if (call.name == "finish") {
+                    // the free pre-check: do not hand over a change with obvious mistakes
+                    val problems = ws.allProblems()
+                    if (problems.isNotEmpty() && fixRounds < 2) {
+                        fixRounds++
+                        results += call.id to "Not accepted yet. Fix these first, then call finish again:\n" + problems.take(8).joinToString("\n")
+                        onStep(Step.Note("Checking my own work found ${problems.size} problem(s). Fixing them first."))
+                    } else { summary = call.input.optString("summary"); results += call.id to "ok" }
+                    continue
+                }
+                val (detail, out) = runCatching { exec(call, weak) }.getOrElse { call.input.optString("path") to "That failed: ${it.message}" }
                 onStep(Step.Tool(call.name, detail, out))
                 results += call.id to out
             }
             history += Msg.Results(results)
-            compact(history)
+            compact(history, if (weak) 1 else 3, if (weak) 300 else 500)
             onSave(history, job)
-            if (summary != null) return (summary.ifBlank { "Done." }) + if (bi > 0) "\n\n(Finished with ${brains[bi].name} because the first AI was not available. Please read the changes carefully before approving.)" else ""
+            if (summary != null) return (summary.ifBlank { "Done." }) + if (usedFallback || !brain.strong) "\n\n(Part of this was done by ${brain.name}, which is less sure at code. Please read the changes carefully before approving.)" else ""
         }
         return "I reached the step limit for one job. Here is where I got to; say continue and I will pick up."
     }

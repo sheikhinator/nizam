@@ -35,16 +35,17 @@ class Workspace(private val root: File) {
         return names.ifBlank { "(empty)" }
     }
 
-    fun read(rel: String, from: Int?, to: Int?): String {
+    fun read(rel: String, from: Int?, to: Int?, small: Boolean = false): String {
         val f = file(rel)
         if (!f.isFile) return "File not found: $rel"
         val text = changes[normal(rel)]?.content ?: f.readText()
         val lines = text.lines()
         val a = ((from ?: 1) - 1).coerceIn(0, lines.size)
-        val b = (to ?: (a + 220)).coerceIn(a, minOf(lines.size, a + 260))
+        val span = if (small) 110 else 260
+        val b = (to ?: (a + span - 40)).coerceIn(a, minOf(lines.size, a + span))
         val out = StringBuilder("$rel (lines ${a + 1}-$b of ${lines.size})\n")
         for (i in a until b) out.append(i + 1).append('\t').append(lines[i].take(220)).append('\n')
-        return out.toString().take(14_000)
+        return out.toString().take(if (small) 6_000 else 14_000)
     }
 
     fun search(pattern: String, rel: String?): String {
@@ -79,7 +80,7 @@ class Workspace(private val root: File) {
         val updated = current.replace(old, new)
         val ch = changes[path]
         if (ch == null) changes[path] = Change(path, current, updated) else ch.content = updated
-        return "Edited $path."
+        return "Edited $path." + warn(path, current, updated)
     }
 
     fun create(rel: String, content: String): String {
@@ -89,8 +90,16 @@ class Workspace(private val root: File) {
         val original = if (f.isFile) (changes[path]?.content ?: f.readText()) else null
         val ch = changes[path]
         if (ch == null) changes[path] = Change(path, original, content) else ch.content = content
-        return if (original == null) "Created $path." else "Rewrote $path."
+        return (if (original == null) "Created $path." else "Rewrote $path.") + warn(path, original, content)
     }
+
+    private fun warn(path: String, before: String?, after: String): String {
+        val p = KotlinCheck.problems(root, path, before, after)
+        return if (p.isEmpty()) "" else "\nCHECK FOUND PROBLEMS (fix them):\n" + p.joinToString("\n")
+    }
+
+    /** Problems across everything changed, before the owner is asked to approve. */
+    fun allProblems(): List<String> = changes.values.flatMap { KotlinCheck.problems(root, it.path, it.original, it.content) }
 
     /** What would be pushed: repo path -> bytes. */
     fun pushable(): Map<String, ByteArray> = changes.values.associate { "project/${it.path}" to it.content.toByteArray(Charsets.UTF_8) }
@@ -100,7 +109,7 @@ class Workspace(private val root: File) {
 
         /** Unpacks the downloaded repo zip, keeping only the project's text files. */
         fun unpack(zip: File, into: File) {
-            into.deleteRecursively(); into.mkdirs()
+            into.deleteRecursively(); into.mkdirs(); KotlinCheck.reset()
             val keep = setOf("kt", "kts", "xml", "md", "txt", "json", "properties", "gradle", "pro", "yml", "yaml", "toml")
             ZipInputStream(zip.inputStream().buffered()).use { zin ->
                 var e = zin.nextEntry
