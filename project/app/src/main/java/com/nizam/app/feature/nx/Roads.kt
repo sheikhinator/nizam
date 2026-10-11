@@ -149,7 +149,7 @@ object Roads {
     fun sources(c: Context): List<Source> = (logSpecs(c).mapNotNull { spec ->
         val e = entries(c, spec)
         if (e.isEmpty()) null else Source(spec.id, spec.title, spec.hub, e.size, e.maxOf { stamp(it, spec) })
-    } + cache.groupBy { it.source }.map { (name, list) -> Source(name.lowercase(), name, list.first().hub, list.size, list.maxOf { it.ts }) })
+    } + (cache + com.nizam.app.feature.flows.Feeds.items(c)).groupBy { it.source }.map { (name, list) -> Source(name.lowercase(), name, list.first().hub, list.size, list.maxOf { it.ts }) })
         .sortedByDescending { it.lastTs }
 
     /** Recent items from every source, newest first. */
@@ -158,7 +158,7 @@ object Roads {
             val t = lineOf(o, spec)
             if (t.isBlank()) null else Item(spec.title, spec.hub, stamp(o, spec), t)
         }
-    } + cache).sortedByDescending { it.ts }
+    } + cache + com.nizam.app.feature.flows.Feeds.items(c)).sortedByDescending { it.ts }
 
     /** Entries made on each of the last [days] days, oldest first. */
     fun pulse(c: Context, days: Int = 7): List<Int> {

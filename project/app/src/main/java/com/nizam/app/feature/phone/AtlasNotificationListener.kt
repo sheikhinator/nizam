@@ -98,6 +98,7 @@ class AtlasNotificationListener : NotificationListenerService() {
             ?: extras.getCharSequence(Notification.EXTRA_TEXT))?.toString().orEmpty()
         if (title.isBlank() && text.isBlank()) return
         runCatching { com.nizam.app.feature.wild.SocialDigest.collect(this, sbn.packageName, title, text) }
+        runCatching { com.nizam.app.feature.flows.FlowEngine.onEvent(this, "notification", mapOf("app" to sbn.packageName, "title" to title, "text" to text.take(400))) }
 
         val appName = runCatching {
             packageManager.getApplicationLabel(

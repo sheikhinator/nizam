@@ -1,1 +1,1 @@
-Chief now keeps working in the background and carries on with another connected AI if the first one fails. Updates also work if your GitHub repository is private. Chief setup and the inbox approvals are included.
+Flows: build your own automations (triggers, steps, AI, connected apps, relay channels), describe one in words and the AI drafts it, anything that acts outside the phone waits for your OK. Connect any app that has a web API.

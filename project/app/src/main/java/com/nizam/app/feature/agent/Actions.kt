@@ -160,7 +160,10 @@ object Actions {
         }
         val r = try {
             ctx = container.appContext
-            if (action == "calculate") {
+            if (action == "flow_continue") {
+                val msg = com.nizam.app.feature.flows.FlowEngine.continueRun(container.appContext, args.optString("run"))
+                Result(true, "Flow: $msg")
+            } else if (action == "calculate") {
                 val lines = com.nizam.app.feature.brain2.Calc.sheet(args.optString("expr"))
                 val last = lines.lastOrNull { it.result != null }
                 if (last == null || last.error) Result(false, "Couldn't calculate: ${last?.result ?: "empty"}")

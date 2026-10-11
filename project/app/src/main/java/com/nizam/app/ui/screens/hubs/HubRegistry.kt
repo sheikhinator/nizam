@@ -99,6 +99,7 @@ object HubRegistry {
         Feature(Routes.MUSIC, "Music", "Stream, download, lyrics", Icons.Outlined.MusicNote, Hub.Media, true, "songs"),
         Feature(Routes.CINEMA, "Cinema", "Films and shows", Icons.Outlined.Movie, Hub.Media, true, "movies series"),
         Feature(Routes.PODCASTS, "Podcasts", "Shows and episodes", Icons.Outlined.Podcasts, Hub.Media, true),
+        Feature("nx/flows", "Flows", "Your own automations for apps, AI and this phone", Icons.Outlined.AccountTree, Hub.Tools, true, "automation workflow n8n zapier ifttt trigger relay"),
         Feature("nx/chief", "Chief", "Talk to Claude to change this app", Icons.Outlined.Handyman, Hub.Tools, true, "claude build update fix change add feature developer"),
         Feature("nx/joytime", "Joytime", "Stories to read, save and take offline", Icons.Outlined.AutoStories, Hub.Media, true, "stories read books reader"),
         Feature(Routes.IPTV, "Live TV", "Channels from around the world", Icons.Outlined.LiveTv, Hub.Media, true, "iptv tv"),
