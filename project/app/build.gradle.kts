@@ -22,6 +22,9 @@ android {
         versionName = "1.0-beta"
         // Only the processor type the Infinix GT 50 Pro uses (64-bit ARM) — about half the download size
         ndk { abiFilters += listOf("arm64-v8a") }
+        // The on-phone build toolchain lives in its own module, added here as a split of this same app
+        // so it installs alongside Atlas rather than as a separate app. It downloads only when opened.
+        dynamicFeatures += setOf(":toolchainpack")
         // Your own API keys, built in: taken from the build machine's environment (GitHub Actions secrets
         // named ATLAS_KEY_…), never written in the source. Empty when a secret isn't set.
         listOf("GEMINI", "OPENROUTER", "CUSTOM", "CUSTOM_URL", "CUSTOM_MODEL", "FAST", "FAST_URL", "FAST_MODEL", "HADITH",

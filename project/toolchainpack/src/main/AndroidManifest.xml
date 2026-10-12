@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:dist="http://schemas.android.com/apk/distribution">
+
+    <!-- This module ships the on-phone build toolchain. It installs as a split of the main Atlas app,
+         not as its own app, so the base app's Chief feature can run the bundled tools once this is added. -->
+    <dist:module
+        dist:instant="false"
+        dist:title="@string/toolchainpack_title">
+        <dist:delivery>
+            <dist:on-demand />
+        </dist:delivery>
+        <dist:fusing dist:include="false" />
+    </dist:module>
+
+</manifest>
