@@ -19,7 +19,13 @@ object BuildEngine {
     data class Step(val name: String, val ok: Boolean, val detail: String)
     data class Result(val steps: List<Step>, val dex: ByteArray?)
 
-    fun compile(workDir: File, className: String, source: String): Result {
+    fun compile(workDir: File, className: String, source: String): Result = try {
+        compileUnsafe(workDir, className, source)
+    } catch (t: Throwable) {
+        Result(listOf(Step("Compile (ECJ)", false, t.message ?: t.javaClass.simpleName)), null)
+    }
+
+    private fun compileUnsafe(workDir: File, className: String, source: String): Result {
         workDir.deleteRecursively()
         workDir.mkdirs()
         val srcFile = File(workDir, "$className.java").apply { writeText(source) }

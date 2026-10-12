@@ -84,15 +84,22 @@ fun TerminalScreen() {
         OutlinedButton(enabled = !busy, onClick = {
             lines = lines + "$ atlas build --demo"; busy = true
             scope.launch {
-                val result = withContext(Dispatchers.Default) {
-                    BuildEngine.compile(java.io.File(c.cacheDir, "demo-build"), "AtlasDemo", DEMO_SOURCE)
+                val built = runCatching {
+                    withContext(Dispatchers.Default) {
+                        BuildEngine.compile(java.io.File(c.cacheDir, "demo-build"), "AtlasDemo", DEMO_SOURCE)
+                    }
                 }
-                lines = lines + result.steps.map { "  ${if (it.ok) "✓" else "✕"} ${it.name}: ${it.detail}" }
-                val dex = result.dex
-                if (dex != null) {
-                    val ran = runCatching { withContext(Dispatchers.Default) { BuildEngine.runDex(dex, "AtlasDemo") } }
-                    lines = lines + (ran.getOrNull()?.lines()?.filter { it.isNotBlank() }?.map { "  > $it" }
-                        ?: listOf("  ✕ Run: ${ran.exceptionOrNull()?.message}"))
+                val result = built.getOrNull()
+                if (result == null) {
+                    lines = lines + "  ✕ Build: ${built.exceptionOrNull()?.message ?: "failed to start"}"
+                } else {
+                    lines = lines + result.steps.map { "  ${if (it.ok) "✓" else "✕"} ${it.name}: ${it.detail}" }
+                    val dex = result.dex
+                    if (dex != null) {
+                        val ran = runCatching { withContext(Dispatchers.Default) { BuildEngine.runDex(dex, "AtlasDemo") } }
+                        lines = lines + (ran.getOrNull()?.lines()?.filter { it.isNotBlank() }?.map { "  > $it" }
+                            ?: listOf("  ✕ Run: ${ran.exceptionOrNull()?.message}"))
+                    }
                 }
                 busy = false
             }
