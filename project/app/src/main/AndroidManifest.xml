@@ -277,6 +277,9 @@
             android:excludeFromRecents="true" android:noHistory="true" android:taskAffinity=""
             android:launchMode="singleInstance" />
 
+        <activity android:name=".feature.toolchain.TerminalActivity" android:exported="false"
+            android:label="Atlas build tools" />
+
         <receiver android:name=".feature.future.TwinReceiver" android:exported="false" />
         <receiver android:name=".feature.future.MoneyReceiver" android:exported="false" />
         <service android:name=".feature.nx.ScreenRecordService" android:exported="false" android:foregroundServiceType="mediaProjection|microphone" />

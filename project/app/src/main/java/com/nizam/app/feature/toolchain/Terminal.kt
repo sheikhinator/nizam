@@ -1,4 +1,4 @@
-package com.nizam.app.toolchainpack
+package com.nizam.app.feature.toolchain
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

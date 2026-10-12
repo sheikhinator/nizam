@@ -15,4 +15,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "Nizam"
 include(":app")
-include(":toolchainpack")

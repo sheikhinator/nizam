@@ -1,4 +1,4 @@
-package com.nizam.app.toolchainpack
+package com.nizam.app.feature.toolchain
 
 import com.android.tools.r8.D8
 import com.android.tools.r8.D8Command

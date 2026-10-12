@@ -22,9 +22,6 @@ android {
         versionName = "1.0-beta"
         // Only the processor type the Infinix GT 50 Pro uses (64-bit ARM) — about half the download size
         ndk { abiFilters += listOf("arm64-v8a") }
-        // The on-phone build toolchain lives in its own module, added here as a split of this same app
-        // so it installs alongside Atlas rather than as a separate app. It downloads only when opened.
-        dynamicFeatures += setOf(":toolchainpack")
         // Your own API keys, built in: taken from the build machine's environment (GitHub Actions secrets
         // named ATLAS_KEY_…), never written in the source. Empty when a secret isn't set.
         listOf("GEMINI", "OPENROUTER", "CUSTOM", "CUSTOM_URL", "CUSTOM_MODEL", "FAST", "FAST_URL", "FAST_MODEL", "HADITH",
@@ -96,9 +93,13 @@ android {
 }
 
 dependencies {
-    // this comes in compileOnly through another library's own POM, which the toolchainpack feature
-    // module's build rejects; pinning it to implementation here settles that for both modules
+    // this comes in compileOnly through another library's own POM, which this project's build rejects
     implementation("com.google.j2objc:j2objc-annotations:2.8")
+    // Real on-device Java compiler (ECJ) and dexer (D8, the same one Gradle uses) for the on-phone
+    // build toolchain. Both run in-process, no native binary, so none of Android's restrictions on
+    // running downloaded/unbundled code apply.
+    implementation("org.eclipse.jdt:ecj:3.42.0")
+    implementation("com.android.tools:r8:9.5.23")
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appfunctions:appfunctions:1.0.0-alpha08")
     implementation("androidx.appfunctions:appfunctions-service:1.0.0-alpha08")
