@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material3.Button
@@ -88,7 +86,10 @@ internal fun ToolchainScreen() {
     var msg by remember { mutableStateOf("") }
     var ready by remember { mutableStateOf(Toolchain.ready(c)) }
 
-    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    // No verticalScroll here: this screen is reached through the app's generic tool-screen shell,
+    // which already places its content inside a scrolling LazyColumn — nesting another scrollable
+    // Column inside that crashes Compose ("infinity maximum height constraints").
+    Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Build Atlas on this phone — groundwork", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         Text("Android only ever runs code that was packaged inside an app when it was installed — never something downloaded afterwards. " +
             "So a real on-phone build needs a second, small companion app with the Java tools built in, which this screen is the first step toward. " +

@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccountTree
 import androidx.compose.material3.Button
@@ -79,7 +77,9 @@ internal fun DiagramScreen(container: AppContainer) {
     var diagram by remember { mutableStateOf<Diagram?>(null) }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf("") }
-    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    // No verticalScroll: this screen is reached through the generic tool-screen shell, which already
+    // scrolls its content in a LazyColumn — nesting another scrollable Column crashes Compose.
+    Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Describe it, see it as a diagram", style = MaterialTheme.typography.titleMedium)
         Text("Explain a process in your own words — how you handle expenses, a morning routine, a recipe's steps — and Atlas draws it as a flowchart on your phone.",
             style = MaterialTheme.typography.bodyMedium)

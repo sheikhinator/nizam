@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Psychology
 import androidx.compose.material3.Button
@@ -219,7 +217,9 @@ internal fun SemanticScreen(container: AppContainer) {
     var q by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var hits by remember { mutableStateOf<List<Semantic.Hit>>(emptyList()) }
-    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    // No verticalScroll: this screen is reached through the generic tool-screen shell, which already
+    // scrolls its content in a LazyColumn — nesting another scrollable Column crashes Compose.
+    Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Find things by what they mean", style = MaterialTheme.typography.titleMedium)
         Text("Ask in your own words, like \"what did I spend on food\" or \"when was my knee hurting\". Atlas finds the closest things you recorded, even if the words are different.",
             style = MaterialTheme.typography.bodyMedium)

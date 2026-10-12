@@ -255,7 +255,9 @@ internal fun ForecastScreen(container: AppContainer) {
         busy = false
     }
 
-    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    // No verticalScroll: this screen is reached through the generic tool-screen shell, which already
+    // scrolls its content in a LazyColumn — nesting another scrollable Column crashes Compose.
+    Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("What your numbers are heading toward", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Series.values().forEach { s -> FilterChip(selected = series == s, onClick = { series = s }, label = { Text(s.label) }) }
