@@ -209,11 +209,11 @@ object TimesFm {
     }
 }
 
-private enum class Series(val label: String, val unit: String, val sum: Boolean) {
+internal enum class Series(val label: String, val unit: String, val sum: Boolean) {
     Spend("Spending per day", "Rs", true), Mood("Mood", "/5", false), Prayers("Prayers per day", "of 5", false), Activity("Things you log per day", "", true)
 }
 
-private suspend fun loadSeries(c: AppContainer, s: Series, days: Int = 120): List<Double> = withContext(Dispatchers.IO) {
+internal suspend fun loadSeries(c: AppContainer, s: Series, days: Int = 120): List<Double> = withContext(Dispatchers.IO) {
     val today = LocalDate.now()
     val from = today.minusDays(days - 1L)
     val idx = { d: String -> runCatching { java.time.temporal.ChronoUnit.DAYS.between(from, LocalDate.parse(d)).toInt() }.getOrDefault(-1) }
@@ -317,6 +317,35 @@ internal fun ForecastScreen(container: AppContainer) {
             OutlinedButton(onClick = { TimesFm.remove(c); ready = false; msg = "Model removed." }) { Text("Remove the downloaded model") }
         }
         if (msg.isNotBlank()) Text(msg, style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+/** Looks ahead for the Noticer: a heads-up when spending or mood is about to move the wrong way. */
+object Outlook {
+    @Volatile var notices: List<com.nizam.app.feature.nx.Noticer.Notice> = emptyList()
+    @Volatile private var at = 0L
+
+    suspend fun refresh(container: AppContainer) {
+        if (System.currentTimeMillis() - at < 6 * 3_600_000L) return
+        at = System.currentTimeMillis()
+        val out = mutableListOf<com.nizam.app.feature.nx.Noticer.Notice>()
+        runCatching {
+            val spend = Forecast.clean(loadSeries(container, Series.Spend))
+            if (spend.count { it > 0 } >= 7) {
+                val p = Forecast.predict(container.appContext, spend, 7)
+                val now = spend.takeLast(7).sum(); val next = p.median.sum()
+                if (next > now * 1.3 && next - now > 2000) out += com.nizam.app.feature.nx.Noticer.Notice("fc_spend", "Spending is heading up",
+                    "The next 7 days look like about Rs ${"%,.0f".format(next)}, against Rs ${"%,.0f".format(now)} over the last 7.", "nx/forecast", 2)
+            }
+            val mood = Forecast.clean(loadSeries(container, Series.Mood))
+            if (mood.size >= 14) {
+                val p = Forecast.predict(container.appContext, mood, 7)
+                val now = mood.takeLast(7).average(); val next = p.median.average()
+                if (now > 0 && next < now * 0.85) out += com.nizam.app.feature.nx.Noticer.Notice("fc_mood", "Mood may dip this week",
+                    "Your check-ins point to a lower week ahead. A little planning now can soften it.", "nx/forecast", 1)
+            }
+        }
+        notices = out
     }
 }
 

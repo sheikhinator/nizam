@@ -32,6 +32,7 @@ object Noticer {
     suspend fun nudge(c: Context, container: com.nizam.app.AppContainer): String? {
         if (!enabled(c)) return null
         Roads.warm(container)
+        runCatching { com.nizam.app.feature.forecast.Outlook.refresh(container) }
         val p = prefs(c)
         val day = LocalDate.now().toString()
         val told = if (p.getString("day", "") == day) p.getStringSet("told", emptySet()).orEmpty() else emptySet()
@@ -101,6 +102,7 @@ object Noticer {
         val last = items.maxOf { it.ts }
         if (last > 0 && ageDays(last) >= 4) out += Notice("quiet", "Nothing recorded for ${ageDays(last)} days",
             "Pick up where you left off?", "nx/pickup", 0)
+        out += com.nizam.app.feature.forecast.Outlook.notices
         return out.sortedByDescending { it.level }
     }
 }

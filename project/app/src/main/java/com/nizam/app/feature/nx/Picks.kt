@@ -28,7 +28,7 @@ import com.nizam.app.AppContainer
 fun AtlasPicks(container: AppContainer, onOpen: (String) -> Unit, modifier: Modifier = Modifier) {
     val c = LocalContext.current
     var tick by remember { mutableIntStateOf(0) }
-    LaunchedEffect(Unit) { Roads.warm(container); tick++ }
+    LaunchedEffect(Unit) { Roads.warm(container); runCatching { com.nizam.app.feature.forecast.Outlook.refresh(container) }; tick++ }
     val notice = remember(tick) { Noticer.scan(c).firstOrNull() }
     val usual = remember(tick) { Mind.now(c, 2) }
     var draft by remember { androidx.compose.runtime.mutableStateOf<String?>(null) }
