@@ -119,7 +119,9 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
             else -> scope.launch { pager.animateScrollToPage(0) } }
     }
 
-    Box(Modifier.fillMaxSize()) {
+    // each space gets a faint wash of its own colour, so the whole screen — not just its cards — tells you where you are
+    val spaceTint by animateColorAsState(accent, label = "spaceTint")
+    Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(wash(spaceTint, 0.07f), MaterialTheme.colorScheme.background.copy(alpha = 0f))))) {
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars)) {
             Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 12.dp, top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 // Today is home: everywhere else gets a real back arrow, not just a chip you have to notice.
