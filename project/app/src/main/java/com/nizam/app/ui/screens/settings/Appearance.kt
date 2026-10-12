@@ -1,7 +1,9 @@
 package com.nizam.app.ui.screens.settings
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Animation
 import androidx.compose.material.icons.outlined.DarkMode
@@ -35,8 +37,9 @@ fun AppearanceScreen(onOpen: (String) -> Unit = {}) {
     val sizes = listOf("0.9", "1.0", "1.15", "1.3")
     AtlasScreen(title = "Look & comfort", subtitle = "Applies everywhere, straight away") {
         item("presets") {
-            androidx.compose.foundation.layout.Row(androidx.compose.ui.Modifier.fillMaxWidth(),
-                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(androidx.compose.ui.unit.Dp(8f))) {
+            androidx.compose.foundation.layout.Row(
+                modifier = androidx.compose.ui.Modifier.Companion.fillMaxWidth(),
+                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
                 Comfort.Preset.values().forEach { preset ->
                     androidx.compose.material3.AssistChip(onClick = { Comfort.applyPreset(ctx, preset) },
                         label = { Text(preset.label) }, modifier = androidx.compose.ui.Modifier.weight(1f))
