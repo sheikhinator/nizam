@@ -18,7 +18,7 @@ android {
         applicationId = "com.nizam.app"
         minSdk = 26
         targetSdk = 34
-        versionCode = 10
+        versionCode = 11
         versionName = "1.0-beta"
         // Only the processor type the Infinix GT 50 Pro uses (64-bit ARM) — about half the download size
         ndk { abiFilters += listOf("arm64-v8a") }
