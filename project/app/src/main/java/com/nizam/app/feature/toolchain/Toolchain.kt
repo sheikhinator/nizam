@@ -101,6 +101,11 @@ internal fun ToolchainScreen() {
 
         if (ready) {
             Text("The base files are downloaded and verified.", color = MaterialTheme.colorScheme.primary)
+            Button(onClick = {
+                runCatching {
+                    c.startActivity(android.content.Intent().setClassName(c.packageName, "com.nizam.app.toolchainpack.TerminalActivity"))
+                }.onFailure { com.nizam.app.ui.components.Feedback.show("Terminal isn't in this build yet — update Atlas first") }
+            }) { Text("Open the terminal") }
             OutlinedButton(onClick = { Toolchain.remove(c); ready = false }) { Text("Remove them") }
         } else {
             val p = prog

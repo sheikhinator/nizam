@@ -10,7 +10,16 @@
         <dist:delivery>
             <dist:on-demand />
         </dist:delivery>
-        <dist:fusing dist:include="false" />
+        <!-- fused into the single APK for now, since the on-demand download path needs delivery
+             infrastructure this project doesn't have yet (no Play Store); still built as a real module -->
+        <dist:fusing dist:include="true" />
     </dist:module>
+
+    <application>
+        <activity
+            android:name=".TerminalActivity"
+            android:exported="false"
+            android:label="@string/toolchainpack_title" />
+    </application>
 
 </manifest>
