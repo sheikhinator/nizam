@@ -96,6 +96,9 @@ android {
 }
 
 dependencies {
+    // this comes in compileOnly through another library's own POM, which the toolchainpack feature
+    // module's build rejects; pinning it to implementation here settles that for both modules
+    implementation("com.google.j2objc:j2objc-annotations:2.8")
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appfunctions:appfunctions:1.0.0-alpha08")
     implementation("androidx.appfunctions:appfunctions-service:1.0.0-alpha08")
