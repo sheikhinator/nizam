@@ -43,6 +43,20 @@ object Comfort {
 
     fun get(c: Context): State = current ?: load(c.applicationContext)
 
+    enum class Preset(val label: String) {
+        Minimal("Minimal"), Dashboard("Dashboard"), Elder("Elder-friendly"), Night("Night")
+    }
+
+    /** One tap sets several comfort settings together, to match a whole way of using the app. */
+    fun applyPreset(c: Context, preset: Preset) {
+        update(c) { s -> when (preset) {
+            Preset.Minimal -> s.copy(reduceMotion = true, zen = true, textScale = 1f, elder = false, oled = s.oled, bigTouch = false)
+            Preset.Dashboard -> s.copy(reduceMotion = false, zen = false, textScale = 1f, elder = false, bigTouch = false)
+            Preset.Elder -> s.copy(elder = true, textScale = 1.3f, bigTouch = true, highContrast = true, reduceMotion = true, easyRead = true, boldText = true)
+            Preset.Night -> s.copy(oled = true, zen = true, warmTint = true, reduceMotion = true)
+        } }
+    }
+
     fun update(c: Context, change: (State) -> State) {
         val next = change(get(c))
         p(c).edit().putFloat("text", next.textScale).putBoolean("still", next.reduceMotion)
