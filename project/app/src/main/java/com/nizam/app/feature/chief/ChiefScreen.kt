@@ -224,6 +224,7 @@ fun ChiefScreen(container: AppContainer, open: (String) -> Unit = {}) {
                 DropdownMenu(more, { more = false }) {
                     DropdownMenuItem(text = { Text("New chat") }, onClick = { more = false; command("/new") })
                     DropdownMenuItem(text = { Text("Past chats") }, onClick = { more = false; view = "history" })
+                    DropdownMenuItem(text = { Text("Past builds") }, onClick = { more = false; view = "builds" })
                     DropdownMenuItem(text = { Text("Setup and limits") }, onClick = { more = false; showSetup = true })
                     DropdownMenuItem(text = { Text("Commands (/help)") }, onClick = { more = false; command("/help") })
                 }
@@ -243,6 +244,45 @@ fun ChiefScreen(container: AppContainer, open: (String) -> Unit = {}) {
                             Text(Instant.ofEpochMilli(s.optLong("t")).atZone(ZoneId.systemDefault()).format(fmt), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         TextButton(onClick = { ChiefRunner.deleteSession(c, s.optString("id")); tick++ }) { Text("Delete") }
+                    }
+                }
+            }
+            return@Column
+        }
+
+        if (view == "builds") {
+            var releases by remember { mutableStateOf<List<org.json.JSONObject>?>(null) }
+            var installingTag by remember { mutableStateOf<String?>(null) }
+            var rollProgress by remember { mutableStateOf<Int?>(null) }
+            LaunchedEffect(view) { releases = runCatching { GitHubApi(ChiefStore.githubToken(c)).recentReleases() }.getOrNull() }
+            TextButton(onClick = { view = "chat" }) { Text("← Back to chat") }
+            Text("Any past build still works — pick one to go back to it. This never changes the code, only which build is installed.",
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(vertical = 4.dp))
+            when {
+                releases == null -> Text("Loading…")
+                releases!!.isEmpty() -> Text("No past builds found.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                else -> LazyColumn(Modifier.weight(1f)) {
+                    items(releases!!.size) { i ->
+                        val r = releases!![i]
+                        val tag = r.optString("tag_name")
+                        Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Column(Modifier.weight(1f)) {
+                                Text(tag, fontWeight = FontWeight.Medium)
+                                Text(runCatching { Instant.parse(r.optString("published_at")).atZone(ZoneId.systemDefault()).format(fmt) }.getOrDefault(""),
+                                    style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                            if (installingTag == tag && rollProgress != null) Text("${rollProgress}%")
+                            else TextButton(onClick = {
+                                installingTag = tag
+                                scope.launch {
+                                    val info = ChiefRunner.updateInfo(c, tag)
+                                    if (info == null) { ChiefRunner.log += Step.Note("Could not find $tag."); installingTag = null; return@launch }
+                                    runCatching { rollProgress = 0; val f = Updater.download(c, info) { rollProgress = it }; Updater.install(c, f) }
+                                        .onFailure { ChiefRunner.log += Step.Note("Download failed: ${it.message}") }
+                                    rollProgress = null; installingTag = null
+                                }
+                            }) { Text("Install") }
+                        }
                     }
                 }
             }

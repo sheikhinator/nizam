@@ -93,4 +93,10 @@ class GitHubApi(private val token: String, private val owner: String = OWNER, pr
     }.getOrDefault("")
 
     suspend fun releaseByTag(tag: String): JSONObject? = runCatching { JSONObject(get("/releases/tags/$tag")) }.getOrNull()
+
+    /** The most recent published builds, newest first — for picking one to roll back to. */
+    suspend fun recentReleases(limit: Int = 10): List<JSONObject> = runCatching {
+        val arr = org.json.JSONArray(get("/releases?per_page=$limit"))
+        (0 until arr.length()).map { arr.getJSONObject(it) }
+    }.getOrDefault(emptyList())
 }
