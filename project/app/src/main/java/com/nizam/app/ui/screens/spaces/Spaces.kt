@@ -25,6 +25,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Person
@@ -103,10 +104,24 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
     val here = SPACES[pager.currentPage]
     val accent = (here as? Space.Life)?.hub?.tint() ?: MaterialTheme.colorScheme.primary
 
+    // Hardware/gesture back: close search, close a peeked tool, or return to Today — never a dead end.
+    // Only Today (page 0) lets a plain back through, so leaving the app from elsewhere still needs two steps.
+    androidx.activity.compose.BackHandler(enabled = searching || sheetRoute != null || pager.currentPage != 0) {
+        when { sheetRoute != null -> sheetRoute = null; searching -> { searching = false; q = "" }
+            else -> scope.launch { pager.animateScrollToPage(0) } }
+    }
+
     Box(Modifier.fillMaxSize()) {
-        Column(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars)) {
             Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 12.dp, top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
+                // Today is home: everywhere else gets a real back arrow, not just a chip you have to notice.
+                if (pager.currentPage != 0) {
+                    Box(Modifier.size(40.dp).clip(RoundedCornerShape(20.dp)).pressable { scope.launch { pager.animateScrollToPage(0) } },
+                        contentAlignment = Alignment.Center) {
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Back to Today", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                Column(Modifier.weight(1f).padding(start = if (pager.currentPage != 0) 4.dp else 0.dp)) {
                     Text(here.name, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = accent)
                     Text(subtitle(here), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
@@ -134,7 +149,7 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
                 OutlinedTextField(q, { q = it }, singleLine = true, placeholder = { Text("Search every tool in Atlas") },
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp))
                 val found = remember(q) { HubRegistry.search(q).take(40) }
-                LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 110.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 140.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (q.isNotBlank() && found.isEmpty()) item { Text("Nothing matches that. Try another word, or ask Atlas.", color = MaterialTheme.colorScheme.onSurfaceVariant) }
                     items(found, key = { it.route }) { f -> Wide(f) { searching = false; q = ""; openOrPeek(f.route) } }
                 }
@@ -178,7 +193,7 @@ private fun SpacePage(hub: Hub, open: (String) -> Unit) {
     val top = remember(hub) { HubRegistry.top(hub) }
     val groups = remember(hub) { HubRegistry.grouped(hub) }
     val recent = remember(hub) { RecentFeatures.recent(c).mapNotNull { r -> HubRegistry.byRoute(r)?.takeIf { it.hub == hub } }.take(4) }
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 120.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 140.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         if (recent.isNotEmpty()) {
             item { Label("Jump back in") }
             item { Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { recent.forEach { f -> Chip(f, tint, Modifier.weight(1f)) { open(f.route) } }; repeat(4 - recent.size) { Spacer(Modifier.weight(1f)) } } }
