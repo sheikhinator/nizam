@@ -99,6 +99,7 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
     // a light tool (an nx/ screen) peeks open in a sheet over the home; anything else leaves the home as before
     var sheetRoute by rememberSaveable { mutableStateOf<String?>(null) }
     fun openOrPeek(r: String) { if (r.startsWith("nx/") && r != "nx/chief" && r != "nx/flows") sheetRoute = r else open(r) }
+    val spaces = remember { listOf(Space.Today) + adaptiveOrder(c).map { Space.Life(it) } + Space.You }
     var start by rememberSaveable { mutableStateOf(0) }
     val pager = rememberPagerState(initialPage = start, pageCount = { spaces.size })
     LaunchedEffect(pager.currentPage) { start = pager.currentPage }
@@ -108,7 +109,6 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
     LaunchedEffect(pager.currentPage) { runCatching { rail.animateScrollToItem((pager.currentPage - 1).coerceAtLeast(0)) } }
     var tick2 by remember { mutableStateOf(0) }
     LaunchedEffect(Unit) { tick2++ }
-    val spaces = remember { listOf(Space.Today) + adaptiveOrder(c).map { Space.Life(it) } + Space.You }
     val here = spaces[pager.currentPage]
     val accent = (here as? Space.Life)?.hub?.tint() ?: MaterialTheme.colorScheme.primary
 
