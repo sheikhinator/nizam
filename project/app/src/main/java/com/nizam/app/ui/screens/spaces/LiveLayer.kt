@@ -131,7 +131,10 @@ fun QuickCaptureFab(container: AppContainer, modifier: Modifier = Modifier) {
                     }
                     com.nizam.app.feature.voice.DictateButton(onPartial = { text = it }, onDone = { text = it })
                 }
-                if (result.isNotBlank()) Text(result, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (result.isNotBlank()) Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(result, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+                    com.nizam.app.feature.voice.SpeakButton(result)
+                }
                 Row(Modifier.fillMaxWidth().pressable(enabled = text.isNotBlank() && !busy) {
                     busy = true
                     scope.launch {

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.Stop
+import androidx.compose.material.icons.outlined.VolumeUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -76,5 +77,21 @@ fun DictateButton(onPartial: (String) -> Unit = {}, onDone: (String) -> Unit, mo
     IconButton(onClick = { if (listening) stop() else start() }, modifier = modifier) {
         Icon(if (listening) Icons.Outlined.Stop else Icons.Outlined.Mic, if (listening) "Stop listening" else "Dictate",
             tint = if (listening) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(22.dp))
+    }
+}
+
+
+/** A small speaker icon: tap to hear [text] read aloud with the phone's own voice, tap again to stop. */
+@Composable
+fun SpeakButton(text: String, modifier: Modifier = Modifier) {
+    val c = LocalContext.current
+    val speaker = remember { Speaker(c) }
+    var speaking by remember { mutableStateOf(false) }
+    DisposableEffect(Unit) { onDispose { speaker.release() } }
+    IconButton(onClick = {
+        if (speaking) { speaker.stop(); speaking = false } else { speaker.speak(text); speaking = true }
+    }, modifier = modifier, enabled = text.isNotBlank()) {
+        Icon(if (speaking) Icons.Outlined.Stop else Icons.Outlined.VolumeUp, if (speaking) "Stop reading" else "Read aloud",
+            tint = if (speaking) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(22.dp))
     }
 }

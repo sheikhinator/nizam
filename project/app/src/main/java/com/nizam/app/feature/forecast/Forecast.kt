@@ -295,8 +295,11 @@ internal fun ForecastScreen(container: AppContainer) {
             val avgNow = hist.takeLast(7).average(); val avgNext = p.median.take(7).average()
             val u = series.unit
             val dir = when { avgNext > avgNow * 1.08 -> "going up"; avgNext < avgNow * 0.92 -> "going down"; else -> "staying about the same" }
-            Text("Last 7 days averaged ${"%.1f".format(avgNow)} $u. The next week looks like ${"%.1f".format(avgNext)} $u, so it is $dir.",
-                style = MaterialTheme.typography.bodyLarge)
+            val summary = "Last 7 days averaged ${"%.1f".format(avgNow)} $u. The next week looks like ${"%.1f".format(avgNext)} $u, so it is $dir."
+            androidx.compose.foundation.layout.Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                Text(summary, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                com.nizam.app.feature.voice.SpeakButton(summary)
+            }
             if (series == Series.Spend) Text("Over the next $horizon days you would spend about Rs ${"%,.0f".format(p.median.sum())} (between ${"%,.0f".format(p.low.sum())} and ${"%,.0f".format(p.high.sum())}).",
                 style = MaterialTheme.typography.bodyMedium)
             Text("Made by: ${if (p.engine == "TimesFM") "TimesFM, running on your phone" else "the basic weekly-pattern forecaster"}. The shaded band is the likely range.",
