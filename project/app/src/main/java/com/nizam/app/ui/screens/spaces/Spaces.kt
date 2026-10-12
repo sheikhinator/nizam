@@ -87,6 +87,9 @@ private val SPACES: List<Space> = listOf(Space.Today) + ORDER.map { Space.Life(i
 fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
     val c = LocalContext.current
     val scope = rememberCoroutineScope()
+    // a light tool (an nx/ screen) peeks open in a sheet over the home; anything else leaves the home as before
+    var sheetRoute by rememberSaveable { mutableStateOf<String?>(null) }
+    fun openOrPeek(r: String) { if (r.startsWith("nx/") && r != "nx/chief" && r != "nx/flows") sheetRoute = r else open(r) }
     var start by rememberSaveable { mutableStateOf(0) }
     val pager = rememberPagerState(initialPage = start, pageCount = { SPACES.size })
     LaunchedEffect(pager.currentPage) { start = pager.currentPage }
@@ -113,7 +116,7 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
             }
             StatusIsland()
             val liveNotices = remember(tick2) { runCatching { com.nizam.app.feature.nx.Noticer.scan(c) }.getOrDefault(emptyList()) }
-            if (!searching) StoryRail(liveNotices, open)
+            if (!searching) StoryRail(liveNotices, ::openOrPeek)
             LazyRow(state = rail, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(SPACES.size) { i ->
                     val s = SPACES[i]; val on = i == pager.currentPage
@@ -132,14 +135,14 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
                 val found = remember(q) { HubRegistry.search(q).take(40) }
                 LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 110.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (q.isNotBlank() && found.isEmpty()) item { Text("Nothing matches that. Try another word, or ask Atlas.", color = MaterialTheme.colorScheme.onSurfaceVariant) }
-                    items(found, key = { it.route }) { f -> Wide(f) { searching = false; q = ""; open(f.route) } }
+                    items(found, key = { it.route }) { f -> Wide(f) { searching = false; q = ""; openOrPeek(f.route) } }
                 }
             } else {
                 HorizontalPager(pager, Modifier.weight(1f), beyondViewportPageCount = 0) { page ->
                     when (val s = SPACES[page]) {
-                        Space.Today -> Box(Modifier.fillMaxSize().padding(bottom = 88.dp)) { TodayScreen(container) { open(it) } }
-                        Space.You -> Box(Modifier.fillMaxSize().padding(bottom = 88.dp)) { MeScreen(container) { open(it) } }
-                        is Space.Life -> SpacePage(s.hub, open)
+                        Space.Today -> Box(Modifier.fillMaxSize().padding(bottom = 88.dp)) { TodayScreen(container) { openOrPeek(it) } }
+                        Space.You -> Box(Modifier.fillMaxSize().padding(bottom = 88.dp)) { MeScreen(container) { openOrPeek(it) } }
+                        is Space.Life -> SpacePage(s.hub, ::openOrPeek)
                     }
                 }
             }
@@ -148,6 +151,16 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
             onAsk = { open(Routes.ASK) }, onTalk = { open(Routes.VOICE) }, onAll = { open(Routes.MODULES) },
             onSearch = { searching = true })
         QuickCaptureFab(container, Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 92.dp))
+        val peek = sheetRoute
+        if (peek != null) {
+            val sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = false)
+            androidx.compose.material3.ModalBottomSheet(onDismissRequest = { sheetRoute = null }, sheetState = sheetState,
+                modifier = Modifier.fillMaxSize()) {
+                Box(Modifier.fillMaxSize()) {
+                    com.nizam.app.feature.nx.NxScreen(peek.removePrefix("nx/"), container) { next -> if (next.startsWith("nx/")) sheetRoute = next else { sheetRoute = null; open(next) } }
+                }
+            }
+        }
     }
 }
 
