@@ -7,6 +7,8 @@ android {
     namespace = "com.nizam.app.toolchainpack"
     compileSdk = 36
     defaultConfig { minSdk = 26 }
+    // must match the base app's debug build type exactly, or the dynamic-feature plugin refuses to build
+    buildTypes { debug { isDebuggable = false; isJniDebuggable = false } }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = "17" }
 }
