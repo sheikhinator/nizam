@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Build as BuildIcon
+import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material3.Button
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -123,7 +123,7 @@ private fun Check(label: String, ok: Boolean) {
 
 object ToolchainSpecs {
     val all: List<Spec> = listOf(
-        ScreenSpec("toolchain", "Build Atlas on this phone", "Groundwork for compiling Atlas without the cloud", BuildIcon,
+        ScreenSpec("toolchain", "Build Atlas on this phone", "Groundwork for compiling Atlas without the cloud", Icons.Outlined.Build,
             Hub.Tools, "toolchain compiler build on device local offline gradle jdk termux") { _, _ -> ToolchainScreen() },
     )
 }
