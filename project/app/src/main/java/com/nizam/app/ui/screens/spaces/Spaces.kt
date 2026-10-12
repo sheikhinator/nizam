@@ -201,15 +201,22 @@ private fun SpacePage(hub: Hub, open: (String) -> Unit) {
     val top = remember(hub) { HubRegistry.top(hub) }
     val groups = remember(hub) { HubRegistry.grouped(hub) }
     val recent = remember(hub) { RecentFeatures.recent(c).mapNotNull { r -> HubRegistry.byRoute(r)?.takeIf { it.hub == hub } }.take(4) }
+    var pinTick by remember { mutableStateOf(0) }
+    val pinned = remember(hub, pinTick) { com.nizam.app.feature.modes.Pins.pinned(c).mapNotNull { r -> HubRegistry.byRoute(r)?.takeIf { it.hub == hub } } }
+    fun togglePin(route: String) { com.nizam.app.feature.modes.Pins.togglePin(c, route); pinTick++ }
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 140.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        if (pinned.isNotEmpty()) {
+            item { Label("Pinned") }
+            item { Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { pinned.take(4).forEach { f -> Chip(f, tint, Modifier.weight(1f), onLongClick = { togglePin(f.route) }) { open(f.route) } }; repeat(4 - pinned.size.coerceAtMost(4)) { Spacer(Modifier.weight(1f)) } } }
+        }
         if (recent.isNotEmpty()) {
             item { Label("Jump back in") }
-            item { Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { recent.forEach { f -> Chip(f, tint, Modifier.weight(1f)) { open(f.route) } }; repeat(4 - recent.size) { Spacer(Modifier.weight(1f)) } } }
+            item { Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { recent.forEach { f -> Chip(f, tint, Modifier.weight(1f), onLongClick = { togglePin(f.route) }) { open(f.route) } }; repeat(4 - recent.size) { Spacer(Modifier.weight(1f)) } } }
         }
-        item { Label("Main") }
+        item { Label("Main · hold a tile to pin it") }
         items(top.chunked(2)) { row ->
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                row.forEach { f -> Hero(f, tint, Modifier.weight(1f)) { open(f.route) } }
+                row.forEach { f -> Hero(f, tint, Modifier.weight(1f), onLongClick = { togglePin(f.route) }) { open(f.route) } }
                 if (row.size == 1) Spacer(Modifier.weight(1f))
             }
         }
@@ -217,7 +224,7 @@ private fun SpacePage(hub: Hub, open: (String) -> Unit) {
             item(key = "g_$name") { Label(name) }
             items(list.chunked(3)) { row ->
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    row.forEach { f -> Tile(f, tint, Modifier.weight(1f)) { open(f.route) } }
+                    row.forEach { f -> Tile(f, tint, Modifier.weight(1f), onLongClick = { togglePin(f.route) }) { open(f.route) } }
                     repeat(3 - row.size) { Spacer(Modifier.weight(1f)) }
                 }
             }
@@ -228,9 +235,10 @@ private fun SpacePage(hub: Hub, open: (String) -> Unit) {
 @Composable private fun Label(t: String) = Text(t, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 6.dp, start = 4.dp))
 
 @Composable
-private fun Hero(f: Feature, tint: Color, modifier: Modifier, onClick: () -> Unit) {
+private fun Hero(f: Feature, tint: Color, modifier: Modifier, onLongClick: () -> Unit = {}, onClick: () -> Unit) {
     Column(modifier.height(116.dp).clip(RoundedCornerShape(24.dp))
-        .background(Brush.linearGradient(listOf(wash(tint, 0.28f), wash(tint, 0.10f)))).pressable { onClick() }.padding(14.dp),
+        .background(Brush.linearGradient(listOf(wash(tint, 0.28f), wash(tint, 0.10f))))
+        .pointerInput(f.route) { detectTapGestures(onTap = { onClick() }, onLongPress = { onLongClick() }) }.padding(14.dp),
         verticalArrangement = Arrangement.SpaceBetween) {
         Icon(f.icon, null, tint = tint, modifier = Modifier.size(28.dp))
         Column {
@@ -241,8 +249,9 @@ private fun Hero(f: Feature, tint: Color, modifier: Modifier, onClick: () -> Uni
 }
 
 @Composable
-private fun Tile(f: Feature, tint: Color, modifier: Modifier, onClick: () -> Unit) {
-    Column(modifier.height(92.dp).clip(RoundedCornerShape(20.dp)).background(wash(tint, 0.10f)).pressable { onClick() }.padding(10.dp),
+private fun Tile(f: Feature, tint: Color, modifier: Modifier, onLongClick: () -> Unit = {}, onClick: () -> Unit) {
+    Column(modifier.height(92.dp).clip(RoundedCornerShape(20.dp)).background(wash(tint, 0.10f))
+        .pointerInput(f.route) { detectTapGestures(onTap = { onClick() }, onLongPress = { onLongClick() }) }.padding(10.dp),
         verticalArrangement = Arrangement.SpaceBetween) {
         Icon(f.icon, null, tint = tint, modifier = Modifier.size(22.dp))
         Text(f.title, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Medium, maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -250,8 +259,9 @@ private fun Tile(f: Feature, tint: Color, modifier: Modifier, onClick: () -> Uni
 }
 
 @Composable
-private fun Chip(f: Feature, tint: Color, modifier: Modifier, onClick: () -> Unit) {
-    Column(modifier.clip(RoundedCornerShape(16.dp)).background(wash(tint, 0.14f)).pressable { onClick() }.padding(horizontal = 8.dp, vertical = 10.dp),
+private fun Chip(f: Feature, tint: Color, modifier: Modifier, onLongClick: () -> Unit = {}, onClick: () -> Unit) {
+    Column(modifier.clip(RoundedCornerShape(16.dp)).background(wash(tint, 0.14f))
+        .pointerInput(f.route) { detectTapGestures(onTap = { onClick() }, onLongPress = { onLongClick() }) }.padding(horizontal = 8.dp, vertical = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally) {
         Icon(f.icon, null, tint = tint, modifier = Modifier.size(20.dp))
         Text(f.title, style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
