@@ -28,4 +28,10 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.activity:activity-compose:1.9.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    // Real on-device Java compiler (ECJ, pure JVM bytecode — the Eclipse batch compiler) and the
+    // dexer Google itself ships Gradle with (D8). Both run in-process: no native binary, no exec,
+    // so none of Android's restrictions on running downloaded code apply to this path.
+    implementation("org.eclipse.jdt:ecj:3.42.0")
+    implementation("com.android.tools:r8:9.5.23")
+    testImplementation("junit:junit:4.13.2")
 }

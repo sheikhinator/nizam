@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
@@ -27,6 +29,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.InputStreamReader
+
+private const val DEMO_SOURCE = """public class AtlasDemo {
+    public static void main(String[] args) {
+        System.out.println("Hello from a build compiled right here on-device.");
+        int total = 0;
+        for (int i = 1; i <= 10; i++) total += i;
+        System.out.println("1 to 10 added up on-device: " + total);
+    }
+}"""
 
 /**
  * A real command runner, scoped to what this module actually controls: whatever is already on the
@@ -46,9 +57,10 @@ private object Shell {
 
 @Composable
 fun TerminalScreen() {
+    val c = LocalContext.current
     val scope = rememberCoroutineScope()
     var cmd by remember { mutableStateOf("") }
-    var lines by remember { mutableStateOf(listOf("Atlas terminal — runs what the phone already has. Bundled build tools arrive in a later update.")) }
+    var lines by remember { mutableStateOf(listOf("Atlas terminal — runs what the phone already has, plus a real Java compiler and dexer bundled in below.")) }
     var busy by remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
     val workDir = remember { java.io.File("/sdcard") }
@@ -62,12 +74,28 @@ fun TerminalScreen() {
         }
         OutlinedTextField(cmd, { cmd = it }, label = { Text("Command") }, singleLine = true, modifier = Modifier.fillMaxWidth())
         Button(enabled = cmd.isNotBlank() && !busy, onClick = {
-            val c = cmd; lines = lines + "$ $c"; cmd = ""; busy = true
+            val c2 = cmd; lines = lines + "$ $c2"; cmd = ""; busy = true
             scope.launch {
-                val (code, out) = Shell.run(c, workDir)
+                val (code, out) = Shell.run(c2, workDir)
                 lines = lines + out.lines().filter { it.isNotBlank() } + "(exit $code)"
                 busy = false
             }
         }) { Text(if (busy) "Running…" else "Run") }
+        OutlinedButton(enabled = !busy, onClick = {
+            lines = lines + "$ atlas build --demo"; busy = true
+            scope.launch {
+                val result = withContext(Dispatchers.Default) {
+                    BuildEngine.compile(java.io.File(c.cacheDir, "demo-build"), "AtlasDemo", DEMO_SOURCE)
+                }
+                lines = lines + result.steps.map { "  ${if (it.ok) "✓" else "✕"} ${it.name}: ${it.detail}" }
+                val dex = result.dex
+                if (dex != null) {
+                    val ran = runCatching { withContext(Dispatchers.Default) { BuildEngine.runDex(dex, "AtlasDemo") } }
+                    lines = lines + (ran.getOrNull()?.lines()?.filter { it.isNotBlank() }?.map { "  > $it" }
+                        ?: listOf("  ✕ Run: ${ran.exceptionOrNull()?.message}"))
+                }
+                busy = false
+            }
+        }) { Text("Run a demo build (compiles real Java on this phone)") }
     }
 }
