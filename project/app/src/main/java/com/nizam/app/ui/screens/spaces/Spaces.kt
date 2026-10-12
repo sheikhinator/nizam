@@ -177,6 +177,7 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
             onAsk = { open(Routes.ASK) }, onTalk = { open(Routes.VOICE) }, onAll = { open(Routes.MODULES) },
             onSearch = { searching = true })
         QuickCaptureFab(container, Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 92.dp))
+        com.nizam.app.feature.next.ShakeToUndo()
         val peek = sheetRoute
         if (peek != null) {
             val sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = false)

@@ -113,6 +113,7 @@ object Capture {
                 "{\"kind\":\"event|task|note\",\"title\":\"...\",\"date\":\"yyyy-mm-dd or empty\",\"time\":\"HH:mm or empty\",\"place\":\"...\",\"details\":\"...\"}\n\n$text",
             system = "You turn messy text into structured items. JSON only.", maxOutputTokens = 300)
         return runCatching { JSONObject(Ai.cleanJson(raw)) }.getOrElse { JSONObject().put("kind", "note").put("title", text.take(60)).put("details", text) }
+            .put("t", System.currentTimeMillis())
     }
 
     fun toCalendar(c: Context, o: JSONObject) {
