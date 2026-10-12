@@ -123,9 +123,13 @@ fun QuickCaptureFab(container: AppContainer, modifier: Modifier = Modifier) {
         ModalBottomSheet(onDismissRequest = { open = false }, sheetState = sheet) {
             Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("Throw anything in", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(wash(MaterialTheme.colorScheme.onSurface, 0.06f)).padding(14.dp)) {
-                    BasicTextField(text, { text = it }, Modifier.fillMaxWidth(), textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                        decorationBox = { inner -> if (text.isEmpty()) Text("A thought, a task, an event…", color = MaterialTheme.colorScheme.onSurfaceVariant); inner() })
+                Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(wash(MaterialTheme.colorScheme.onSurface, 0.06f)).padding(start = 14.dp, end = 4.dp, top = 14.dp, bottom = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.weight(1f)) {
+                        BasicTextField(text, { text = it }, Modifier.fillMaxWidth(), textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                            decorationBox = { inner -> if (text.isEmpty()) Text("A thought, a task, an event…", color = MaterialTheme.colorScheme.onSurfaceVariant); inner() })
+                    }
+                    com.nizam.app.feature.voice.DictateButton(onPartial = { text = it }, onDone = { text = it })
                 }
                 if (result.isNotBlank()) Text(result, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Row(Modifier.fillMaxWidth().pressable(enabled = text.isNotBlank() && !busy) {
