@@ -13,4 +13,7 @@ android {
 
 dependencies {
     implementation(project(":app"))
+    // a transitive dep of :app resolves as compileOnly in this module's graph, which the dynamic-feature
+    // plugin rejects; pinning it to implementation here settles that
+    implementation("com.google.j2objc:j2objc-annotations:2.8")
 }
