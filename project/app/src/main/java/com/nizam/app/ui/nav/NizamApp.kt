@@ -445,7 +445,7 @@ fun NizamApp(container: AppContainer, startOnCurator: Boolean = false, startRout
             }
         },
         topBar = {
-            if (currentRoute != Routes.PLAYER && currentRoute != Routes.BEDSIDE && currentRoute != Routes.IPTV_PLAYER && currentRoute != Routes.AMBIENT) {
+            if (currentRoute != Routes.PLAYER && currentRoute != Routes.BEDSIDE && currentRoute != Routes.IPTV_PLAYER && currentRoute != Routes.AMBIENT && currentRoute != Routes.TODAY) {
                 Row(
                     Modifier
                         .fillMaxWidth()
@@ -488,7 +488,7 @@ fun NizamApp(container: AppContainer, startOnCurator: Boolean = false, startRout
             }
         },
         bottomBar = {
-            if (currentRoute != Routes.PLAYER && currentRoute != Routes.BEDSIDE && currentRoute != Routes.IPTV_PLAYER && currentRoute != Routes.AMBIENT) {
+            if (currentRoute != Routes.PLAYER && currentRoute != Routes.BEDSIDE && currentRoute != Routes.IPTV_PLAYER && currentRoute != Routes.AMBIENT && currentRoute != Routes.TODAY) {
                 androidx.compose.foundation.layout.Column(Modifier.padding(start = if (wide) 80.dp else 0.dp)) {
                 com.nizam.app.ui.design.ContextStrip(currentRoute) { r -> navController.navigate(r) { launchSingleTop = true } }
                 if (!wide) FloatingNav(
@@ -536,7 +536,7 @@ fun NizamApp(container: AppContainer, startOnCurator: Boolean = false, startRout
             modifier = Modifier.padding(innerPadding).padding(start = if (wide && currentRoute != Routes.PLAYER && currentRoute != Routes.IPTV_PLAYER && currentRoute != Routes.BEDSIDE && currentRoute != Routes.AMBIENT) 80.dp else 0.dp)
         ) {
             composable(Routes.TODAY) {
-                TodayScreen(container = container, onOpen = { navController.navigate(it) })
+                com.nizam.app.ui.screens.spaces.SpacesHome(container) { navController.navigate(it) }
             }
             composable(Routes.MODULES) {
                 com.nizam.app.ui.screens.hubs.LifeScreen(container) { navController.navigate(it) }
