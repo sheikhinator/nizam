@@ -94,6 +94,8 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
     var searching by rememberSaveable { mutableStateOf(false) }
     val rail = rememberLazyListState()
     LaunchedEffect(pager.currentPage) { runCatching { rail.animateScrollToItem((pager.currentPage - 1).coerceAtLeast(0)) } }
+    var tick2 by remember { mutableStateOf(0) }
+    LaunchedEffect(Unit) { tick2++ }
     val here = SPACES[pager.currentPage]
     val accent = (here as? Space.Life)?.hub?.tint() ?: MaterialTheme.colorScheme.primary
 
@@ -109,6 +111,9 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
                     Icon(if (searching) Icons.Outlined.Close else Icons.Outlined.Search, "Search", tint = accent)
                 }
             }
+            StatusIsland()
+            val liveNotices = remember(tick2) { runCatching { com.nizam.app.feature.nx.Noticer.scan(c) }.getOrDefault(emptyList()) }
+            if (!searching) StoryRail(liveNotices, open)
             LazyRow(state = rail, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(SPACES.size) { i ->
                     val s = SPACES[i]; val on = i == pager.currentPage
@@ -142,6 +147,7 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
         Dock(Modifier.align(Alignment.BottomCenter), accent,
             onAsk = { open(Routes.ASK) }, onTalk = { open(Routes.VOICE) }, onAll = { open(Routes.MODULES) },
             onSearch = { searching = true })
+        QuickCaptureFab(container, Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 92.dp))
     }
 }
 
