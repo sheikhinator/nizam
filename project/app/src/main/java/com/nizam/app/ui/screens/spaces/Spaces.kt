@@ -83,6 +83,7 @@ private val SPACES: List<Space> = listOf(Space.Today) + ORDER.map { Space.Life(i
  * The home of Atlas: every part of your life is a space you swipe to. A strip of chips on top shows
  * where you are, a search box reaches everything, and one orb at the bottom asks Atlas (hold to talk).
  */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
     val c = LocalContext.current

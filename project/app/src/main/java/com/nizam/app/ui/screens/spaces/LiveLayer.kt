@@ -105,6 +105,7 @@ fun StoryRail(notices: List<Noticer.Notice>, open: (String) -> Unit) {
 }
 
 /** One floating "+" that stays on screen everywhere: type anything and Atlas files it as a task, note or event. */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun QuickCaptureFab(container: AppContainer, modifier: Modifier = Modifier) {
     val c = LocalContext.current
