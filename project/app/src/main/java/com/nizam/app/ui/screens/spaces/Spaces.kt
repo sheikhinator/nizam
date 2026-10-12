@@ -78,8 +78,14 @@ private sealed class Space(val name: String, val icon: ImageVector) {
     object You : Space("You", Icons.Outlined.Person)
 }
 
-private val ORDER = listOf(Hub.Money, Hub.Deen, Hub.Health, Hub.Work, Hub.Memory, Hub.Learn, Hub.Home, Hub.Social, Hub.Media, Hub.Create, Hub.Travel, Hub.Tools)
-private val SPACES: List<Space> = listOf(Space.Today) + ORDER.map { Space.Life(it) } + Space.You
+private val DEFAULT_ORDER = listOf(Hub.Money, Hub.Deen, Hub.Health, Hub.Work, Hub.Memory, Hub.Learn, Hub.Home, Hub.Social, Hub.Media, Hub.Create, Hub.Travel, Hub.Tools)
+
+/** Spaces you actually use rise to the front; an unused one keeps its sensible default spot. Today and You stay fixed ends. */
+private fun adaptiveOrder(c: android.content.Context): List<Hub> {
+    val score = DEFAULT_ORDER.associateWith { h -> HubRegistry.of(h).sumOf { RecentFeatures.uses(c, it.route) } }
+    val any = score.values.any { it > 0 }
+    return if (!any) DEFAULT_ORDER else DEFAULT_ORDER.sortedByDescending { score[it] ?: 0 }
+}
 
 /**
  * The home of Atlas: every part of your life is a space you swipe to. A strip of chips on top shows
@@ -94,7 +100,7 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
     var sheetRoute by rememberSaveable { mutableStateOf<String?>(null) }
     fun openOrPeek(r: String) { if (r.startsWith("nx/") && r != "nx/chief" && r != "nx/flows") sheetRoute = r else open(r) }
     var start by rememberSaveable { mutableStateOf(0) }
-    val pager = rememberPagerState(initialPage = start, pageCount = { SPACES.size })
+    val pager = rememberPagerState(initialPage = start, pageCount = { spaces.size })
     LaunchedEffect(pager.currentPage) { start = pager.currentPage }
     var q by rememberSaveable { mutableStateOf("") }
     var searching by rememberSaveable { mutableStateOf(false) }
@@ -102,7 +108,8 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
     LaunchedEffect(pager.currentPage) { runCatching { rail.animateScrollToItem((pager.currentPage - 1).coerceAtLeast(0)) } }
     var tick2 by remember { mutableStateOf(0) }
     LaunchedEffect(Unit) { tick2++ }
-    val here = SPACES[pager.currentPage]
+    val spaces = remember { listOf(Space.Today) + adaptiveOrder(c).map { Space.Life(it) } + Space.You }
+    val here = spaces[pager.currentPage]
     val accent = (here as? Space.Life)?.hub?.tint() ?: MaterialTheme.colorScheme.primary
 
     // Hardware/gesture back: close search, close a peeked tool, or return to Today — never a dead end.
@@ -135,8 +142,8 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
             val liveNotices = remember(tick2) { runCatching { com.nizam.app.feature.nx.Noticer.scan(c) }.getOrDefault(emptyList()) }
             if (!searching) StoryRail(liveNotices, ::openOrPeek)
             LazyRow(state = rail, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(SPACES.size) { i ->
-                    val s = SPACES[i]; val on = i == pager.currentPage
+                items(spaces.size) { i ->
+                    val s = spaces[i]; val on = i == pager.currentPage
                     val tint = (s as? Space.Life)?.hub?.tint() ?: MaterialTheme.colorScheme.primary
                     val bg by animateColorAsState(if (on) wash(tint, 0.24f) else wash(MaterialTheme.colorScheme.onSurface, 0.06f), label = "chip")
                     Row(Modifier.clip(RoundedCornerShape(20.dp)).background(bg).pressable { scope.launch { pager.animateScrollToPage(i) } }
@@ -156,7 +163,7 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
                 }
             } else {
                 HorizontalPager(pager, Modifier.weight(1f), beyondViewportPageCount = 0) { page ->
-                    when (val s = SPACES[page]) {
+                    when (val s = spaces[page]) {
                         Space.Today -> Box(Modifier.fillMaxSize().padding(bottom = 88.dp)) { TodayScreen(container) { openOrPeek(it) } }
                         Space.You -> Box(Modifier.fillMaxSize().padding(bottom = 88.dp)) { MeScreen(container) { openOrPeek(it) } }
                         is Space.Life -> SpacePage(s.hub, ::openOrPeek)
