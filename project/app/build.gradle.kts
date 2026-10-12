@@ -153,6 +153,7 @@ dependencies {
     implementation("androidx.camera:camera-view:1.3.4")
     // On-device LLM for offline answers (the model file is imported by the user, not bundled)
     implementation("com.google.mediapipe:tasks-genai:0.10.24")
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.20.0")
 
     debugImplementation(composeBom)
     debugImplementation("androidx.compose.ui:ui-tooling")
