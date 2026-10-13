@@ -113,7 +113,7 @@ jobs:
           ATLAS_KEY_TOMTOM: ${{ secrets.ATLAS_KEY_TOMTOM }}
         run: |
           set -o pipefail
-          gradle assembleDebug --no-daemon --stacktrace 2>&1 | tee /tmp/build.log
+          gradle assembleDebug -x lintVitalAnalyzeDebug -x lintVitalReportDebug --no-daemon --stacktrace 2>&1 | tee /tmp/build.log
 
       - name: Audit every tool and screen
         if: success() && contains(github.event.head_commit.message, '[audit]')

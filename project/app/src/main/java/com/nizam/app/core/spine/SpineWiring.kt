@@ -106,6 +106,18 @@ object SpineWiring {
                     )
                     // Even the organism's own memory-keeping is logged, so nothing it does is silent.
                     Receipts.record(ctx, "goals", "noted-milestone", "Recorded achieved goal: ${signal.summary}")
+                    // Aliveness: if the owner has granted at least NOTIFY for goals, Atlas celebrates
+                    // the milestone — and records that it did. A nudge is never silent either.
+                    if (TrustBudget.allows(ctx, "goals", TrustBudget.Level.NOTIFY)) {
+                        runCatching {
+                            com.nizam.app.feature.notify.Notifications.post(
+                                ctx, com.nizam.app.feature.notify.Notifications.CHANNEL_NUDGE, 270,
+                                "Goal reached 🎉",
+                                "You hit: ${signal.summary}. That's a real one — well done."
+                            )
+                        }
+                        Receipts.record(ctx, "goals", "nudge", "Congratulated on: ${signal.summary}", reversible = false)
+                    }
                 }
             }
         }
