@@ -182,6 +182,8 @@ class AtlasWorker(context: Context, params: WorkerParameters) : CoroutineWorker(
         // unfinished Chief work (a build being watched, an interrupted job) keeps moving even when the app is closed
         runCatching { com.nizam.app.feature.chief.ChiefRunner.tick(applicationContext) }
         runCatching { com.nizam.app.feature.flows.FlowEngine.tick(applicationContext) }
+        // The organism dreams: once each night, Atlas reflects on the day and leaves a morning brief.
+        runCatching { com.nizam.app.core.spine.SelfReview.runIfDue(applicationContext) }
         if (!settings.notificationsOn.first()) return Result.success()
 
         val now = LocalTime.now().let { it.hour + it.minute / 60.0 }
@@ -189,6 +191,7 @@ class AtlasWorker(context: Context, params: WorkerParameters) : CoroutineWorker(
         runCatching { com.nizam.app.feature.future.Documents.remind(applicationContext) }
         runCatching { com.nizam.app.feature.future.PakistanData.remind(applicationContext) }
         runCatching { com.nizam.app.feature.future.AgentSchedule.check(applicationContext, container) }
+        runCatching { com.nizam.app.core.spine.SelfReview.deliverMorningBriefIfDue(applicationContext) }
 
         runCatching {
             val times = PrayerTimes.calculate(
