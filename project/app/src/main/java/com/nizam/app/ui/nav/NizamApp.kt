@@ -186,6 +186,7 @@ object Routes {
     const val PROFILE = "profile"
     const val TOWN = "town"
     const val ME = "me"
+    const val ACTIVITY = "activity"
     const val APPS = "apps"
     const val PODCASTS = "podcasts"
     const val PODCAST_SHOW = "podcastshow"
@@ -542,6 +543,7 @@ fun NizamApp(container: AppContainer, startOnCurator: Boolean = false, startRout
                 com.nizam.app.ui.screens.hubs.LifeScreen(container) { navController.navigate(it) }
             }
             composable(Routes.FIREWALL) { com.nizam.app.feature.brain2.FirewallScreen() }
+            composable(Routes.ACTIVITY) { com.nizam.app.core.spine.AtlasActivityScreen() }
             composable(Routes.SKILLS) { com.nizam.app.feature.agent.SkillsProScreen(container) }
             composable(Routes.KNOWSME) { com.nizam.app.feature.brain2.PersonalModelScreen() }
             composable(Routes.RESEARCH) { com.nizam.app.feature.brain2.ResearchScreen(container) }

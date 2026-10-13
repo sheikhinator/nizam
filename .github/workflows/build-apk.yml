@@ -149,6 +149,7 @@ jobs:
 
       - name: Upload build log
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: build-log
@@ -171,6 +172,7 @@ jobs:
 
       - name: Upload APK
         if: success()
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: nizam-debug-apk
