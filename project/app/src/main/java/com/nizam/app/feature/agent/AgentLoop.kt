@@ -83,8 +83,13 @@ class AgentLoop(private val container: () -> AppContainer) {
         }
 
         val selectedParts = contextParts?.filter { it.included }
-        val runContext = if (contextParts == null) Snapshot.of(c) else
+        // The Spine's unified sense of the owner's situation leads the snapshot, so the agent
+        // reasons from the whole organism (money, prayer, tasks, health, mood…) rather than one
+        // feature at a time. Guarded: if Self is empty or slow, the snapshot still stands alone.
+        val selfBrief = runCatching { com.nizam.app.core.spine.Self.brief() }.getOrDefault("")
+        val snapshotBlock = if (contextParts == null) Snapshot.of(c) else
             selectedParts.orEmpty().filter { it.id.startsWith("snapshot_") }.joinToString("\n") { it.content }
+        val runContext = (if (selfBrief.isNotBlank()) "Situation now:\n$selfBrief\n\n" else "") + snapshotBlock
         val memory = c.agentMemory
         val memories = if (contextParts == null) {
             if (ChatModes.private) "" else memory.recall()

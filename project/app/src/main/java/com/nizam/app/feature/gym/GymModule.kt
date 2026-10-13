@@ -111,10 +111,18 @@ class GymRepository(private val dao: GymDao) {
     fun cardio() = dao.observeCardio()
     suspend fun addSet(exercise: String, weight: Double, reps: Int) {
         dao.insert(WorkoutSet(localDate = today(), exercise = exercise.trim(), weight = weight, reps = reps))
+        com.nizam.app.core.spine.Pulse.emit(
+            "fitness", "workout", exercise.trim(),
+            org.json.JSONObject().put("exercise", exercise.trim()).put("reps", reps)
+        )
     }
     suspend fun remove(set: WorkoutSet) = dao.delete(set)
     suspend fun addCardio(type: String, minutes: Int, km: Double) {
         dao.insertCardio(Cardio(localDate = today(), type = type, minutes = minutes, distanceKm = km))
+        com.nizam.app.core.spine.Pulse.emit(
+            "fitness", "cardio", "$type · ${minutes}m",
+            org.json.JSONObject().put("type", type).put("minutes", minutes)
+        )
     }
 }
 

@@ -187,6 +187,10 @@ class DietRepository(private val dao: DietDao) {
             "Enter a food name, valid meal slot, and finite non-negative nutrition values."
         }
         dao.insert(MealItem(localDate = today(), slot = slot, name = name, kcal = kcal, protein = protein))
+        com.nizam.app.core.spine.Pulse.emit(
+            "diet", "meal", "$slot · $name",
+            org.json.JSONObject().put("slot", slot).put("name", name)
+        )
     }
     suspend fun remove(item: MealItem) = dao.delete(item)
     suspend fun addWater(deltaMl: Int) {

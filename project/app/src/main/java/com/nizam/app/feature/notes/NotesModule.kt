@@ -87,8 +87,10 @@ class NoteRepository(private val dao: NoteDao) {
     fun all() = dao.observeAll()
     fun search(q: String) = dao.search(q)
     suspend fun create(title: String): Long = dao.insert(Note(title = title.trim()))
+        .also { com.nizam.app.core.spine.Pulse.emit("notes", "created", title.trim()) }
     suspend fun createFull(title: String, body: String): Long =
         dao.insert(Note(title = title.trim(), body = body))
+            .also { com.nizam.app.core.spine.Pulse.emit("notes", "created", title.trim()) }
     suspend fun save(note: Note) = dao.update(note.copy(updatedAt = System.currentTimeMillis()))
     suspend fun remove(note: Note) = dao.delete(note)
     suspend fun everything(): List<Note> = dao.getAll()

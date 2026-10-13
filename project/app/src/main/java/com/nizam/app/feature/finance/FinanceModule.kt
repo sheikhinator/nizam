@@ -158,6 +158,12 @@ class FinanceRepository(private val dao: FinanceDao) {
                 note = note
             )
         )
+        com.nizam.app.core.spine.Pulse.emit(
+            "money", if (kind == "EXPENSE") "expense" else "income",
+            "PKR ${"%,.0f".format(amount)} · ${category.ifBlank { "Uncategorised" }}",
+            org.json.JSONObject().put("amount", amount).put("kind", kind)
+                .put("category", category.ifBlank { "Uncategorised" })
+        )
     }
     suspend fun remove(txn: Txn) = dao.delete(txn)
     suspend fun restore(txn: Txn) = dao.insert(validateTransaction(txn))
@@ -176,6 +182,12 @@ class FinanceRepository(private val dao: FinanceDao) {
                 category = category.ifBlank { "Uncategorised" },
                 localDate = validDate, note = note
             )
+        )
+        com.nizam.app.core.spine.Pulse.emit(
+            "money", if (kind == "EXPENSE") "expense" else "income",
+            "PKR ${"%,.0f".format(amount)} · ${category.ifBlank { "Uncategorised" }}",
+            org.json.JSONObject().put("amount", amount).put("kind", kind)
+                .put("category", category.ifBlank { "Uncategorised" }).put("date", validDate)
         )
     }
     suspend fun setBudget(category: String, amount: Double) {

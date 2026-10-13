@@ -17,14 +17,20 @@ class TaskRepository(private val dao: TaskDao) {
 
     suspend fun add(title: String, due: Long?, priority: Int) {
         dao.insert(Task(title = title.trim(), due = due, priority = priority))
+        com.nizam.app.core.spine.Pulse.emit("tasks", "added", title.trim())
     }
 
     suspend fun toggleComplete(task: Task) {
+        val nowDone = task.completedAt == null
         dao.update(
             task.copy(
-                completedAt = if (task.completedAt == null) System.currentTimeMillis() else null,
+                completedAt = if (nowDone) System.currentTimeMillis() else null,
                 updatedAt = System.currentTimeMillis()
             )
+        )
+        if (nowDone) com.nizam.app.core.spine.Pulse.emit(
+            "tasks", "done", task.title,
+            org.json.JSONObject().put("title", task.title).put("priority", task.priority)
         )
     }
 
@@ -56,6 +62,10 @@ class HabitRepository(private val dao: HabitDao) {
             dao.clearEntry(habitId, localDate)
         } else {
             dao.insertEntry(HabitEntry(habitId = habitId, localDate = localDate))
+            com.nizam.app.core.spine.Pulse.emit(
+                "habits", "kept", "habit kept",
+                org.json.JSONObject().put("habitId", habitId).put("date", localDate)
+            )
         }
     }
 

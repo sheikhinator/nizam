@@ -96,11 +96,14 @@ class DiaryRepository(private val dao: DiaryDao) {
     fun checkIns() = dao.observeCheckIns()
     suspend fun addEntry(body: String, mood: Int, emotions: List<String>) {
         dao.insert(DiaryEntry(localDate = today(), body = body.trim(), mood = mood, emotions = emotions.joinToString(",")))
+        // Signal that a journal entry happened — never the entry's text (it stays private).
+        com.nizam.app.core.spine.Pulse.emit("diary", "entry", "journaled")
     }
     suspend fun deleteEntry(id: Long) = dao.deleteEntry(id)
 
     suspend fun addCheckIn(mood: Int, emotions: List<String>) {
         dao.insertCheckIn(MoodCheckIn(localDate = today(), mood = mood, emotions = emotions.joinToString(",")))
+        com.nizam.app.core.spine.Pulse.emit("diary", "checkin", "mood check-in")
     }
 }
 

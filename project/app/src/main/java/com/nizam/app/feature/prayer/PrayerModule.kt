@@ -106,6 +106,10 @@ class PrayerRepository(private val dao: PrayerDao) {
             else -> base.copy(isha = status)
         }
         dao.upsert(updated)
+        com.nizam.app.core.spine.Pulse.emit(
+            "deen", "prayer", "$prayer · ${statusLabel(status)}",
+            org.json.JSONObject().put("prayer", prayer).put("status", status).put("date", date)
+        )
     }
 }
 

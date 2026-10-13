@@ -244,11 +244,16 @@ class MissionRepository(
         Verifier.measure(container(), mission, mission.localDate)
 
     suspend fun toggle(mission: Mission) {
+        val nowDone = mission.completedAt == null
         dao.update(
             mission.copy(
-                completedAt = if (mission.completedAt == null) System.currentTimeMillis() else null,
+                completedAt = if (nowDone) System.currentTimeMillis() else null,
                 autoVerified = false
             )
+        )
+        if (nowDone) com.nizam.app.core.spine.Pulse.emit(
+            "missions", "done", mission.title,
+            org.json.JSONObject().put("xp", mission.xp)
         )
     }
 
@@ -266,6 +271,8 @@ class MissionRepository(
 
     suspend fun openMissions() = dao.openMissions(java.time.LocalDate.now().minusDays(30).toString())
 
-    suspend fun closeGoal(goal: Goal, done: Boolean) =
+    suspend fun closeGoal(goal: Goal, done: Boolean) {
         dao.updateGoal(goal.copy(status = if (done) "DONE" else "ABANDONED"))
+        if (done) com.nizam.app.core.spine.Pulse.emit("goals", "achieved", goal.title)
+    }
 }
