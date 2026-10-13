@@ -101,6 +101,24 @@ object SpineWiring {
                 "money" -> {
                     val category = signal.data.optString("category").ifBlank { "Uncategorised" }
                     World.put(ctx, World.Node("category:$category", "spend_category", category))
+                    // Self-evolving help: if one category keeps recurring, Atlas offers to grow a
+                    // budget-tracker for it — once a day, gated by the trust budget, logged.
+                    val recurring = Pulse.recentIn("money", 40).count { it.data.optString("category") == category }
+                    if (recurring >= 6 && TrustBudget.allows(ctx, "money", TrustBudget.Level.NOTIFY)) {
+                        val gate = ctx.getSharedPreferences("spine_suggest", 0)
+                        val once = "budget_${category}_${java.time.LocalDate.now()}"
+                        if (!gate.getBoolean(once, false)) {
+                            gate.edit().putBoolean(once, true).apply()
+                            runCatching {
+                                com.nizam.app.feature.notify.Notifications.post(
+                                    ctx, com.nizam.app.feature.notify.Notifications.CHANNEL_NUDGE, 272,
+                                    "A pattern in $category",
+                                    "You've been logging $category a lot. Want Atlas to set a budget and watch it for you?"
+                                )
+                            }
+                            Receipts.record(ctx, "money", "suggestion", "Offered a budget for $category", reversible = false)
+                        }
+                    }
                 }
                 "goals" -> if (signal.kind == "achieved" && signal.summary.isNotBlank()) {
                     World.put(
