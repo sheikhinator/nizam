@@ -34,8 +34,12 @@ object BuildEngine {
         val steps = mutableListOf<Step>()
 
         val log = StringWriter()
+        // No -source/-target: passing them sets a flag that later makes ECJ compare Java versions
+        // via java.lang.Runtime$Version, a class Android's runtime doesn't have at all (it's a
+        // desktop-JDK-only API) — an uncatchable crash. Leaving them out skips that check entirely,
+        // and ECJ's own default compliance level is more than enough for the plain Java this compiles.
         val compiled = Ecj(PrintWriter(log), PrintWriter(log), false, null, null).compile(
-            arrayOf(srcFile.path, "-d", outDir.path, "-source", "17", "-target", "17", "-nowarn", "-proc:none")
+            arrayOf(srcFile.path, "-d", outDir.path, "-nowarn", "-proc:none")
         )
         steps += Step("Compile (ECJ)", compiled, log.toString().ifBlank { "No errors." })
         if (!compiled) return Result(steps, null)
