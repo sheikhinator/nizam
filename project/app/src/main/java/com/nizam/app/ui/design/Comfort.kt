@@ -15,7 +15,8 @@ object Comfort {
                      val wallpaperColours: Boolean = false, val zen: Boolean = false, val elder: Boolean = false,
                      val ambientOnCharge: Boolean = false,
                      val highContrast: Boolean = false, val easyRead: Boolean = false,
-                     val bigTouch: Boolean = false, val keepAwake: Boolean = false, val warmTint: Boolean = false, val boldText: Boolean = false)
+                     val bigTouch: Boolean = false, val keepAwake: Boolean = false, val warmTint: Boolean = false, val boldText: Boolean = false,
+                     val calm: Boolean = true)
 
     private var current by mutableStateOf<State?>(null)
 
@@ -34,12 +35,13 @@ object Comfort {
         bigTouch = p(c).getBoolean("bigtouch", false),
         keepAwake = p(c).getBoolean("awake", false),
         warmTint = p(c).getBoolean("warm", false),
-        boldText = p(c).getBoolean("bold", false)
+        boldText = p(c).getBoolean("bold", false),
+        calm = p(c).getBoolean("calm", true)
     )
 
     /** Read inside composition: screens redraw the moment a setting changes. */
     @Composable
-    fun state(c: Context): State = current ?: load(c.applicationContext).also { current = it; Motion.still = it.reduceMotion }
+    fun state(c: Context): State = current ?: load(c.applicationContext).also { current = it; Motion.still = it.reduceMotion; Motion.calm = it.calm }
 
     fun get(c: Context): State = current ?: load(c.applicationContext)
 
@@ -64,8 +66,10 @@ object Comfort {
             .putBoolean("zen", next.zen).putBoolean("elder", next.elder).putBoolean("ambient", next.ambientOnCharge)
             .putBoolean("contrast", next.highContrast).putBoolean("easy", next.easyRead)
             .putBoolean("bigtouch", next.bigTouch).putBoolean("awake", next.keepAwake)
-            .putBoolean("warm", next.warmTint).putBoolean("bold", next.boldText).apply()
+            .putBoolean("warm", next.warmTint).putBoolean("bold", next.boldText)
+            .putBoolean("calm", next.calm).apply()
         Motion.still = next.reduceMotion
+        Motion.calm = next.calm
         current = next
     }
 }

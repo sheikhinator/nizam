@@ -92,6 +92,12 @@ object Motion {
     const val long = 420
     /** Reduce motion: set from Comfort. Animations jump straight to their end. */
     @Volatile var still: Boolean = false
+    /**
+     * Calm: the clean, Muse-like default. Set from Comfort. When on, the busiest ornament
+     * (edge-glow, morphing blobs, heavy parallax/mesh) renders quiet or static. The living sky,
+     * companion and warm palette — Atlas's charm — are never touched by this.
+     */
+    @Volatile var calm: Boolean = true
     fun <T> press(): androidx.compose.animation.core.AnimationSpec<T> = if (still) snap() else spring(dampingRatio = 0.6f, stiffness = Spring.StiffnessMedium)
     fun <T> settle(): androidx.compose.animation.core.AnimationSpec<T> = if (still) snap() else spring(dampingRatio = 0.82f, stiffness = Spring.StiffnessMediumLow)
     fun <T> bouncy(): androidx.compose.animation.core.AnimationSpec<T> = if (still) snap() else spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow)
