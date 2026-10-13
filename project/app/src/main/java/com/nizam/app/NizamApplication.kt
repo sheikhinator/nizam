@@ -84,6 +84,9 @@ class NizamApplication : Application() {
         }
         container = AppContainer(this, startupSettings)
         com.nizam.app.net.Router.appContext = applicationContext
+        // Bring the nervous system to life: Pulse (events), Self (situation), World (knowledge),
+        // Reactor (reactions). Additive — every existing feature keeps working untouched.
+        com.nizam.app.core.spine.Spine.start(this)
         // Seed the built-in module specs on first launch.
         kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
             runCatching { container.dynamicRepository.seedIfEmpty() }
