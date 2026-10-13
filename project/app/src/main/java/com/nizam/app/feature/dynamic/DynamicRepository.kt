@@ -90,6 +90,12 @@ class DynamicRepository(private val dao: DynamicDao) {
         ModuleTemplateExchange.encode(spec)
         require(dao.spec(spec.key) == null) { "A module with this key already exists." }
         dao.insertSpec(spec)
+        // Self-authoring: the organism grew a new part of itself. Announce it so the Spine can
+        // remember and log the growth (the Reactor turns this into a World node + a Receipt).
+        com.nizam.app.core.spine.Pulse.emit(
+            "system", "grew", spec.name,
+            org.json.JSONObject().put("key", spec.key).put("name", spec.name)
+        )
     }
 
     suspend fun spec(key: String) = dao.spec(key)

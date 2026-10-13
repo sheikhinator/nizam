@@ -79,6 +79,12 @@ object SpineWiring {
             parts.joinToString(" · ")
         }
 
+        // Self-authoring — how many modules Atlas has grown for this life (self-awareness).
+        Self.contribute("modules") {
+            val custom = container.dynamicRepository.specs().first().count { !it.builtIn }
+            if (custom == 0) "" else "$custom self-made module${if (custom == 1) "" else "s"}"
+        }
+
         wireReactions(container)
     }
 
@@ -118,6 +124,17 @@ object SpineWiring {
                         }
                         Receipts.record(ctx, "goals", "nudge", "Congratulated on: ${signal.summary}", reversible = false)
                     }
+                }
+                "system" -> if (signal.kind == "grew" && signal.summary.isNotBlank()) {
+                    // The organism grew a new part of itself — remember it and log the growth.
+                    World.put(
+                        ctx,
+                        World.Node(
+                            "module:${signal.data.optString("key").ifBlank { signal.summary }}",
+                            "module", signal.summary
+                        )
+                    )
+                    Receipts.record(ctx, "self-authoring", "grew-module", "Atlas added a new module: ${signal.summary}")
                 }
             }
         }
