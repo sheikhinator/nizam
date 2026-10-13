@@ -104,6 +104,8 @@ object SpineWiring {
                             org.json.JSONObject().put("status", "achieved")
                         )
                     )
+                    // Even the organism's own memory-keeping is logged, so nothing it does is silent.
+                    Receipts.record(ctx, "goals", "noted-milestone", "Recorded achieved goal: ${signal.summary}")
                 }
             }
         }
