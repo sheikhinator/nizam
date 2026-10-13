@@ -189,7 +189,8 @@ fun StyleBackground(modifier: Modifier = Modifier) {
     val c = MaterialTheme.colorScheme
     val light = c.background.luminance() > 0.5f
     val a = if (light) 0.10f else 0.22f
-    val t = if (Motion.still || st.bg !in listOf("Aurora", "Waves", "Stars")) null else rememberInfiniteTransition(label = "bg")
+    // Calm keeps the warm themed backdrop but holds it still — quiet, not removed.
+    val t = if (Motion.still || Motion.calm || st.bg !in listOf("Aurora", "Waves", "Stars")) null else rememberInfiniteTransition(label = "bg")
     val phase = t?.animateFloat(0f, 1f, infiniteRepeatable(tween(18000, easing = LinearEasing)), label = "p")?.value ?: 0.25f
     Canvas(modifier.fillMaxSize()) {
         val w = size.width; val h = size.height
