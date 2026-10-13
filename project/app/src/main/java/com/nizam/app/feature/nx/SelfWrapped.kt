@@ -6,6 +6,8 @@ package com.nizam.app.feature.nx
  */
 internal val SELF_WRAPPED: Set<String> = setOf(
     "arcade",
+    "atlaschat",
+    "atlassocial",
     "joytime",
     "chief",
     "flows",
