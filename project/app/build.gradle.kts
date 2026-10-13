@@ -166,6 +166,9 @@ dependencies {
     // On-device LLM for offline answers (the model file is imported by the user, not bundled)
     implementation("com.google.mediapipe:tasks-genai:0.10.24")
     implementation("com.microsoft.onnxruntime:onnxruntime-android:1.20.0")
+    // Atlas Arcade: the libretro front-end. The emulator cores themselves are real native binaries,
+    // fetched by the CI build into jniLibs (see .github/workflows/build-apk.yml) — not bundled here.
+    implementation("com.github.Swordfish90:LibretroDroid:0.14.0")
 
     debugImplementation(composeBom)
     debugImplementation("androidx.compose.ui:ui-tooling")

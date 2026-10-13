@@ -5,6 +5,7 @@ package com.nizam.app.feature.nx
  * in a standard titled, padded, scrollable page, so a new screen can never come out crunched or unscrollable.
  */
 internal val SELF_WRAPPED: Set<String> = setOf(
+    "arcade",
     "joytime",
     "chief",
     "flows",

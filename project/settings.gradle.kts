@@ -10,6 +10,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // LibretroDroid (Atlas Arcade's emulator front-end) publishes only here, not to Maven Central
+        maven { url = uri("https://jitpack.io") }
     }
 }
 
