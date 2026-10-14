@@ -447,7 +447,7 @@ fun NizamApp(container: AppContainer, startOnCurator: Boolean = false, startRout
             }
         },
         topBar = {
-            if (currentRoute != Routes.PLAYER && currentRoute != Routes.BEDSIDE && currentRoute != Routes.IPTV_PLAYER && currentRoute != Routes.AMBIENT && currentRoute != Routes.TODAY) {
+            if (currentRoute != Routes.PLAYER && currentRoute != Routes.BEDSIDE && currentRoute != Routes.IPTV_PLAYER && currentRoute != Routes.AMBIENT && currentRoute != Routes.TODAY && currentRoute != Routes.SPACES) {
                 Row(
                     Modifier
                         .fillMaxWidth()
@@ -490,7 +490,9 @@ fun NizamApp(container: AppContainer, startOnCurator: Boolean = false, startRout
             }
         },
         bottomBar = {
-            if (currentRoute != Routes.PLAYER && currentRoute != Routes.BEDSIDE && currentRoute != Routes.IPTV_PLAYER && currentRoute != Routes.AMBIENT && currentRoute != Routes.TODAY) {
+            // Today is now the plain dashboard, so it needs the standard tab bar. Spaces (SpacesHome)
+            // brings its own nav, so the standard bar is hidden there instead.
+            if (currentRoute != Routes.PLAYER && currentRoute != Routes.BEDSIDE && currentRoute != Routes.IPTV_PLAYER && currentRoute != Routes.AMBIENT && currentRoute != Routes.SPACES) {
                 androidx.compose.foundation.layout.Column(Modifier.padding(start = if (wide) 80.dp else 0.dp)) {
                 com.nizam.app.ui.design.ContextStrip(currentRoute) { r -> navController.navigate(r) { launchSingleTop = true } }
                 if (!wide) FloatingNav(
