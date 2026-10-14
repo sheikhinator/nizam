@@ -145,10 +145,15 @@ fun Modifier.frost(shape: Shape = Radius.card, strength: Float = 0.86f): Modifie
     val c = MaterialTheme.colorScheme
     val light = c.background.luminance() > 0.5f
     val base = if (light) Color.White else c.surfaceBright
-    val body = base.copy(alpha = if (light) strength else strength * 0.9f).compositeOver(c.background.copy(alpha = 0.6f))
-    val shine = GBrush.verticalGradient(listOf(Color.White.copy(alpha = if (light) 0.55f else 0.07f), Color.Transparent))
-    val edge = Color.White.copy(alpha = if (light) 0.7f else 0.09f)
-    this.clip(shape).background(body).background(shine).border(BorderStroke(0.8.dp, edge), shape)
+    // A touch more translucent on dark, so the living light behind shows through the glass.
+    val body = base.copy(alpha = if (light) strength else strength * 0.82f).compositeOver(c.background.copy(alpha = 0.5f))
+    // A clear top sheen and a bright rim read unmistakably as glass — much stronger on dark than before.
+    val shine = GBrush.verticalGradient(listOf(Color.White.copy(alpha = if (light) 0.55f else 0.16f), Color.Transparent), endY = 160f)
+    val edge = GBrush.verticalGradient(listOf(
+        Color.White.copy(alpha = if (light) 0.75f else 0.26f),
+        Color.White.copy(alpha = if (light) 0.25f else 0.06f)
+    ))
+    this.clip(shape).background(body).background(shine).border(BorderStroke(1.dp, edge), shape)
 }
 
 /** Haptics with meaning: a tick for selection, a firmer pulse for success, a double for warnings. */

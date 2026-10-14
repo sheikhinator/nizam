@@ -188,7 +188,7 @@ fun StyleBackground(modifier: Modifier = Modifier) {
     if (st.bg == "Plain") return
     val c = MaterialTheme.colorScheme
     val light = c.background.luminance() > 0.5f
-    val a = if (light) 0.10f else 0.22f
+    val a = if (light) 0.14f else 0.34f
     // Calm keeps the warm themed backdrop but holds it still — quiet, not removed.
     val t = if (Motion.still || Motion.calm || st.bg !in listOf("Aurora", "Waves", "Stars")) null else rememberInfiniteTransition(label = "bg")
     val phase = t?.animateFloat(0f, 1f, infiniteRepeatable(tween(18000, easing = LinearEasing)), label = "p")?.value ?: 0.25f
@@ -201,11 +201,17 @@ fun StyleBackground(modifier: Modifier = Modifier) {
                 drawCircle(Brush.radialGradient(listOf(c.tertiary.copy(alpha = a * 0.9f), Color.Transparent), Offset(w * 0.95f, h * 0.35f), w * 0.8f), w * 0.8f, Offset(w * 0.95f, h * 0.35f))
                 drawCircle(Brush.radialGradient(listOf(c.secondary.copy(alpha = a * 0.6f), Color.Transparent), Offset(w * 0.3f, h * 0.85f), w * 0.9f), w * 0.9f, Offset(w * 0.3f, h * 0.85f))
             }
-            "Aurora" -> repeat(3) { i ->
-                val ph = (phase + i / 3f) * 2 * PI.toFloat()
-                val cx = w * (0.5f + 0.4f * sin(ph + i)); val cy = h * (0.18f + 0.12f * cos(ph * 0.7f + i * 2))
-                val col = listOf(c.primary, c.tertiary, c.secondary)[i].copy(alpha = a * 0.9f)
-                drawCircle(Brush.radialGradient(listOf(col, Color.Transparent), Offset(cx, cy), w * 0.75f), w * 0.75f, Offset(cx, cy))
+            "Aurora" -> {
+                // three poles of living light — the merged palette, in the chosen theme's colours —
+                // drifting across the top and reaching well down the screen so every surface sits in it.
+                listOf(
+                    Triple(0.22f, 0.10f, c.primary), Triple(0.80f, 0.16f, c.tertiary), Triple(0.55f, 0.62f, c.secondary)
+                ).forEachIndexed { i, (bx, by, base) ->
+                    val ph = (phase + i / 3f) * 2 * PI.toFloat()
+                    val cx = w * (bx + 0.16f * sin(ph + i)); val cy = h * (by + 0.08f * cos(ph * 0.7f + i * 2))
+                    val r = w * (0.85f + 0.08f * i)
+                    drawCircle(Brush.radialGradient(listOf(base.copy(alpha = a), Color.Transparent), Offset(cx, cy), r), r, Offset(cx, cy))
+                }
             }
             "Stars" -> {
                 drawRect(Brush.verticalGradient(listOf(c.primary.copy(alpha = a * 0.7f), Color.Transparent), endY = h * 0.6f))
