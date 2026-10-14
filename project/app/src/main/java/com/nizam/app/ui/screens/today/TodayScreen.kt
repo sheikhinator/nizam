@@ -316,7 +316,7 @@ fun TodayScreen(container: AppContainer, onOpen: (String) -> Unit) {
         Spacer(Modifier.height(10.dp))
 
         // ── The one thing that anchors the day: the next prayer ──
-        if (showTodayCard("next-prayer") && (zen || !showTodayCard("bento"))) com.nizam.app.ui.design.Group(Modifier.clickable(role = Role.Button) { onOpen(Routes.PRAYER) }) {
+        if (showTodayCard("next-prayer") && (zen || !showTodayCard("bento"))) com.nizam.app.ui.design.DepthCard(spine = com.nizam.app.ui.design.Hub.Deen.tint(), modifier = Modifier.clickable(role = Role.Button) { onOpen(Routes.PRAYER) }, gauge = prayerStatuses.count { it != "NOT_PRAYED" } / 5f) {
             val nextName = upcoming?.first ?: "Fajr"
             val nextAt = upcoming?.second ?: times.fajr
             val minsLeft = if (upcoming != null) ((upcoming.second - nowHours) * 60).toInt()
@@ -486,7 +486,10 @@ fun TodayScreen(container: AppContainer, onOpen: (String) -> Unit) {
         insights.firstOrNull()?.let { insight ->
             Spacer(Modifier.height(12.dp))
             com.nizam.app.ui.design.Group(Modifier.clickable { onOpen(Routes.INSIGHTS) }) {
-                Text(insight.headline, style = MaterialTheme.typography.titleMedium)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    com.nizam.app.ui.design.PulseDot(com.nizam.app.ui.design.Hub.Memory.tint())
+                    Text(insight.headline, style = MaterialTheme.typography.titleMedium)
+                }
                 Spacer(Modifier.height(4.dp))
                 Text(insight.body, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
