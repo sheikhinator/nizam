@@ -47,7 +47,7 @@ import com.nizam.app.ui.design.liquidGlass
 import com.nizam.app.ui.design.rememberHaptics
 import com.nizam.app.ui.design.wash
 
-data class NavTab(val route: String, val label: String, val icon: ImageVector, val idle: ImageVector)
+data class NavTab(val route: String, val label: String, val icon: ImageVector, val idle: ImageVector, val isOrb: Boolean = false)
 
 /**
  * The tab bar: a floating frosted pill with a soft highlight that glides to the chosen tab.
@@ -100,9 +100,14 @@ fun FloatingNav(items: List<NavTab>, current: String?, onSelect: (String) -> Uni
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
                     ) {
-                        Icon(if (on) tab.icon else tab.idle, tab.label, tint = tint, modifier = Modifier.size(24.dp).scale(lift))
-                        Text(tab.label, style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = if (on) FontWeight.SemiBold else FontWeight.Medium), color = tint, maxLines = 1)
+                        if (tab.isOrb) {
+                            // The Atlas orb, centre stage: tap to chat with Atlas, hold for voice.
+                            com.nizam.app.ui.design.AtlasOrb(com.nizam.app.ui.design.OrbState.Idle, Modifier.scale(lift), diameter = 42.dp)
+                        } else {
+                            Icon(if (on) tab.icon else tab.idle, tab.label, tint = tint, modifier = Modifier.size(24.dp).scale(lift))
+                            Text(tab.label, style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = if (on) FontWeight.SemiBold else FontWeight.Medium), color = tint, maxLines = 1)
+                        }
                     }
                 }
             }

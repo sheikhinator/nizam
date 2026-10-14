@@ -334,7 +334,7 @@ object Routes {
     fun dynamic(key: String) = "module/$key"
 }
 
-private data class BottomItem(val route: String, val label: String, val icon: ImageVector, val idle: ImageVector)
+private data class BottomItem(val route: String, val label: String, val icon: ImageVector, val idle: ImageVector, val isOrb: Boolean = false)
 
 // Outlined when idle, filled when chosen — the only signal the tab bar needs.
 /** Keyboard shortcuts, wired to the live NavController while the app is on screen. */
@@ -358,8 +358,9 @@ object KeyNav {
 
 private val bottomItems = listOf(
     BottomItem(Routes.TODAY, "Today", Icons.Filled.Today, Icons.Outlined.OutlinedToday),
-    BottomItem(Routes.ASK, "Ask", Icons.Filled.AutoAwesome, Icons.Outlined.OutlinedAutoAwesome),
     BottomItem(Routes.MODULES, "Life", Icons.Filled.GridView, Icons.Outlined.OutlinedGridView),
+    // The Atlas orb, centre stage — tap to talk to Atlas, hold for voice. Replaces the Ask tab.
+    BottomItem(Routes.ASSISTANT, "Atlas", Icons.Filled.AutoAwesome, Icons.Outlined.OutlinedAutoAwesome, isOrb = true),
     BottomItem(Routes.ME, "You", Icons.Filled.Person, Icons.Outlined.OutlinedPerson)
 )
 
@@ -496,7 +497,7 @@ fun NizamApp(container: AppContainer, startOnCurator: Boolean = false, startRout
                 androidx.compose.foundation.layout.Column(Modifier.padding(start = if (wide) 80.dp else 0.dp)) {
                 com.nizam.app.ui.design.ContextStrip(currentRoute) { r -> navController.navigate(r) { launchSingleTop = true } }
                 if (!wide) FloatingNav(
-                    items = bottomItems.map { NavTab(it.route, it.label, it.icon, it.idle) },
+                    items = bottomItems.map { NavTab(it.route, it.label, it.icon, it.idle, it.isOrb) },
                     current = currentRoute,
                     onSelect = { route ->
                         if (currentRoute != route) navController.navigate(route) {
@@ -506,7 +507,7 @@ fun NizamApp(container: AppContainer, startOnCurator: Boolean = false, startRout
                         }
                     },
                     // hold the centre tab to talk to Atlas straight away
-                    onHold = { route -> if (route == Routes.ASK) navController.navigate(Routes.VOICE) { launchSingleTop = true } },
+                    onHold = { route -> if (route == Routes.ASSISTANT) navController.navigate(Routes.VOICE) { launchSingleTop = true } },
                     highlightRoute = if (guidedVisible && !guidedPaused) guidedTarget else null
                 )
                 }
