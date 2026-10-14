@@ -100,7 +100,7 @@ object AtlasChat {
             val app = c.applicationContext
             val chat = get(app)
             val e = RoomEngine(RelayPool(), KeystorePersist(app, "atlasrooms.vault"), scope, chat,
-                { t, b, id -> if (!appInForeground) ChatNotifier.show(app, t, b, id) })
+                { t, b, id -> if (!appInForeground) ChatNotifier.show(app, t, b, id) }, mediaDir = File(app.filesDir, "atlas_media"))
             e.load(); e.start(); roomsEng = e
             return e
         }

@@ -53,6 +53,7 @@ class RoomEngine(
     private val scope: CoroutineScope,
     private val chat: ChatEngine,
     private val notify: (title: String, body: String, roomId: String) -> Unit = { _, _, _ -> },
+    private val mediaDir: java.io.File? = null,
 ) {
     val rooms = LinkedHashMap<String, Room>()
     private val messages = HashMap<String, MutableList<Msg>>()
@@ -165,6 +166,47 @@ class RoomEngine(
         return m
     }
 
+    /** Sends a photo, video or file into a channel or group (same encryption model as 1:1 media). */
+    fun sendMedia(roomId: String, bytes: ByteArray, mime: String, name: String, caption: String = "", replyTo: String? = null): Msg? {
+        val r = rooms[roomId] ?: return null
+        val sec = mySecret() ?: return null
+        if (!canPost(r)) return null
+        val m = Msg(newId(), true, System.currentTimeMillis(), caption.trim(), replyTo, 1).apply {
+            senderName = myName(); senderPub = me(); mediaMime = mime; mediaName = name; mediaSize = bytes.size.toLong()
+        }
+        runCatching { mediaDir?.let { d -> d.mkdirs(); java.io.File(d, m.id).apply { writeBytes(bytes) }.also { m.mediaPath = it.absolutePath } } }
+        synchronized(messages) { messages.getOrPut(roomId) { ArrayList() }.add(m) }
+        r.lastTs = m.ts; bump(); saveNow()
+        scope.launch(Dispatchers.Default) {
+            val payload = JSONObject().put("k", "t").put("id", m.id).put("b", caption.trim()).put("re", replyTo ?: "").put("nm", myName())
+                .put("mm", mime).put("mn", name).put("mz", bytes.size)
+            val inline = mime.startsWith("image/") && bytes.size <= 90_000
+            if (inline) payload.put("img", Base64.getEncoder().encodeToString(bytes))
+            else {
+                val enc = runCatching { AtlasMedia.encrypt(bytes) }.getOrNull()
+                val url = enc?.let { AtlasMedia.upload(it.first) }
+                if (enc == null || url == null) return@launch
+                m.mediaUrl = url; m.mediaKey = enc.second; m.mediaIv = enc.third; saveNow()
+                payload.put("mu", url).put("mk", enc.second).put("mv", enc.third)
+            }
+            val content = if (r.private && r.sharedKey != null) seal(r.sharedKey!!, payload.toString()) else payload.toString()
+            val signer = if (r.channel && r.secret != null) r.secret!!.fromHex() else sec
+            net.publish(NostrWire.build(signer, KIND_ROOM, listOf(listOf("e", roomId, "", "root")), content))
+        }
+        return m
+    }
+
+    /** Downloads and decrypts a room blob the first time it's shown. */
+    suspend fun fetchMedia(m: Msg): String? {
+        m.mediaPath?.let { if (java.io.File(it).exists()) return it }
+        val url = m.mediaUrl ?: return null; val k = m.mediaKey ?: return null; val iv = m.mediaIv ?: return null
+        val d = mediaDir ?: return null
+        val cipher = AtlasMedia.download(url) ?: return null
+        val plain = runCatching { AtlasMedia.decrypt(cipher, k, iv) }.getOrNull() ?: return null
+        val f = java.io.File(d.apply { mkdirs() }, m.id).apply { writeBytes(plain) }
+        m.mediaPath = f.absolutePath; bump(); saveNow(); return f.absolutePath
+    }
+
     private suspend fun onEvent(ev: JSONObject) {
         if (!NostrWire.verify(ev)) return
         if (ev.optInt("kind") != KIND_ROOM) return
@@ -184,6 +226,16 @@ class RoomEngine(
         val mine = senderPub == me()
         val m = Msg(msgId, mine, ev.getLong("created_at") * 1000, p.optString("b"), p.optString("re").ifEmpty { null }, 2).apply {
             senderName = p.optString("nm").ifEmpty { if (r.channel) r.name else senderPub.take(8) }; this.senderPub = senderPub
+        }
+        if (p.optString("mm").isNotEmpty()) {
+            m.mediaMime = p.optString("mm"); m.mediaName = p.optString("mn").ifEmpty { null }; m.mediaSize = p.optLong("mz")
+            val img = p.optString("img")
+            if (img.isNotEmpty()) runCatching {
+                val b = Base64.getDecoder().decode(img)
+                mediaDir?.let { d -> d.mkdirs(); java.io.File(d, m.id).apply { writeBytes(b) }.also { fl -> m.mediaPath = fl.absolutePath } }
+            } else {
+                m.mediaUrl = p.optString("mu").ifEmpty { null }; m.mediaKey = p.optString("mk").ifEmpty { null }; m.mediaIv = p.optString("mv").ifEmpty { null }
+            }
         }
         synchronized(messages) { list.add(m) }
         r.lastTs = m.ts

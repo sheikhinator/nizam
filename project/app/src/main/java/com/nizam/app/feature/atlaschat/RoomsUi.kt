@@ -23,7 +23,21 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.net.Uri
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AttachFile
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.InsertDriveFile
+import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Campaign
@@ -121,15 +135,32 @@ fun JoinRoom(engine: RoomEngine, back: () -> Unit, open: (String) -> Unit) {
 
 // ───────────────────────── a channel / group thread ─────────────────────────
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RoomScreen(engine: RoomEngine, roomId: String, rev: Int, back: () -> Unit) {
     val r = engine.rooms[roomId] ?: return
     val clip = LocalClipboardManager.current
+    val ctx = LocalContext.current
+    val scope = rememberCoroutineScope()
     val msgs = remember(rev) { engine.msgs(roomId) }
     val list = rememberLazyListState()
     var text by remember(roomId) { mutableStateOf("") }
-    androidx.compose.runtime.LaunchedEffect(roomId, msgs.size) { engine.markRead(roomId); if (msgs.isNotEmpty()) list.animateScrollToItem(msgs.size - 1) }
+    var attachOpen by remember { mutableStateOf(false) }
+    LaunchedEffect(roomId, msgs.size) { engine.markRead(roomId); if (msgs.isNotEmpty()) list.animateScrollToItem(msgs.size - 1) }
     val canPost = engine.canPost(r)
+    fun sendUri(uri: Uri) {
+        scope.launch(Dispatchers.IO) {
+            runCatching {
+                val cr = ctx.contentResolver
+                var mime = cr.getType(uri) ?: "application/octet-stream"
+                val nm = mediaNameOf(cr, uri)
+                var bytes = cr.openInputStream(uri)?.use { it.readBytes() } ?: return@launch
+                if (mime.startsWith("image/")) downscaleJpeg(bytes)?.let { bytes = it; mime = "image/jpeg" }
+                engine.sendMedia(roomId, bytes, mime, nm, "")
+            }
+        }
+    }
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri -> uri?.let { sendUri(it) } }
 
     Column(Modifier.fillMaxSize().imePadding()) {
         Surface(tonalElevation = 3.dp) {
@@ -149,7 +180,7 @@ fun RoomScreen(engine: RoomEngine, roomId: String, rev: Int, back: () -> Unit) {
                 IconButton(onClick = { clip.setText(AnnotatedString(engine.inviteLink(r))); com.nizam.app.ui.components.Feedback.show("Invite link copied") }) { Icon(Icons.Filled.Link, "Invite link") }
             }
         }
-        LazyColumn(Modifier.weight(1f).fillMaxWidth(), state = list, contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+        LazyColumn(Modifier.weight(1f).fillMaxWidth().background(tgWallpaper()), state = list, contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
             if (msgs.isEmpty()) item {
                 Column(Modifier.fillMaxWidth().padding(top = 60.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(if (r.channel) Icons.Filled.Campaign else Icons.Filled.Groups, null, Modifier.size(40.dp), tint = MaterialTheme.colorScheme.outline)
@@ -158,10 +189,11 @@ fun RoomScreen(engine: RoomEngine, roomId: String, rev: Int, back: () -> Unit) {
                     Text("Share the invite link to bring people in.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 }
             }
-            items(msgs, key = { it.id }) { m -> RoomBubble(m, r.channel) }
+            items(msgs, key = { it.id }) { m -> RoomBubble(m, r.channel, engine) }
         }
         if (canPost) {
             Row(Modifier.fillMaxWidth().navigationBarsPadding().padding(8.dp), verticalAlignment = Alignment.Bottom) {
+                IconButton(onClick = { attachOpen = true }, modifier = Modifier.size(52.dp)) { Icon(Icons.Filled.AttachFile, "Attach", tint = MaterialTheme.colorScheme.primary) }
                 OutlinedTextField(text, { text = it }, placeholder = { Text(if (r.channel) "Post to channel" else "Message") }, shape = RoundedCornerShape(26.dp), maxLines = 5, modifier = Modifier.weight(1f))
                 Spacer(Modifier.width(8.dp))
                 FilledIconButton(onClick = { engine.send(roomId, text); text = "" }, enabled = text.isNotBlank(), modifier = Modifier.size(52.dp)) {
@@ -176,18 +208,39 @@ fun RoomScreen(engine: RoomEngine, roomId: String, rev: Int, back: () -> Unit) {
             }
         }
     }
+
+    if (attachOpen) ModalBottomSheet(onDismissRequest = { attachOpen = false }) {
+        Column(Modifier.padding(bottom = 24.dp)) {
+            RoomSheetItem(Icons.Filled.Image, "Photo") { attachOpen = false; picker.launch("image/*") }
+            RoomSheetItem(Icons.Filled.Videocam, "Video") { attachOpen = false; picker.launch("video/*") }
+            RoomSheetItem(Icons.Filled.InsertDriveFile, "File") { attachOpen = false; picker.launch("*/*") }
+        }
+    }
 }
 
 @Composable
-private fun RoomBubble(m: Msg, channel: Boolean) {
+private fun RoomSheetItem(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, onClick: () -> Unit) {
+    Row(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 24.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+        Icon(icon, null); Spacer(Modifier.width(18.dp)); Text(label)
+    }
+}
+
+@Composable
+private fun RoomBubble(m: Msg, channel: Boolean, engine: RoomEngine) {
     val mine = m.mine
-    val bg = if (mine) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
-    val fg = if (mine) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+    val ctx = LocalContext.current
+    val bg = tgBubble(mine)
+    val fg = tgInk()
     val shape = RoundedCornerShape(18.dp, 18.dp, if (mine) 4.dp else 18.dp, if (mine) 18.dp else 4.dp)
     Column(Modifier.fillMaxWidth(), horizontalAlignment = if (mine) Alignment.End else Alignment.Start) {
         Column(Modifier.widthIn(max = 300.dp).clip(shape).background(bg).padding(horizontal = 12.dp, vertical = 8.dp)) {
             if (!mine && !channel) Text(m.senderName ?: "", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
-            Text(m.text, color = fg, fontSize = 16.sp)
+            if (m.hasMedia) {
+                LaunchedEffect(m.id, m.mediaPath) { if (m.mediaPath == null && m.mediaUrl != null) runCatching { engine.fetchMedia(m) } }
+                MediaBlock(m.mediaMime ?: "", m.mediaPath, m.mediaName, m.mediaSize, fg) { p -> openMedia(ctx, p, m.mediaMime ?: "") }
+                if (m.text.isNotEmpty()) Spacer(Modifier.height(6.dp))
+            }
+            if (m.text.isNotEmpty()) Text(m.text, color = fg, fontSize = 16.sp)
             Text(SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(m.ts)), fontSize = 10.sp, color = fg.copy(alpha = 0.55f), modifier = Modifier.align(Alignment.End).padding(top = 2.dp))
         }
     }

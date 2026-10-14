@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -334,7 +335,7 @@ private fun ChatScreen(engine: ChatEngine, pub: String, rev: Int, back: () -> Un
                 IconButton(onClick = info) { Icon(Icons.Filled.MoreVert, "Chat info") }
             }
         }
-        LazyColumn(Modifier.weight(1f).fillMaxWidth(), state = list, contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+        LazyColumn(Modifier.weight(1f).fillMaxWidth().background(tgWallpaper()), state = list, contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
             if (msgs.isEmpty()) item {
                 Column(Modifier.fillMaxWidth().padding(top = 60.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Filled.Lock, null, Modifier.size(34.dp), tint = MaterialTheme.colorScheme.outline)
@@ -411,7 +412,7 @@ private fun SheetItem(icon: androidx.compose.ui.graphics.vector.ImageVector, lab
 // ───────────────────────── media (photos, video, files) ─────────────────────────
 
 @Composable
-private fun MediaLoading(label: String) {
+internal fun MediaLoading(label: String) {
     Box(Modifier.size(200.dp, 140.dp).clip(RoundedCornerShape(12.dp)).background(Color.Black.copy(alpha = 0.22f)), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
@@ -421,7 +422,7 @@ private fun MediaLoading(label: String) {
 }
 
 @Composable
-private fun VideoThumb(path: String?, onClick: () -> Unit) {
+internal fun VideoThumb(path: String?, onClick: () -> Unit) {
     Box(Modifier.size(220.dp, 140.dp).clip(RoundedCornerShape(12.dp)).background(Color.Black.copy(alpha = 0.35f))
         .clickable(enabled = path != null, onClick = onClick), contentAlignment = Alignment.Center) {
         if (path == null) CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
@@ -430,7 +431,7 @@ private fun VideoThumb(path: String?, onClick: () -> Unit) {
 }
 
 @Composable
-private fun FileChip(name: String, size: Long, fg: Color, onClick: () -> Unit) {
+internal fun FileChip(name: String, size: Long, fg: Color, onClick: () -> Unit) {
     Row(Modifier.clip(RoundedCornerShape(12.dp)).background(fg.copy(alpha = 0.08f)).clickable(onClick = onClick).padding(10.dp),
         verticalAlignment = Alignment.CenterVertically) {
         Icon(Icons.Filled.InsertDriveFile, null, tint = fg)
@@ -442,13 +443,41 @@ private fun FileChip(name: String, size: Long, fg: Color, onClick: () -> Unit) {
     }
 }
 
-private fun humanSize(b: Long): String = when {
+/** Telegram-style messenger palette — bubbles and chat wallpaper, in light and dark. */
+internal object Tg {
+    val outLight = Color(0xFFEFFDDE); val outDark = Color(0xFF2B5278)
+    val inLight = Color(0xFFFFFFFF); val inDark = Color(0xFF182533)
+    val bgLight = Color(0xFFD9E6EF); val bgDark = Color(0xFF0E1621)
+    val textLight = Color(0xFF0F1419); val textDark = Color(0xFFECF2F8)
+    val subLight = Color(0xFF5A6b78); val subDark = Color(0xFF8AA0B2)
+}
+
+@Composable internal fun tgDark(): Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f
+@Composable internal fun tgBubble(mine: Boolean): Color = if (tgDark()) { if (mine) Tg.outDark else Tg.inDark } else { if (mine) Tg.outLight else Tg.inLight }
+@Composable internal fun tgInk(): Color = if (tgDark()) Tg.textDark else Tg.textLight
+@Composable internal fun tgWallpaper(): Color = if (tgDark()) Tg.bgDark else Tg.bgLight
+
+/** Renders a message's media (image, video or file), shared by 1:1 chats and rooms. */
+@Composable
+internal fun MediaBlock(mime: String, path: String?, name: String?, size: Long, fg: Color, onOpen: (String) -> Unit) {
+    when {
+        mime.startsWith("image/") ->
+            if (path != null) AsyncImage(model = java.io.File(path), contentDescription = name,
+                modifier = Modifier.clip(RoundedCornerShape(12.dp)).widthIn(max = 260.dp).clickable { onOpen(path) },
+                contentScale = androidx.compose.ui.layout.ContentScale.FillWidth)
+            else MediaLoading("Photo")
+        mime.startsWith("video/") -> VideoThumb(path) { if (path != null) onOpen(path) }
+        else -> FileChip(name ?: "File", size, fg) { if (path != null) onOpen(path) }
+    }
+}
+
+internal fun humanSize(b: Long): String = when {
     b >= 1_000_000 -> "%.1f MB".format(b / 1_000_000.0)
     b >= 1000 -> "${b / 1000} KB"
     else -> "$b B"
 }
 
-private fun mediaNameOf(cr: android.content.ContentResolver, uri: Uri): String {
+internal fun mediaNameOf(cr: android.content.ContentResolver, uri: Uri): String {
     var name = "file_" + System.currentTimeMillis()
     runCatching {
         cr.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use {
@@ -458,7 +487,7 @@ private fun mediaNameOf(cr: android.content.ContentResolver, uri: Uri): String {
     return name
 }
 
-private fun downscaleJpeg(bytes: ByteArray, max: Int = 1600, quality: Int = 82): ByteArray? = runCatching {
+internal fun downscaleJpeg(bytes: ByteArray, max: Int = 1600, quality: Int = 82): ByteArray? = runCatching {
     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
     BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
     var sample = 1
@@ -469,7 +498,7 @@ private fun downscaleJpeg(bytes: ByteArray, max: Int = 1600, quality: Int = 82):
     out.toByteArray()
 }.getOrNull()
 
-private fun openMedia(ctx: android.content.Context, path: String, mime: String) {
+internal fun openMedia(ctx: android.content.Context, path: String, mime: String) {
     runCatching {
         val uri = androidx.core.content.FileProvider.getUriForFile(ctx, ctx.packageName + ".fileprovider", java.io.File(path))
         ctx.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW)
@@ -483,8 +512,8 @@ private fun openMedia(ctx: android.content.Context, path: String, mime: String) 
 private fun Bubble(m: Msg, quoted: Msg?, me: String, otherName: String, engine: ChatEngine, onLong: () -> Unit) {
     val mine = m.mine
     val ctxB = LocalContext.current
-    val bg = if (mine) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
-    val fg = if (mine) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+    val bg = tgBubble(mine)
+    val fg = tgInk()
     val shape = RoundedCornerShape(18.dp, 18.dp, if (mine) 4.dp else 18.dp, if (mine) 18.dp else 4.dp)
     Column(Modifier.fillMaxWidth(), horizontalAlignment = if (mine) Alignment.End else Alignment.Start) {
         Column(Modifier.widthIn(max = 300.dp).clip(shape).background(bg).combinedClickable(onClick = {}, onLongClick = onLong).padding(horizontal = 12.dp, vertical = 8.dp)) {
