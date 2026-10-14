@@ -135,7 +135,10 @@ fun LifeScreen(container: AppContainer, onOpen: (String) -> Unit) {
             }
         }
         val allowedHubs = com.nizam.app.feature.platform2.Profiles.allowedHubs(ctx)
-        HUB_GROUPS.map { (l, hs) -> l to (if (allowedHubs == null) hs else hs.filter { it in allowedHubs }) }.filter { it.second.isNotEmpty() }.forEach { (label, hubs) ->
+        // De-cluttered: a hub already shown in "Your suites" or the current mode isn't repeated
+        // again in the groups below — each hub appears once, so the browse reads clean.
+        val shownHubs = (mine + modeInfo.hubs).toSet()
+        HUB_GROUPS.map { (l, hs) -> l to hs.filter { it !in shownHubs && (allowedHubs == null || it in allowedHubs) } }.filter { it.second.isNotEmpty() }.forEach { (label, hubs) ->
             item("hubs-h-$label") { SectionHeader(label) }
             hubs.chunked(cols).forEachIndexed { row, chunk ->
                 item("hubs-$label-$row") {
