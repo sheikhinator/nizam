@@ -90,7 +90,11 @@ android {
             excludes += setOf("META-INF/NOTICE.md", "META-INF/LICENSE.md", "META-INF/NOTICE", "META-INF/LICENSE")
         }
         // Emulator cores extract to nativeLibraryDir, where ArcadeSystems.coreReady() looks for them.
-        jniLibs { useLegacyPackaging = true }
+        // Don't strip the prebuilt libretro cores — stripping can corrupt them so they fail to load.
+        jniLibs {
+            useLegacyPackaging = true
+            keepDebugSymbols += "**/*_libretro_android.so"
+        }
     }
 }
 

@@ -216,7 +216,7 @@ fun ArcadePlayer(game: ArcadeGame, backTick: Int, onExit: () -> Unit) {
     }
     LaunchedEffect(menu) { if (menu) owner.pause() else owner.resume() }
     LaunchedEffect(view) {
-        launch { view.getGLRetroErrors().collect { problem = if (it == GLRetroView.ERROR_LOAD_LIBRARY) "This phone couldn't start the ${system.name} emulator." else "This game couldn't be started (error $it)." } }
+        launch { view.getGLRetroErrors().collect { problem = if (it == GLRetroView.ERROR_LOAD_LIBRARY) "Couldn't load the ${system.name} core (code $it). The core file may be missing or incompatible with this phone." else "Couldn't start ${system.name} (error code $it)." } }
         view.getGLRetroEvents().first { it is GLRetroView.GLRetroEvents.SurfaceCreated }
         delay(600)
         if (problem.isEmpty()) started1[0] = true
