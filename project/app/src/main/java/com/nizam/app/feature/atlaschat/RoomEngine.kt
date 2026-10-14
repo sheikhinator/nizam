@@ -28,15 +28,17 @@ class Room(
     var unread: Int = 0,
     var pinned: Boolean = false,
     var muted: Boolean = false,
+    var photoPath: String? = null,  // local avatar file for the room
 ) {
-    val mineToPost get() = !channel || true // display gate handled in UI; owner-only posting enforced there
     fun toJson(): JSONObject = JSONObject().put("id", id).put("sk", secret ?: "").put("nm", name).put("ab", about)
         .put("ch", channel).put("pv", private).put("key", sharedKey ?: "").put("ow", ownerPub)
-        .put("lt", lastTs).put("un", unread).put("pi", pinned).put("mu", muted)
+        .put("lt", lastTs).put("un", unread).put("pi", pinned).put("mu", muted).put("pp", photoPath ?: "")
     companion object {
         fun fromJson(o: JSONObject) = Room(o.getString("id"), o.optString("sk").ifEmpty { null }, o.getString("nm"), o.optString("ab"),
             o.optBoolean("ch"), o.optBoolean("pv"), o.optString("key").ifEmpty { null }, o.optString("ow"),
-            o.optLong("lt"), o.optInt("un"), o.optBoolean("pi"), o.optBoolean("mu"))
+            o.optLong("lt"), o.optInt("un"), o.optBoolean("pi"), o.optBoolean("mu")).apply {
+            photoPath = o.optString("pp").ifEmpty { null }
+        }
     }
 }
 
@@ -145,6 +147,36 @@ class RoomEngine(
     fun markRead(roomId: String) { rooms[roomId]?.let { if (it.unread != 0) { it.unread = 0; saveNow(); bump() } } }
     /** In a channel you can post only if you own it; groups let everyone post. */
     fun canPost(r: Room): Boolean = !r.channel || (r.secret != null && r.ownerPub == me())
+    /** Only the owner (who holds the room key) can change the name or photo. */
+    fun canEdit(r: Room): Boolean = r.secret != null
+
+    /** Owner-only: rename the room and tell everyone. */
+    fun rename(roomId: String, name: String) {
+        val r = rooms[roomId] ?: return
+        if (r.secret == null) return
+        r.name = name.trim().ifEmpty { r.name }; saveNow(); bump()
+        broadcastMeta(r, null)
+    }
+
+    /** Owner-only: set the room's photo (a small avatar) and tell everyone. */
+    fun setPhoto(roomId: String, jpeg: ByteArray) {
+        val r = rooms[roomId] ?: return
+        if (r.secret == null) return
+        runCatching { mediaDir?.let { d -> d.mkdirs(); java.io.File(d, r.id + "_photo").apply { writeBytes(jpeg) }.also { r.photoPath = it.absolutePath } } }
+        saveNow(); bump()
+        broadcastMeta(r, jpeg)
+    }
+
+    private fun broadcastMeta(r: Room, photo: ByteArray?) {
+        val sec = r.secret ?: return
+        scope.launch(Dispatchers.Default) {
+            val payload = JSONObject().put("k", "meta").put("nm", r.name).put("ab", r.about)
+            val ph = photo ?: r.photoPath?.let { runCatching { java.io.File(it).readBytes() }.getOrNull() }
+            if (ph != null && ph.size <= 120_000) payload.put("ph", Base64.getEncoder().encodeToString(ph))
+            val content = if (r.private && r.sharedKey != null) seal(r.sharedKey!!, payload.toString()) else payload.toString()
+            net.publish(NostrWire.build(sec.fromHex(), KIND_ROOM, listOf(listOf("e", r.id, "", "meta")), content))
+        }
+    }
 
     // ── send / receive ──
     fun send(roomId: String, text: String, replyTo: String? = null): Msg? {
@@ -219,6 +251,19 @@ class RoomEngine(
         val raw = ev.getString("content")
         val payloadStr = if (r.private && r.sharedKey != null) open(r.sharedKey!!, raw) ?: return else raw
         val p = runCatching { JSONObject(payloadStr) }.getOrNull() ?: return
+        if (p.optString("k") == "meta") {
+            // name/photo updates are trusted only when signed by the room key (the owner)
+            if (senderPub == roomId) {
+                r.name = p.optString("nm").ifEmpty { r.name }; r.about = p.optString("ab")
+                val ph = p.optString("ph")
+                if (ph.isNotEmpty()) runCatching {
+                    val b = Base64.getDecoder().decode(ph)
+                    mediaDir?.let { d -> d.mkdirs(); java.io.File(d, r.id + "_photo").apply { writeBytes(b) }.also { fl -> r.photoPath = fl.absolutePath } }
+                }
+                saveNow(); bump()
+            }
+            return
+        }
         if (p.optString("k") != "t") return
         val msgId = p.optString("id").ifEmpty { evId }
         val list = synchronized(messages) { messages.getOrPut(roomId) { ArrayList() } }

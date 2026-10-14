@@ -299,7 +299,9 @@ private fun ChatScreen(engine: ChatEngine, pub: String, rev: Int, back: () -> Un
     val scope = rememberCoroutineScope()
     var attachOpen by remember { mutableStateOf(false) }
     var pickImage by remember { mutableStateOf(true) }
-    fun sendUri(uri: Uri) {
+    var pendingUri by remember { mutableStateOf<Uri?>(null) }
+    var caption by remember { mutableStateOf("") }
+    fun sendUri(uri: Uri, cap: String) {
         val replyId = replyTo?.id; replyTo = null
         scope.launch(Dispatchers.IO) {
             runCatching {
@@ -308,11 +310,11 @@ private fun ChatScreen(engine: ChatEngine, pub: String, rev: Int, back: () -> Un
                 val name = mediaNameOf(cr, uri)
                 var bytes = cr.openInputStream(uri)?.use { it.readBytes() } ?: return@launch
                 if (mime.startsWith("image/")) downscaleJpeg(bytes)?.let { bytes = it; mime = "image/jpeg" }
-                engine.sendMedia(pub, bytes, mime, name, "", replyId)
+                engine.sendMedia(pub, bytes, mime, name, cap, replyId)
             }
         }
     }
-    val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri -> uri?.let { sendUri(it) } }
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri -> if (uri != null) { pendingUri = uri; caption = "" } }
 
     Column(Modifier.fillMaxSize().imePadding()) {
         Surface(tonalElevation = 3.dp) {
@@ -384,6 +386,14 @@ private fun ChatScreen(engine: ChatEngine, pub: String, rev: Int, back: () -> Un
             SheetItem(Icons.Filled.InsertDriveFile, "File") { attachOpen = false; pickImage = false; picker.launch("*/*") }
         }
     }
+
+    if (pendingUri != null) AlertDialog(
+        onDismissRequest = { pendingUri = null },
+        title = { Text("Add a caption") },
+        text = { OutlinedTextField(caption, { caption = it }, placeholder = { Text("Caption (optional)") }, modifier = Modifier.fillMaxWidth(), maxLines = 3) },
+        confirmButton = { TextButton(onClick = { pendingUri?.let { sendUri(it, caption.trim()) }; pendingUri = null }) { Text("Send") } },
+        dismissButton = { TextButton(onClick = { pendingUri = null }) { Text("Cancel") } }
+    )
 
     menuFor?.let { m ->
         ModalBottomSheet(onDismissRequest = { menuFor = null }) {

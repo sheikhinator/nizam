@@ -53,7 +53,9 @@ import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilledIconButton
@@ -78,6 +80,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material.icons.filled.Edit
+import coil.compose.AsyncImage
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -155,10 +159,12 @@ fun RoomScreen(engine: RoomEngine, roomId: String, rev: Int, back: () -> Unit) {
     var text by remember(roomId) { mutableStateOf("") }
     var attachOpen by remember { mutableStateOf(false) }
     var menu by remember { mutableStateOf(false) }
+    var pendingUri by remember { mutableStateOf<Uri?>(null) }
+    var caption by remember { mutableStateOf("") }
     val owner = r.secret != null
     LaunchedEffect(roomId, msgs.size) { engine.markRead(roomId); if (msgs.isNotEmpty()) list.animateScrollToItem(msgs.size - 1) }
     val canPost = engine.canPost(r)
-    fun sendUri(uri: Uri) {
+    fun sendUri(uri: Uri, cap: String) {
         scope.launch(Dispatchers.IO) {
             runCatching {
                 val cr = ctx.contentResolver
@@ -166,19 +172,28 @@ fun RoomScreen(engine: RoomEngine, roomId: String, rev: Int, back: () -> Unit) {
                 val nm = mediaNameOf(cr, uri)
                 var bytes = cr.openInputStream(uri)?.use { it.readBytes() } ?: return@launch
                 if (mime.startsWith("image/")) downscaleJpeg(bytes)?.let { bytes = it; mime = "image/jpeg" }
-                engine.sendMedia(roomId, bytes, mime, nm, "")
+                engine.sendMedia(roomId, bytes, mime, nm, cap)
             }
         }
     }
-    val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri -> uri?.let { sendUri(it) } }
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri -> if (uri != null) { pendingUri = uri; caption = "" } }
+    var editOpen by remember { mutableStateOf(false) }
+    var editName by remember(roomId) { mutableStateOf(r.name) }
+    val photoPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) scope.launch(Dispatchers.IO) {
+            runCatching {
+                val bytes = ctx.contentResolver.openInputStream(uri)?.use { it.readBytes() } ?: return@launch
+                val small = downscaleJpeg(bytes, max = 400, quality = 80) ?: bytes
+                engine.setPhoto(roomId, small)
+            }
+        }
+    }
 
     Column(Modifier.fillMaxSize().imePadding()) {
         Surface(tonalElevation = 3.dp) {
             Row(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 4.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = back) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
-                Box(Modifier.size(40.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) {
-                    Icon(if (r.channel) Icons.Filled.Campaign else Icons.Filled.Groups, null, tint = MaterialTheme.colorScheme.primary)
-                }
+                RoomAvatar(r, 40.dp)
                 Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -193,6 +208,8 @@ fun RoomScreen(engine: RoomEngine, roomId: String, rev: Int, back: () -> Unit) {
                     DropdownMenu(menu, { menu = false }) {
                         DropdownMenuItem(text = { Text("Copy invite link") }, leadingIcon = { Icon(Icons.Filled.ContentCopy, null) },
                             onClick = { menu = false; clip.setText(AnnotatedString(engine.inviteLink(r))); com.nizam.app.ui.components.Feedback.show("Invite link copied") })
+                        if (owner) DropdownMenuItem(text = { Text("Edit " + (if (r.channel) "channel" else "group")) }, leadingIcon = { Icon(Icons.Filled.Edit, null) },
+                            onClick = { menu = false; editName = r.name; editOpen = true })
                         DropdownMenuItem(text = { Text(if (r.pinned) "Unpin" else "Pin") }, leadingIcon = { Icon(Icons.Filled.PushPin, null) },
                             onClick = { menu = false; engine.setPinned(roomId, !r.pinned) })
                         DropdownMenuItem(text = { Text(if (r.muted) "Unmute" else "Mute") }, leadingIcon = { Icon(Icons.Filled.NotificationsOff, null) },
@@ -241,6 +258,41 @@ fun RoomScreen(engine: RoomEngine, roomId: String, rev: Int, back: () -> Unit) {
             RoomSheetItem(Icons.Filled.InsertDriveFile, "File") { attachOpen = false; picker.launch("*/*") }
         }
     }
+
+    if (pendingUri != null) AlertDialog(
+        onDismissRequest = { pendingUri = null },
+        title = { Text("Add a caption") },
+        text = { OutlinedTextField(caption, { caption = it }, placeholder = { Text("Caption (optional)") }, modifier = Modifier.fillMaxWidth(), maxLines = 3) },
+        confirmButton = { TextButton(onClick = { pendingUri?.let { sendUri(it, caption.trim()) }; pendingUri = null }) { Text("Send") } },
+        dismissButton = { TextButton(onClick = { pendingUri = null }) { Text("Cancel") } }
+    )
+
+    if (editOpen) AlertDialog(
+        onDismissRequest = { editOpen = false },
+        title = { Text("Edit " + if (r.channel) "channel" else "group") },
+        text = {
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RoomAvatar(r, 56.dp)
+                    Spacer(Modifier.width(12.dp))
+                    TextButton(onClick = { photoPicker.launch("image/*") }) { Text("Change photo") }
+                }
+                Spacer(Modifier.height(12.dp))
+                OutlinedTextField(editName, { editName = it }, label = { Text("Name") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            }
+        },
+        confirmButton = { TextButton(onClick = { engine.rename(roomId, editName); editOpen = false }) { Text("Save") } },
+        dismissButton = { TextButton(onClick = { editOpen = false }) { Text("Cancel") } }
+    )
+}
+
+@Composable
+private fun RoomAvatar(r: Room, size: androidx.compose.ui.unit.Dp) {
+    val path = r.photoPath
+    Box(Modifier.size(size).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) {
+        if (path != null) AsyncImage(model = java.io.File(path), contentDescription = r.name, modifier = Modifier.fillMaxSize(), contentScale = androidx.compose.ui.layout.ContentScale.Crop)
+        else Icon(if (r.channel) Icons.Filled.Campaign else Icons.Filled.Groups, null, tint = MaterialTheme.colorScheme.primary)
+    }
 }
 
 @Composable
@@ -277,9 +329,7 @@ private fun RoomBubble(m: Msg, channel: Boolean, engine: RoomEngine) {
 fun RoomRow(engine: RoomEngine, r: Room, rev: Int, onClick: () -> Unit) {
     val last = remember(rev) { engine.msgs(r.id).lastOrNull() }
     Row(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(48.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) {
-            Icon(if (r.channel) Icons.Filled.Campaign else Icons.Filled.Groups, null, tint = MaterialTheme.colorScheme.primary)
-        }
+        RoomAvatar(r, 48.dp)
         Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
