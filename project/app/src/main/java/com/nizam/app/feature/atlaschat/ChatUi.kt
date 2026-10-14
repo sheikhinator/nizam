@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.asImageBitmap
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
@@ -423,10 +424,24 @@ internal fun MediaLoading(label: String) {
 
 @Composable
 internal fun VideoThumb(path: String?, onClick: () -> Unit) {
+    // Pull the first frame out of the video so it shows a real preview, not just a play button.
+    val frame by androidx.compose.runtime.produceState<android.graphics.Bitmap?>(null, path) {
+        value = if (path == null) null else withContext(Dispatchers.IO) {
+            runCatching {
+                val r = android.media.MediaMetadataRetriever()
+                r.setDataSource(path)
+                val b = r.getFrameAtTime(1_000_000, android.media.MediaMetadataRetriever.OPTION_CLOSEST_SYNC) ?: r.frameAtTime
+                r.release(); b
+            }.getOrNull()
+        }
+    }
     Box(Modifier.size(220.dp, 140.dp).clip(RoundedCornerShape(12.dp)).background(Color.Black.copy(alpha = 0.35f))
         .clickable(enabled = path != null, onClick = onClick), contentAlignment = Alignment.Center) {
+        frame?.let { Image(it.asImageBitmap(), "Video", Modifier.fillMaxSize(), contentScale = androidx.compose.ui.layout.ContentScale.Crop) }
         if (path == null) CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
-        else Icon(Icons.Filled.PlayCircle, "Play", Modifier.size(54.dp), tint = Color.White)
+        else Box(Modifier.size(54.dp).clip(CircleShape).background(Color.Black.copy(alpha = 0.45f)), contentAlignment = Alignment.Center) {
+            Icon(Icons.Filled.PlayCircle, "Play", Modifier.size(50.dp), tint = Color.White)
+        }
     }
 }
 
