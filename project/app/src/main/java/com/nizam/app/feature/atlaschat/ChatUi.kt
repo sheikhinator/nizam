@@ -49,6 +49,12 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
 import com.nizam.app.feature.nx.Share
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import android.net.Uri
+import android.graphics.BitmapFactory
+import android.provider.OpenableColumns
+import java.io.ByteArrayOutputStream
+import coil.compose.AsyncImage
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -262,6 +268,24 @@ private fun ChatScreen(engine: ChatEngine, pub: String, rev: Int, back: () -> Un
     LaunchedEffect(pub, msgs.size) { engine.markRead(pub); if (msgs.isNotEmpty()) list.animateScrollToItem(msgs.size - 1) }
     val byId = remember(msgs) { msgs.associateBy { it.id } }
     val me = engine.myPub.orEmpty()
+    val ctx = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var attachOpen by remember { mutableStateOf(false) }
+    var pickImage by remember { mutableStateOf(true) }
+    fun sendUri(uri: Uri) {
+        val replyId = replyTo?.id; replyTo = null
+        scope.launch(Dispatchers.IO) {
+            runCatching {
+                val cr = ctx.contentResolver
+                var mime = cr.getType(uri) ?: "application/octet-stream"
+                val name = mediaNameOf(cr, uri)
+                var bytes = cr.openInputStream(uri)?.use { it.readBytes() } ?: return@launch
+                if (mime.startsWith("image/")) downscaleJpeg(bytes)?.let { bytes = it; mime = "image/jpeg" }
+                engine.sendMedia(pub, bytes, mime, name, "", replyId)
+            }
+        }
+    }
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri -> uri?.let { sendUri(it) } }
 
     Column(Modifier.fillMaxSize().imePadding()) {
         Surface(tonalElevation = 3.dp) {
@@ -297,7 +321,7 @@ private fun ChatScreen(engine: ChatEngine, pub: String, rev: Int, back: () -> Un
                 val m = msgs[i]
                 if (i == 0 || !sameDay(msgs[i - 1].ts, m.ts)) Text(dayText(m.ts), Modifier.fillMaxWidth().padding(vertical = 10.dp), textAlign = androidx.compose.ui.text.style.TextAlign.Center, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (m.system) Text(m.text, Modifier.fillMaxWidth().padding(vertical = 6.dp), textAlign = androidx.compose.ui.text.style.TextAlign.Center, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                else Bubble(m, byId[m.reply], me, c.name, onLong = { menuFor = m })
+                else Bubble(m, byId[m.reply], me, c.name, engine, onLong = { menuFor = m })
             }
         }
         AnimatedVisibility(replyTo != null || editing != null) {
@@ -313,6 +337,9 @@ private fun ChatScreen(engine: ChatEngine, pub: String, rev: Int, back: () -> Un
             }
         }
         Row(Modifier.fillMaxWidth().navigationBarsPadding().padding(8.dp), verticalAlignment = Alignment.Bottom) {
+            IconButton(onClick = { attachOpen = true }, modifier = Modifier.size(52.dp)) {
+                Icon(Icons.Filled.AttachFile, "Attach", tint = MaterialTheme.colorScheme.primary)
+            }
             OutlinedTextField(text, { text = it }, placeholder = { Text("Message") }, shape = RoundedCornerShape(26.dp), maxLines = 5, modifier = Modifier.weight(1f))
             Spacer(Modifier.width(8.dp))
             FilledIconButton(onClick = {
@@ -320,6 +347,14 @@ private fun ChatScreen(engine: ChatEngine, pub: String, rev: Int, back: () -> Un
                 if (e != null) { engine.edit(pub, e.id, text); editing = null } else { engine.send(pub, text, replyTo?.id); replyTo = null }
                 text = ""
             }, enabled = text.isNotBlank(), modifier = Modifier.size(52.dp)) { Icon(if (editing != null) Icons.Filled.Check else Icons.AutoMirrored.Filled.Send, "Send") }
+        }
+    }
+
+    if (attachOpen) ModalBottomSheet(onDismissRequest = { attachOpen = false }) {
+        Column(Modifier.padding(bottom = 24.dp)) {
+            SheetItem(Icons.Filled.Image, "Photo") { attachOpen = false; pickImage = true; picker.launch("image/*") }
+            SheetItem(Icons.Filled.Videocam, "Video") { attachOpen = false; pickImage = false; picker.launch("video/*") }
+            SheetItem(Icons.Filled.InsertDriveFile, "File") { attachOpen = false; pickImage = false; picker.launch("*/*") }
         }
     }
 
@@ -348,10 +383,81 @@ private fun SheetItem(icon: androidx.compose.ui.graphics.vector.ImageVector, lab
     }
 }
 
+// ───────────────────────── media (photos, video, files) ─────────────────────────
+
+@Composable
+private fun MediaLoading(label: String) {
+    Box(Modifier.size(200.dp, 140.dp).clip(RoundedCornerShape(12.dp)).background(Color.Black.copy(alpha = 0.22f)), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
+            Spacer(Modifier.height(6.dp)); Text(label, style = MaterialTheme.typography.labelSmall)
+        }
+    }
+}
+
+@Composable
+private fun VideoThumb(path: String?, onClick: () -> Unit) {
+    Box(Modifier.size(220.dp, 140.dp).clip(RoundedCornerShape(12.dp)).background(Color.Black.copy(alpha = 0.35f))
+        .clickable(enabled = path != null, onClick = onClick), contentAlignment = Alignment.Center) {
+        if (path == null) CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
+        else Icon(Icons.Filled.PlayCircle, "Play", Modifier.size(54.dp), tint = Color.White)
+    }
+}
+
+@Composable
+private fun FileChip(name: String, size: Long, fg: Color, onClick: () -> Unit) {
+    Row(Modifier.clip(RoundedCornerShape(12.dp)).background(fg.copy(alpha = 0.08f)).clickable(onClick = onClick).padding(10.dp),
+        verticalAlignment = Alignment.CenterVertically) {
+        Icon(Icons.Filled.InsertDriveFile, null, tint = fg)
+        Spacer(Modifier.width(10.dp))
+        Column {
+            Text(name, maxLines = 1, overflow = TextOverflow.Ellipsis, color = fg, style = MaterialTheme.typography.bodyMedium)
+            if (size > 0) Text(humanSize(size), color = fg.copy(alpha = 0.6f), style = MaterialTheme.typography.labelSmall)
+        }
+    }
+}
+
+private fun humanSize(b: Long): String = when {
+    b >= 1_000_000 -> "%.1f MB".format(b / 1_000_000.0)
+    b >= 1000 -> "${b / 1000} KB"
+    else -> "$b B"
+}
+
+private fun mediaNameOf(cr: android.content.ContentResolver, uri: Uri): String {
+    var name = "file_" + System.currentTimeMillis()
+    runCatching {
+        cr.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use {
+            if (it.moveToFirst()) { val i = it.getColumnIndex(OpenableColumns.DISPLAY_NAME); if (i >= 0) it.getString(i)?.let { n -> name = n } }
+        }
+    }
+    return name
+}
+
+private fun downscaleJpeg(bytes: ByteArray, max: Int = 1600, quality: Int = 82): ByteArray? = runCatching {
+    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+    var sample = 1
+    while (bounds.outWidth / sample > max || bounds.outHeight / sample > max) sample *= 2
+    val bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, BitmapFactory.Options().apply { inSampleSize = sample }) ?: return null
+    val out = ByteArrayOutputStream()
+    bmp.compress(Bitmap.CompressFormat.JPEG, quality, out)
+    out.toByteArray()
+}.getOrNull()
+
+private fun openMedia(ctx: android.content.Context, path: String, mime: String) {
+    runCatching {
+        val uri = androidx.core.content.FileProvider.getUriForFile(ctx, ctx.packageName + ".fileprovider", java.io.File(path))
+        ctx.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW)
+            .setDataAndType(uri, mime.ifEmpty { "*/*" })
+            .addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION))
+    }
+}
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun Bubble(m: Msg, quoted: Msg?, me: String, otherName: String, onLong: () -> Unit) {
+private fun Bubble(m: Msg, quoted: Msg?, me: String, otherName: String, engine: ChatEngine, onLong: () -> Unit) {
     val mine = m.mine
+    val ctxB = LocalContext.current
     val bg = if (mine) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
     val fg = if (mine) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
     val shape = RoundedCornerShape(18.dp, 18.dp, if (mine) 4.dp else 18.dp, if (mine) 18.dp else 4.dp)
@@ -364,8 +470,23 @@ private fun Bubble(m: Msg, quoted: Msg?, me: String, otherName: String, onLong: 
                     Text(if (quoted.deleted) "Message deleted" else quoted.text, maxLines = 2, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodySmall, color = fg)
                 }
             }
+            if (m.hasMedia && !m.deleted) {
+                LaunchedEffect(m.id, m.mediaPath) { if (m.mediaPath == null && m.mediaUrl != null) runCatching { engine.fetchMedia(m) } }
+                val path = m.mediaPath
+                val mime = m.mediaMime ?: ""
+                when {
+                    mime.startsWith("image/") ->
+                        if (path != null) AsyncImage(model = java.io.File(path), contentDescription = m.mediaName,
+                            modifier = Modifier.clip(RoundedCornerShape(12.dp)).widthIn(max = 260.dp).clickable { openMedia(ctxB, path, mime) },
+                            contentScale = androidx.compose.ui.layout.ContentScale.FillWidth)
+                        else MediaLoading("Photo")
+                    mime.startsWith("video/") -> VideoThumb(path) { if (path != null) openMedia(ctxB, path, mime) }
+                    else -> FileChip(m.mediaName ?: "File", m.mediaSize, fg) { if (path != null) openMedia(ctxB, path, mime) }
+                }
+                if (m.text.isNotEmpty()) Spacer(Modifier.height(6.dp))
+            }
             if (m.deleted) Text("🚫 This message was deleted", color = fg.copy(alpha = 0.6f), fontStyle = androidx.compose.ui.text.font.FontStyle.Italic)
-            else Text(m.text, color = fg, fontSize = 16.sp)
+            else if (m.text.isNotEmpty()) Text(m.text, color = fg, fontSize = 16.sp)
             Row(Modifier.align(Alignment.End).padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                 if (m.expiresAt > 0) { Icon(Icons.Filled.Timer, null, Modifier.size(11.dp), tint = fg.copy(alpha = 0.55f)); Spacer(Modifier.width(3.dp)) }
                 if (m.edited && !m.deleted) Text("edited  ", fontSize = 10.sp, color = fg.copy(alpha = 0.55f))

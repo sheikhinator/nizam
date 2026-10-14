@@ -83,7 +83,8 @@ object AtlasChat {
         synchronized(this) {
             inst?.let { return it }
             val app = c.applicationContext
-            val e = ChatEngine(RelayPool(), KeystorePersist(app), scope, { t, b, p -> if (!appInForeground || p.isEmpty()) ChatNotifier.show(app, t, b, p.ifEmpty { "request" }) })
+            val e = ChatEngine(RelayPool(), KeystorePersist(app), scope, { t, b, p -> if (!appInForeground || p.isEmpty()) ChatNotifier.show(app, t, b, p.ifEmpty { "request" }) },
+                mediaDir = File(app.filesDir, "atlas_media"))
             e.load(); e.start()
             inst = e
             if (e.registered) schedulePolling(app)

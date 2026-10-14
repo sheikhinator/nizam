@@ -18,16 +18,27 @@ class Msg(
     var edited: Boolean = false, var deleted: Boolean = false, var expiresAt: Long = 0L,
     val reactions: MutableMap<String, String> = LinkedHashMap(), var outbox: String? = null,
     var system: Boolean = false,
+    // Media: a photo, video or file. mediaPath is the local decrypted copy; mediaUrl/Key/Iv let the
+    // recipient fetch and decrypt an uploaded blob when it isn't inline. mediaMime drives how it renders.
+    var mediaMime: String? = null, var mediaName: String? = null, var mediaSize: Long = 0L,
+    var mediaPath: String? = null, var mediaUrl: String? = null, var mediaKey: String? = null, var mediaIv: String? = null,
 ) {
+    val hasMedia get() = mediaPath != null || mediaUrl != null
     fun toJson() = JSONObject().put("id", id).put("m", mine).put("ts", ts).put("t", text).put("re", reply ?: "").put("st", status)
         .put("ed", edited).put("de", deleted).put("ex", expiresAt).put("sy", system).put("ob", outbox ?: "")
+        .put("mm", mediaMime ?: "").put("mn", mediaName ?: "").put("mz", mediaSize).put("mp", mediaPath ?: "")
+        .put("mu", mediaUrl ?: "").put("mk", mediaKey ?: "").put("mv", mediaIv ?: "")
         .put("rx", JSONObject().also { o -> reactions.forEach { (k, v) -> o.put(k, v) } })
     companion object {
         fun fromJson(o: JSONObject): Msg {
             val rx = LinkedHashMap<String, String>()
             o.optJSONObject("rx")?.let { r -> r.keys().forEach { k -> rx[k] = r.getString(k) } }
             return Msg(o.getString("id"), o.getBoolean("m"), o.getLong("ts"), o.optString("t"), o.optString("re").ifEmpty { null }, o.optInt("st"),
-                o.optBoolean("ed"), o.optBoolean("de"), o.optLong("ex"), rx, o.optString("ob").ifEmpty { null }, o.optBoolean("sy"))
+                o.optBoolean("ed"), o.optBoolean("de"), o.optLong("ex"), rx, o.optString("ob").ifEmpty { null }, o.optBoolean("sy")).apply {
+                mediaMime = o.optString("mm").ifEmpty { null }; mediaName = o.optString("mn").ifEmpty { null }; mediaSize = o.optLong("mz")
+                mediaPath = o.optString("mp").ifEmpty { null }; mediaUrl = o.optString("mu").ifEmpty { null }
+                mediaKey = o.optString("mk").ifEmpty { null }; mediaIv = o.optString("mv").ifEmpty { null }
+            }
         }
     }
 }
@@ -80,6 +91,7 @@ class ChatEngine(
     private val scope: CoroutineScope,
     private val notify: (title: String, body: String, pub: String) -> Unit = { _, _, _ -> },
     private val now: () -> Long = { System.currentTimeMillis() },
+    private val mediaDir: java.io.File? = null,
 ) {
     var identity: Identity? = null; private set
     var myName: String = ""; private set
@@ -311,6 +323,43 @@ class ChatEngine(
         return m
     }
 
+    /** Sends a photo, video or file. Small photos ride inline (fully E2E); larger media is encrypted and uploaded. */
+    fun sendMedia(pub: String, bytes: ByteArray, mime: String, name: String, caption: String = "", replyTo: String? = null): Msg? {
+        val c = contacts[pub] ?: return null
+        val m = Msg(newId(), true, now(), caption.trim(), replyTo, 0, expiresAt = if (c.disappear > 0) now() + c.disappear * 1000L else 0L)
+        m.mediaMime = mime; m.mediaName = name; m.mediaSize = bytes.size.toLong()
+        runCatching { mediaDir?.let { d -> d.mkdirs(); java.io.File(d, m.id).apply { writeBytes(bytes) }.also { m.mediaPath = it.absolutePath } } }
+        synchronized(messages) { messages.getOrPut(pub) { ArrayList() }.add(m) }
+        c.lastTs = m.ts; bump(); save()
+        val inline = mime.startsWith("image/") && bytes.size <= 90_000
+        enqueue {
+            val p = payloadBase("t").put("id", m.id).put("b", caption.trim()).put("re", replyTo ?: "").put("x", c.disappear)
+                .put("mm", mime).put("mn", name).put("mz", bytes.size)
+            if (inline) {
+                p.put("img", Base64.getEncoder().encodeToString(bytes))
+            } else {
+                val enc = runCatching { AtlasMedia.encrypt(bytes) }.getOrNull()
+                val url = enc?.let { AtlasMedia.upload(it.first) }
+                if (enc == null || url == null) { m.outbox = null; bump(); save(); return@enqueue }
+                m.mediaUrl = url; m.mediaKey = enc.second; m.mediaIv = enc.third; save()
+                p.put("mu", url).put("mk", enc.second).put("mv", enc.third)
+            }
+            dispatch(c, p, m)
+        }
+        return m
+    }
+
+    /** Downloads and decrypts an uploaded blob the first time it's shown; returns the local path. */
+    suspend fun fetchMedia(m: Msg): String? {
+        m.mediaPath?.let { if (java.io.File(it).exists()) return it }
+        val url = m.mediaUrl ?: return null; val k = m.mediaKey ?: return null; val iv = m.mediaIv ?: return null
+        val d = mediaDir ?: return null
+        val cipher = AtlasMedia.download(url) ?: return null
+        val plain = runCatching { AtlasMedia.decrypt(cipher, k, iv) }.getOrNull() ?: return null
+        val f = java.io.File(d.apply { mkdirs() }, m.id).apply { writeBytes(plain) }
+        m.mediaPath = f.absolutePath; bump(); save(); return f.absolutePath
+    }
+
     private suspend fun dispatch(c: Contact, payload: JSONObject, m: Msg? = null) {
         val evJson = transmit(c, payload)
         if (evJson == null) { m?.let { it.outbox = null; bump() }; return }
@@ -470,6 +519,16 @@ class ChatEngine(
                 val x = p.optInt("x")
                 val m = Msg(id, false, p.optLong("ts", now()).coerceAtMost(now()), p.optString("b"), p.optString("re").ifEmpty { null }, if (openChat == pub) 3 else 2,
                     expiresAt = if (x > 0) now() + x * 1000L else 0L)
+                if (p.optString("mm").isNotEmpty()) {
+                    m.mediaMime = p.optString("mm"); m.mediaName = p.optString("mn").ifEmpty { null }; m.mediaSize = p.optLong("mz")
+                    val img = p.optString("img")
+                    if (img.isNotEmpty()) runCatching {
+                        val bytes = Base64.getDecoder().decode(img)
+                        mediaDir?.let { d -> d.mkdirs(); java.io.File(d, m.id).apply { writeBytes(bytes) }.also { fl -> m.mediaPath = fl.absolutePath } }
+                    } else {
+                        m.mediaUrl = p.optString("mu").ifEmpty { null }; m.mediaKey = p.optString("mk").ifEmpty { null }; m.mediaIv = p.optString("mv").ifEmpty { null }
+                    }
+                }
                 synchronized(messages) { list.add(m) }
                 c.lastTs = now()
                 if (p.optString("nm").isNotEmpty() && c.name == c.pub.take(8)) c.name = p.optString("nm")
@@ -477,7 +536,7 @@ class ChatEngine(
                 else {
                     c.unread++
                     enqueue { dispatch(c, payloadBase("r").put("s", "d").put("ids", JSONArray(listOf(id)))) }
-                    if (!c.muted) notify(c.name, m.text.take(120), pub)
+                    if (!c.muted) notify(c.name, (if (m.text.isNotEmpty()) m.text else if (m.hasMedia) "📎 " + (m.mediaName ?: "Media") else "").take(120), pub)
                 }
             }
             "r" -> {
