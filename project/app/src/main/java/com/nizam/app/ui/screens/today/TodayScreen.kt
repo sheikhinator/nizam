@@ -231,10 +231,7 @@ fun TodayScreen(container: AppContainer, onOpen: (String) -> Unit) {
                 androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Outlined.CalendarMonth,
                     contentDescription = "Past days", tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            androidx.compose.material3.IconButton(onClick = { onOpen(Routes.SETTINGS) }) {
-                androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Outlined.Settings,
-                    contentDescription = "Settings", tint = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
+            // Settings lives under You (and via Profile) — kept off the home header to keep it calm.
             Box(Modifier.clickable(role = Role.Button) { onOpen(Routes.PROFILE) }) {
                 com.nizam.app.feature.profile.FaceAvatar(com.nizam.app.feature.profile.Face.decode(faceCode), 40.dp)
             }
