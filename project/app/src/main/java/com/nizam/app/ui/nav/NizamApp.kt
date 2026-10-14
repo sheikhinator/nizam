@@ -187,6 +187,7 @@ object Routes {
     const val TOWN = "town"
     const val ME = "me"
     const val ATLAS_ACTIVITY = "atlas_activity"
+    const val SPACES = "spaces"
     const val APPS = "apps"
     const val PODCASTS = "podcasts"
     const val PODCAST_SHOW = "podcastshow"
@@ -537,6 +538,11 @@ fun NizamApp(container: AppContainer, startOnCurator: Boolean = false, startRout
             modifier = Modifier.padding(innerPadding).padding(start = if (wide && currentRoute != Routes.PLAYER && currentRoute != Routes.IPTV_PLAYER && currentRoute != Routes.BEDSIDE && currentRoute != Routes.AMBIENT) 80.dp else 0.dp)
         ) {
             composable(Routes.TODAY) {
+                // Today is now the clean dashboard (your now), not the swipe-spaces browser —
+                // so Today and Life no longer both browse the hubs. Spaces is kept at Routes.SPACES.
+                com.nizam.app.ui.screens.today.TodayScreen(container) { navController.navigate(it) }
+            }
+            composable(Routes.SPACES) {
                 com.nizam.app.ui.screens.spaces.SpacesHome(container) { navController.navigate(it) }
             }
             composable(Routes.MODULES) {

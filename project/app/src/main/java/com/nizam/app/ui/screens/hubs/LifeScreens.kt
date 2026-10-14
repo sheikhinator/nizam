@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.SearchOff
@@ -82,6 +83,8 @@ fun LifeScreen(container: AppContainer, onOpen: (String) -> Unit) {
 
     AtlasScreen(title = "Life", subtitle = "Everything in Atlas, sorted into hubs. Search finds any tool.",
         actions = {
+            Icon(Icons.Outlined.Apps, "Spaces view", tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.clip(Radius.chip).pressable { onOpen(Routes.SPACES) }.padding(Space.s))
             Icon(Icons.Outlined.Tune, "Arrange modules", tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.clip(Radius.chip).pressable { onOpen(Routes.MODULES_CLASSIC) }.padding(Space.s))
         }) {
