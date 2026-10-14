@@ -92,6 +92,20 @@ object AtlasChat {
         }
     }
 
+    @Volatile private var roomsEng: RoomEngine? = null
+    fun rooms(c: Context): RoomEngine {
+        roomsEng?.let { return it }
+        synchronized(this) {
+            roomsEng?.let { return it }
+            val app = c.applicationContext
+            val chat = get(app)
+            val e = RoomEngine(RelayPool(), KeystorePersist(app, "atlasrooms.vault"), scope, chat,
+                { t, b, id -> if (!appInForeground) ChatNotifier.show(app, t, b, id) })
+            e.load(); e.start(); roomsEng = e
+            return e
+        }
+    }
+
     @Volatile private var social: SocialEngine? = null
     fun social(c: Context): SocialEngine {
         social?.let { return it }

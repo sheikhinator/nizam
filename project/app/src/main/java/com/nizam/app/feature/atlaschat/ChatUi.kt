@@ -27,6 +27,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Reply
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -101,8 +103,11 @@ fun AtlasMessengerScreen() {
     val ctx = LocalContext.current
     val engine = remember { AtlasChat.get(ctx) }
     val rev by engine.rev.collectAsState()
+    val roomEngine = remember { AtlasChat.rooms(ctx) }
+    val roomRev by roomEngine.rev.collectAsState()
     var page by rememberSaveable { mutableStateOf("home") }
     var chatPub by rememberSaveable { mutableStateOf("") }
+    var roomId by rememberSaveable { mutableStateOf("") }
     DisposableEffect(Unit) { AtlasChat.appInForeground = true; onDispose { AtlasChat.appInForeground = false; engine.openChat = null } }
     val notifPerm = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
     LaunchedEffect(engine.registered) {
@@ -118,7 +123,11 @@ fun AtlasMessengerScreen() {
             page == "me" -> { BackHandler { page = "home" }; MyId(engine) { page = "home" } }
             page == "requests" -> { BackHandler { page = "home" }; Requests(engine, rev, { page = "home" }) { pub -> chatPub = pub; page = "chat"; engine.openChat = pub } }
             page == "settings" -> { BackHandler { page = "home" }; SettingsPage(engine, rev) { page = "home" } }
-            else -> Home(engine, rev, { page = it }) { pub -> chatPub = pub; page = "chat"; engine.openChat = pub }
+            page == "newgroup" -> { BackHandler { page = "home" }; NewRoom(roomEngine, channel = false, { page = "home" }) { id -> roomId = id; roomEngine.openRoom = id; page = "room" } }
+            page == "newchannel" -> { BackHandler { page = "home" }; NewRoom(roomEngine, channel = true, { page = "home" }) { id -> roomId = id; roomEngine.openRoom = id; page = "room" } }
+            page == "joinroom" -> { BackHandler { page = "home" }; JoinRoom(roomEngine, { page = "home" }) { id -> roomId = id; roomEngine.openRoom = id; page = "room" } }
+            page == "room" && roomEngine.rooms[roomId] != null -> { BackHandler { page = "home"; roomEngine.openRoom = null }; RoomScreen(roomEngine, roomId, roomRev) { page = "home"; roomEngine.openRoom = null } }
+            else -> Home(engine, rev, roomEngine, roomRev, { page = it }, { pub -> chatPub = pub; page = "chat"; engine.openChat = pub }) { id -> roomId = id; roomEngine.openRoom = id; page = "room" }
         }
       } }
     }
@@ -168,15 +177,30 @@ private fun relayStatus(engine: ChatEngine, @Suppress("UNUSED_PARAMETER") rev: I
 // ───────────────────────── chat list ─────────────────────────
 
 @Composable
-private fun Home(engine: ChatEngine, rev: Int, go: (String) -> Unit, openChat: (String) -> Unit) {
+private fun Home(engine: ChatEngine, rev: Int, roomEngine: RoomEngine, roomRev: Int, go: (String) -> Unit, openChat: (String) -> Unit, openRoom: (String) -> Unit) {
     var q by remember { mutableStateOf("") }
+    var fabMenu by remember { mutableStateOf(false) }
     val list = remember(rev, q) {
         engine.contacts.values.filter { q.isBlank() || it.name.contains(q, true) }
             .sortedWith(compareByDescending<Contact> { it.pinned }.thenByDescending { it.lastTs })
     }
+    val rooms = remember(roomRev, q) {
+        roomEngine.rooms.values.filter { q.isBlank() || it.name.contains(q, true) }
+            .sortedWith(compareByDescending<Room> { it.pinned }.thenByDescending { it.lastTs })
+    }
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        floatingActionButton = { ExtendedFloatingActionButton(onClick = { go("new") }, icon = { Icon(Icons.Filled.Edit, null) }, text = { Text("New chat") }) },
+        floatingActionButton = {
+            Box {
+                ExtendedFloatingActionButton(onClick = { fabMenu = true }, icon = { Icon(Icons.Filled.Edit, null) }, text = { Text("New") })
+                DropdownMenu(fabMenu, { fabMenu = false }) {
+                    DropdownMenuItem(text = { Text("New group") }, leadingIcon = { Icon(Icons.Filled.Groups, null) }, onClick = { fabMenu = false; go("newgroup") })
+                    DropdownMenuItem(text = { Text("New channel") }, leadingIcon = { Icon(Icons.Filled.Campaign, null) }, onClick = { fabMenu = false; go("newchannel") })
+                    DropdownMenuItem(text = { Text("New chat") }, leadingIcon = { Icon(Icons.Filled.PersonAdd, null) }, onClick = { fabMenu = false; go("new") })
+                    DropdownMenuItem(text = { Text("Join by link") }, leadingIcon = { Icon(Icons.Filled.Link, null) }, onClick = { fabMenu = false; go("joinroom") })
+                }
+            }
+        },
     ) { pad ->
         Column(Modifier.padding(pad).fillMaxSize()) {
             Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 8.dp, top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -199,14 +223,15 @@ private fun Home(engine: ChatEngine, rev: Int, go: (String) -> Unit, openChat: (
                     }
                 }
             }
-            if (list.isEmpty()) {
+            if (list.isEmpty() && rooms.isEmpty()) {
                 Column(Modifier.fillMaxSize().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                     Icon(Icons.Filled.Forum, null, Modifier.size(64.dp), tint = MaterialTheme.colorScheme.outline)
                     Spacer(Modifier.height(12.dp))
                     Text(if (q.isBlank()) "No chats yet" else "Nothing found", style = MaterialTheme.typography.titleMedium)
-                    if (q.isBlank()) Text("Tap New chat and enter a friend's username, or share your Atlas ID with them.", textAlign = androidx.compose.ui.text.style.TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (q.isBlank()) Text("Tap New to start a chat, create a group or channel, or join one with a link.", textAlign = androidx.compose.ui.text.style.TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             } else LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 96.dp)) {
+                items(rooms, key = { "room_" + it.id }) { r -> RoomRow(roomEngine, r, roomRev) { openRoom(r.id) } }
                 items(list, key = { it.pub }) { c -> ChatRow(engine, c, rev) { openChat(c.pub) } }
             }
         }

@@ -22,12 +22,15 @@ class Msg(
     // recipient fetch and decrypt an uploaded blob when it isn't inline. mediaMime drives how it renders.
     var mediaMime: String? = null, var mediaName: String? = null, var mediaSize: Long = 0L,
     var mediaPath: String? = null, var mediaUrl: String? = null, var mediaKey: String? = null, var mediaIv: String? = null,
+    // In a group/channel, who sent it (1:1 chats leave these null and rely on `mine`).
+    var senderName: String? = null, var senderPub: String? = null,
 ) {
     val hasMedia get() = mediaPath != null || mediaUrl != null
     fun toJson() = JSONObject().put("id", id).put("m", mine).put("ts", ts).put("t", text).put("re", reply ?: "").put("st", status)
         .put("ed", edited).put("de", deleted).put("ex", expiresAt).put("sy", system).put("ob", outbox ?: "")
         .put("mm", mediaMime ?: "").put("mn", mediaName ?: "").put("mz", mediaSize).put("mp", mediaPath ?: "")
         .put("mu", mediaUrl ?: "").put("mk", mediaKey ?: "").put("mv", mediaIv ?: "")
+        .put("sn", senderName ?: "").put("sp", senderPub ?: "")
         .put("rx", JSONObject().also { o -> reactions.forEach { (k, v) -> o.put(k, v) } })
     companion object {
         fun fromJson(o: JSONObject): Msg {
@@ -38,6 +41,7 @@ class Msg(
                 mediaMime = o.optString("mm").ifEmpty { null }; mediaName = o.optString("mn").ifEmpty { null }; mediaSize = o.optLong("mz")
                 mediaPath = o.optString("mp").ifEmpty { null }; mediaUrl = o.optString("mu").ifEmpty { null }
                 mediaKey = o.optString("mk").ifEmpty { null }; mediaIv = o.optString("mv").ifEmpty { null }
+                senderName = o.optString("sn").ifEmpty { null }; senderPub = o.optString("sp").ifEmpty { null }
             }
         }
     }
