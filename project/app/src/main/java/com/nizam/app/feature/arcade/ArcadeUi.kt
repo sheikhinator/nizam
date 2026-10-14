@@ -57,10 +57,8 @@ private fun Cover(g: ArcadeGame, modifier: Modifier = Modifier) {
 @Composable
 fun AtlasArcadeScreen() {
     val ctx = LocalContext.current
-    var playing by remember { mutableStateOf<ArcadeGame?>(null) }
     var tab by rememberSaveable { mutableIntStateOf(0) }
     var rev by remember { mutableIntStateOf(0) }
-    val p = playing
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
             Row(Modifier.fillMaxWidth().padding(start = 20.dp, top = 12.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -89,13 +87,12 @@ fun AtlasArcadeScreen() {
                 }
             }
             when (tab) {
-                0 -> Library(rev, { rev++ }) { playing = it }
+                0 -> Library(rev, { rev++ }) { ArcadePlayerActivity.launch(ctx, it.id) }
                 1 -> Store { rev++ }
                 else -> EmulatorsPage(ctx)
             }
         }
     }
-    if (p != null) ArcadePlayerWindow(p) { playing = null; rev++ }
 }
 
 @OptIn(ExperimentalFoundationApi::class)

@@ -76,6 +76,13 @@ class NizamApplication : Application() {
         super.onCreate()
         com.nizam.app.feature.safe.CrashGuard.install(this)
         com.nizam.app.ui.design.Density.load(this)
+        // The emulator runs in a separate ":arcade" process. It only needs game files, not the whole
+        // app (database, nervous system, seeding) — and running that twice could clash. Skip it there.
+        val procName = if (android.os.Build.VERSION.SDK_INT >= 28) android.app.Application.getProcessName() else runCatching {
+            val pid = android.os.Process.myPid()
+            (getSystemService(ACTIVITY_SERVICE) as android.app.ActivityManager).runningAppProcesses?.firstOrNull { it.pid == pid }?.processName
+        }.getOrNull()
+        if (procName != null && procName != packageName) return
         val startupSettings = SettingsRepository(this)
         // Restore staged files before Room or DataStore opens them.
         runBlocking(Dispatchers.IO) {

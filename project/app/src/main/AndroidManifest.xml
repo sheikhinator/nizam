@@ -81,6 +81,13 @@
         android:theme="@style/Theme.Atlas">
 
         <activity
+            android:name="com.nizam.app.feature.arcade.ArcadePlayerActivity"
+            android:exported="false"
+            android:process=":arcade"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
+            android:theme="@style/Theme.Atlas" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:supportsPictureInPicture="true"

@@ -89,6 +89,8 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
             excludes += setOf("META-INF/NOTICE.md", "META-INF/LICENSE.md", "META-INF/NOTICE", "META-INF/LICENSE")
         }
+        // Emulator cores extract to nativeLibraryDir, where ArcadeSystems.coreReady() looks for them.
+        jniLibs { useLegacyPackaging = true }
     }
 }
 
