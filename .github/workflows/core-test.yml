@@ -62,7 +62,7 @@ jobs:
           working-directory: project
           script: |
             adb logcat -c || true
-            gradle :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nizam.app.ArcadeCoreLoadTest --no-daemon --stacktrace || true
-            echo "=================== CORETEST LOG ==================="
-            adb logcat -d -s CORETEST:V | sed 's/^.*CORETEST *: //'
-            echo "=================== END CORETEST ==================="
+            gradle :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.package=com.nizam.app --no-daemon --stacktrace || true
+            echo "=================== CORETEST + GAMETEST LOG ==================="
+            adb logcat -d -s CORETEST:V GAMETEST:V | sed -E 's/^.*(CORETEST|GAMETEST) *: //'
+            echo "=================== END LOG ==================="
