@@ -45,6 +45,14 @@ import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Public
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.PushPin
+import androidx.compose.material.icons.filled.NotificationsOff
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Card
@@ -146,6 +154,8 @@ fun RoomScreen(engine: RoomEngine, roomId: String, rev: Int, back: () -> Unit) {
     val list = rememberLazyListState()
     var text by remember(roomId) { mutableStateOf("") }
     var attachOpen by remember { mutableStateOf(false) }
+    var menu by remember { mutableStateOf(false) }
+    val owner = r.secret != null
     LaunchedEffect(roomId, msgs.size) { engine.markRead(roomId); if (msgs.isNotEmpty()) list.animateScrollToItem(msgs.size - 1) }
     val canPost = engine.canPost(r)
     fun sendUri(uri: Uri) {
@@ -178,6 +188,21 @@ fun RoomScreen(engine: RoomEngine, roomId: String, rev: Int, back: () -> Unit) {
                     Text((if (r.channel) "Channel" else "Group") + " · " + (if (r.private) "Private" else "Public"), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 IconButton(onClick = { clip.setText(AnnotatedString(engine.inviteLink(r))); com.nizam.app.ui.components.Feedback.show("Invite link copied") }) { Icon(Icons.Filled.Link, "Invite link") }
+                Box {
+                    IconButton(onClick = { menu = true }) { Icon(Icons.Filled.MoreVert, "More") }
+                    DropdownMenu(menu, { menu = false }) {
+                        DropdownMenuItem(text = { Text("Copy invite link") }, leadingIcon = { Icon(Icons.Filled.ContentCopy, null) },
+                            onClick = { menu = false; clip.setText(AnnotatedString(engine.inviteLink(r))); com.nizam.app.ui.components.Feedback.show("Invite link copied") })
+                        DropdownMenuItem(text = { Text(if (r.pinned) "Unpin" else "Pin") }, leadingIcon = { Icon(Icons.Filled.PushPin, null) },
+                            onClick = { menu = false; engine.setPinned(roomId, !r.pinned) })
+                        DropdownMenuItem(text = { Text(if (r.muted) "Unmute" else "Mute") }, leadingIcon = { Icon(Icons.Filled.NotificationsOff, null) },
+                            onClick = { menu = false; engine.setMuted(roomId, !r.muted) })
+                        DropdownMenuItem(
+                            text = { Text(if (owner) "Delete " + (if (r.channel) "channel" else "group") else "Leave", color = MaterialTheme.colorScheme.error) },
+                            leadingIcon = { Icon(if (owner) Icons.Filled.Delete else Icons.Filled.Logout, null, tint = MaterialTheme.colorScheme.error) },
+                            onClick = { menu = false; engine.leave(roomId); back() })
+                    }
+                }
             }
         }
         LazyColumn(Modifier.weight(1f).fillMaxWidth().background(tgWallpaper()), state = list, contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
