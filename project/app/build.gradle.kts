@@ -20,8 +20,8 @@ android {
         targetSdk = 34
         versionCode = 11
         versionName = "1.0-beta"
-        // 64-bit ARM for real phones; x86_64 so the game cores can be load-tested on a CI emulator.
-        ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
+        // 64-bit ARM only for the shipped app (real phones). The CI core test adds x86_64 itself.
+        ndk { abiFilters += listOf("arm64-v8a") }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // Your own API keys, built in: taken from the build machine's environment (GitHub Actions secrets
         // named ATLAS_KEY_…), never written in the source. Empty when a secret isn't set.
