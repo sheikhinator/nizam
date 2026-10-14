@@ -94,6 +94,33 @@ jobs:
         with:
           gradle-version: '8.14.3'
 
+      - name: Fetch arcade emulator cores
+        continue-on-error: true
+        working-directory: ${{ steps.proj.outputs.dir }}
+        run: |
+          set +e
+          ABI=arm64-v8a
+          DEST="app/src/main/jniLibs/$ABI"
+          mkdir -p "$DEST"
+          BASE="https://buildbot.libretro.com/nightly/android/latest/$ABI"
+          # appCoreName:buildbotCoreName (ArcadeCore.kt expects lib<appCoreName>_libretro_android.so)
+          CORES="gambatte:gambatte mgba:mgba fceumm:fceumm snes9x:snes9x mupen64plus_next_gles3:mupen64plus_next melonds:melonds pcsx_rearmed:pcsx_rearmed ppsspp:ppsspp genesis_plus_gx:genesis_plus_gx mednafen_pce_fast:mednafen_pce_fast stella:stella handy:handy mednafen_wswan:mednafen_wswan"
+          ok=0; miss=0
+          for PAIR in $CORES; do
+            APP="${PAIR%%:*}"; BB="${PAIR##*:}"
+            URL="$BASE/${BB}_libretro_android.so.zip"
+            OUT="$DEST/lib${APP}_libretro_android.so"
+            for try in 1 2 3; do
+              curl -fsSL "$URL" -o /tmp/core.zip && unzip -o -q /tmp/core.zip -d /tmp/core \
+                && mv "/tmp/core/${BB}_libretro_android.so" "$OUT" && break
+              sleep 3
+            done
+            if [ -f "$OUT" ]; then echo "OK   $APP"; ok=$((ok+1)); else echo "MISS $APP ($URL)"; miss=$((miss+1)); fi
+            rm -rf /tmp/core /tmp/core.zip
+          done
+          echo "cores: $ok ready, $miss missing"
+          ls -la "$DEST" || true
+
       - name: Build debug APK
         working-directory: ${{ steps.proj.outputs.dir }}
         env:
