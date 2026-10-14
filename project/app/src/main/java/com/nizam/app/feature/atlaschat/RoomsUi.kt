@@ -1,7 +1,9 @@
 package com.nizam.app.feature.atlaschat
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +22,10 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items as gridItems
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -31,6 +37,8 @@ import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.InsertDriveFile
 import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.runtime.LaunchedEffect
@@ -38,6 +46,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Campaign
@@ -81,6 +91,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Close
 import coil.compose.AsyncImage
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -179,6 +190,10 @@ fun RoomScreen(engine: RoomEngine, roomId: String, rev: Int, back: () -> Unit) {
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri -> if (uri != null) { pendingUri = uri; caption = "" } }
     var editOpen by remember { mutableStateOf(false) }
     var editName by remember(roomId) { mutableStateOf(r.name) }
+    var msgMenu by remember { mutableStateOf<Msg?>(null) }
+    var editingMsg by remember { mutableStateOf<Msg?>(null) }
+    var editMsgText by remember { mutableStateOf("") }
+    var showMedia by remember { mutableStateOf(false) }
     val photoPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) scope.launch(Dispatchers.IO) {
             runCatching {
@@ -210,7 +225,9 @@ fun RoomScreen(engine: RoomEngine, roomId: String, rev: Int, back: () -> Unit) {
                             onClick = { menu = false; clip.setText(AnnotatedString(engine.inviteLink(r))); com.nizam.app.ui.components.Feedback.show("Invite link copied") })
                         if (owner) DropdownMenuItem(text = { Text("Edit " + (if (r.channel) "channel" else "group")) }, leadingIcon = { Icon(Icons.Filled.Edit, null) },
                             onClick = { menu = false; editName = r.name; editOpen = true })
-                        DropdownMenuItem(text = { Text(if (r.pinned) "Unpin" else "Pin") }, leadingIcon = { Icon(Icons.Filled.PushPin, null) },
+                        DropdownMenuItem(text = { Text("Shared media") }, leadingIcon = { Icon(Icons.Filled.Image, null) },
+                            onClick = { menu = false; showMedia = true })
+                        DropdownMenuItem(text = { Text(if (r.pinned) "Unpin chat" else "Pin chat") }, leadingIcon = { Icon(Icons.Filled.PushPin, null) },
                             onClick = { menu = false; engine.setPinned(roomId, !r.pinned) })
                         DropdownMenuItem(text = { Text(if (r.muted) "Unmute" else "Mute") }, leadingIcon = { Icon(Icons.Filled.NotificationsOff, null) },
                             onClick = { menu = false; engine.setMuted(roomId, !r.muted) })
@@ -219,6 +236,19 @@ fun RoomScreen(engine: RoomEngine, roomId: String, rev: Int, back: () -> Unit) {
                             leadingIcon = { Icon(if (owner) Icons.Filled.Delete else Icons.Filled.Logout, null, tint = MaterialTheme.colorScheme.error) },
                             onClick = { menu = false; engine.leave(roomId); back() })
                     }
+                }
+            }
+        }
+        r.pinnedId?.let { pid ->
+            engine.msgById(roomId, pid)?.takeIf { !it.deleted }?.let { pm ->
+                Row(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(horizontal = 14.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Filled.PushPin, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
+                    Spacer(Modifier.width(10.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text("Pinned message", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                        Text(if (pm.text.isNotEmpty()) pm.text else "📎 " + (pm.mediaName ?: "Media"), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodySmall)
+                    }
+                    if (owner) IconButton(onClick = { engine.pinMsg(roomId, null) }) { Icon(Icons.Filled.Close, "Unpin", Modifier.size(18.dp)) }
                 }
             }
         }
@@ -231,7 +261,7 @@ fun RoomScreen(engine: RoomEngine, roomId: String, rev: Int, back: () -> Unit) {
                     Text("Share the invite link to bring people in.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 }
             }
-            items(msgs, key = { it.id }) { m -> RoomBubble(m, r.channel, engine) }
+            items(msgs, key = { it.id }) { m -> RoomBubble(m, r.channel, engine) { msgMenu = m } }
         }
         if (canPost) {
             Row(Modifier.fillMaxWidth().navigationBarsPadding().padding(8.dp), verticalAlignment = Alignment.Bottom) {
@@ -284,6 +314,95 @@ fun RoomScreen(engine: RoomEngine, roomId: String, rev: Int, back: () -> Unit) {
         confirmButton = { TextButton(onClick = { engine.rename(roomId, editName); editOpen = false }) { Text("Save") } },
         dismissButton = { TextButton(onClick = { editOpen = false }) { Text("Cancel") } }
     )
+
+    msgMenu?.let { m ->
+        ModalBottomSheet(onDismissRequest = { msgMenu = null }) {
+            Column(Modifier.padding(bottom = 24.dp)) {
+                if (m.text.isNotEmpty()) RoomSheetItem(Icons.Filled.ContentCopy, "Copy") { clip.setText(AnnotatedString(m.text)); msgMenu = null }
+                if (m.mine && !m.hasMedia && m.text.isNotEmpty()) RoomSheetItem(Icons.Filled.Edit, "Edit") { editingMsg = m; editMsgText = m.text; msgMenu = null }
+                if (owner) RoomSheetItem(Icons.Filled.PushPin, if (r.pinnedId == m.id) "Unpin" else "Pin") { engine.pinMsg(roomId, if (r.pinnedId == m.id) null else m.id); msgMenu = null }
+                if (m.mine || owner) RoomSheetItem(Icons.Filled.Delete, "Delete for everyone") { engine.deleteMsg(roomId, m.id); msgMenu = null }
+            }
+        }
+    }
+
+    if (editingMsg != null) AlertDialog(
+        onDismissRequest = { editingMsg = null },
+        title = { Text("Edit message") },
+        text = { OutlinedTextField(editMsgText, { editMsgText = it }, modifier = Modifier.fillMaxWidth(), maxLines = 5) },
+        confirmButton = { TextButton(onClick = { editingMsg?.let { engine.editMsg(roomId, it.id, editMsgText) }; editingMsg = null }) { Text("Save") } },
+        dismissButton = { TextButton(onClick = { editingMsg = null }) { Text("Cancel") } }
+    )
+
+    if (showMedia) {
+        val media = remember(rev) { msgs.filter { it.hasMedia && !it.deleted }.reversed() }
+        Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+            Column(Modifier.fillMaxSize()) {
+                RoomTopBar("Shared media", back = { showMedia = false })
+                if (media.isEmpty()) {
+                    Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                        Icon(Icons.Filled.Image, null, Modifier.size(40.dp), tint = MaterialTheme.colorScheme.outline)
+                        Spacer(Modifier.height(10.dp))
+                        Text("No media yet", style = MaterialTheme.typography.titleMedium)
+                        Text("Photos, videos and files shared here will show up in this gallery.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(horizontal = 40.dp, vertical = 4.dp))
+                    }
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(3),
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(2.dp),
+                        horizontalArrangement = Arrangement.spacedBy(2.dp),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        gridItems(media, key = { it.id }) { m ->
+                            LaunchedEffect(m.id, m.mediaPath) { if (m.mediaPath == null && m.mediaUrl != null) runCatching { engine.fetchMedia(m) } }
+                            MediaGridCell(m) {
+                                m.mediaPath?.let { openMedia(ctx, it, m.mediaMime ?: "") }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MediaGridCell(m: Msg, onClick: () -> Unit) {
+    val mime = m.mediaMime ?: ""
+    val path = m.mediaPath
+    Box(
+        Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(4.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        when {
+            path == null -> CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
+            mime.startsWith("image/") -> AsyncImage(model = java.io.File(path), contentDescription = m.mediaName, modifier = Modifier.fillMaxSize(), contentScale = androidx.compose.ui.layout.ContentScale.Crop)
+            mime.startsWith("video/") -> {
+                val frame by androidx.compose.runtime.produceState<android.graphics.Bitmap?>(null, path) {
+                    value = withContext(Dispatchers.IO) {
+                        runCatching {
+                            val r = android.media.MediaMetadataRetriever()
+                            r.setDataSource(path)
+                            val b = r.getFrameAtTime(1_000_000, android.media.MediaMetadataRetriever.OPTION_CLOSEST_SYNC) ?: r.frameAtTime
+                            r.release(); b
+                        }.getOrNull()
+                    }
+                }
+                Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.35f)), contentAlignment = Alignment.Center) {
+                    frame?.let { androidx.compose.foundation.Image(it.asImageBitmap(), m.mediaName, Modifier.fillMaxSize(), contentScale = androidx.compose.ui.layout.ContentScale.Crop) }
+                    Icon(Icons.Filled.PlayCircle, null, Modifier.size(34.dp), tint = Color.White.copy(alpha = 0.9f))
+                }
+            }
+            else -> Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.padding(6.dp)) {
+                Icon(Icons.Filled.InsertDriveFile, null, Modifier.size(28.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(4.dp))
+                Text(m.mediaName ?: "File", style = MaterialTheme.typography.labelSmall, maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+            }
+        }
+    }
 }
 
 @Composable
@@ -302,23 +421,32 @@ private fun RoomSheetItem(icon: androidx.compose.ui.graphics.vector.ImageVector,
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun RoomBubble(m: Msg, channel: Boolean, engine: RoomEngine) {
+private fun RoomBubble(m: Msg, channel: Boolean, engine: RoomEngine, onLong: () -> Unit) {
     val mine = m.mine
     val ctx = LocalContext.current
     val bg = tgBubble(mine)
     val fg = tgInk()
     val shape = RoundedCornerShape(18.dp, 18.dp, if (mine) 4.dp else 18.dp, if (mine) 18.dp else 4.dp)
     Column(Modifier.fillMaxWidth(), horizontalAlignment = if (mine) Alignment.End else Alignment.Start) {
-        Column(Modifier.widthIn(max = 300.dp).clip(shape).background(bg).padding(horizontal = 12.dp, vertical = 8.dp)) {
-            if (!mine && !channel) Text(m.senderName ?: "", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
-            if (m.hasMedia) {
-                LaunchedEffect(m.id, m.mediaPath) { if (m.mediaPath == null && m.mediaUrl != null) runCatching { engine.fetchMedia(m) } }
-                MediaBlock(m.mediaMime ?: "", m.mediaPath, m.mediaName, m.mediaSize, fg) { p -> openMedia(ctx, p, m.mediaMime ?: "") }
-                if (m.text.isNotEmpty()) Spacer(Modifier.height(6.dp))
+        Column(Modifier.widthIn(max = 300.dp).clip(shape).background(bg)
+            .combinedClickable(onClick = {}, onLongClick = { if (!m.deleted) onLong() })
+            .padding(horizontal = 12.dp, vertical = 8.dp)) {
+            if (!mine && !channel && !m.deleted) Text(m.senderName ?: "", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+            if (m.deleted) Text("🚫 This message was deleted", color = fg.copy(alpha = 0.6f), fontStyle = androidx.compose.ui.text.font.FontStyle.Italic)
+            else {
+                if (m.hasMedia) {
+                    LaunchedEffect(m.id, m.mediaPath) { if (m.mediaPath == null && m.mediaUrl != null) runCatching { engine.fetchMedia(m) } }
+                    MediaBlock(m.mediaMime ?: "", m.mediaPath, m.mediaName, m.mediaSize, fg) { p -> openMedia(ctx, p, m.mediaMime ?: "") }
+                    if (m.text.isNotEmpty()) Spacer(Modifier.height(6.dp))
+                }
+                if (m.text.isNotEmpty()) Text(m.text, color = fg, fontSize = 16.sp)
             }
-            if (m.text.isNotEmpty()) Text(m.text, color = fg, fontSize = 16.sp)
-            Text(SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(m.ts)), fontSize = 10.sp, color = fg.copy(alpha = 0.55f), modifier = Modifier.align(Alignment.End).padding(top = 2.dp))
+            Row(Modifier.align(Alignment.End).padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+                if (m.edited && !m.deleted) Text("edited  ", fontSize = 9.sp, color = fg.copy(alpha = 0.55f))
+                Text(SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(m.ts)), fontSize = 10.sp, color = fg.copy(alpha = 0.55f))
+            }
         }
     }
 }

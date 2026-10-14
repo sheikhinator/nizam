@@ -29,15 +29,16 @@ class Room(
     var pinned: Boolean = false,
     var muted: Boolean = false,
     var photoPath: String? = null,  // local avatar file for the room
+    var pinnedId: String? = null,   // id of the pinned message, shown as a banner
 ) {
     fun toJson(): JSONObject = JSONObject().put("id", id).put("sk", secret ?: "").put("nm", name).put("ab", about)
         .put("ch", channel).put("pv", private).put("key", sharedKey ?: "").put("ow", ownerPub)
-        .put("lt", lastTs).put("un", unread).put("pi", pinned).put("mu", muted).put("pp", photoPath ?: "")
+        .put("lt", lastTs).put("un", unread).put("pi", pinned).put("mu", muted).put("pp", photoPath ?: "").put("pm", pinnedId ?: "")
     companion object {
         fun fromJson(o: JSONObject) = Room(o.getString("id"), o.optString("sk").ifEmpty { null }, o.getString("nm"), o.optString("ab"),
             o.optBoolean("ch"), o.optBoolean("pv"), o.optString("key").ifEmpty { null }, o.optString("ow"),
             o.optLong("lt"), o.optInt("un"), o.optBoolean("pi"), o.optBoolean("mu")).apply {
-            photoPath = o.optString("pp").ifEmpty { null }
+            photoPath = o.optString("pp").ifEmpty { null }; pinnedId = o.optString("pm").ifEmpty { null }
         }
     }
 }
@@ -167,6 +168,52 @@ class RoomEngine(
         broadcastMeta(r, jpeg)
     }
 
+    fun msgById(roomId: String, id: String): Msg? = synchronized(messages) { messages[roomId]?.firstOrNull { it.id == id } }
+
+    /** Delete a message for everyone. Allowed for the author, or the room owner. */
+    fun deleteMsg(roomId: String, msgId: String) {
+        val r = rooms[roomId] ?: return
+        val m = msgById(roomId, msgId) ?: return
+        val amOwner = r.secret != null
+        if (!(m.mine || amOwner)) return
+        m.deleted = true; m.text = ""; bump(); saveNow()
+        val signWithRoom = r.channel || !m.mine
+        val sk = if (signWithRoom) r.secret?.fromHex() else mySecret()
+        if (sk == null) return
+        scope.launch(Dispatchers.Default) {
+            val payload = JSONObject().put("k", "d").put("t", msgId)
+            val content = if (r.private && r.sharedKey != null) seal(r.sharedKey!!, payload.toString()) else payload.toString()
+            net.publish(NostrWire.build(sk, KIND_ROOM, listOf(listOf("e", roomId, "", "root")), content))
+        }
+    }
+
+    /** Edit your own message. */
+    fun editMsg(roomId: String, msgId: String, text: String) {
+        val r = rooms[roomId] ?: return
+        val m = msgById(roomId, msgId) ?: return
+        if (!m.mine) return
+        val t = text.trim(); if (t.isEmpty() || t == m.text) return
+        m.text = t; m.edited = true; bump(); saveNow()
+        val sk = (if (r.channel) r.secret?.fromHex() else mySecret()) ?: return
+        scope.launch(Dispatchers.Default) {
+            val payload = JSONObject().put("k", "e").put("t", msgId).put("b", t)
+            val content = if (r.private && r.sharedKey != null) seal(r.sharedKey!!, payload.toString()) else payload.toString()
+            net.publish(NostrWire.build(sk, KIND_ROOM, listOf(listOf("e", roomId, "", "root")), content))
+        }
+    }
+
+    /** Owner-only: pin (or unpin) a message; shown as a banner for everyone. */
+    fun pinMsg(roomId: String, msgId: String?) {
+        val r = rooms[roomId] ?: return
+        if (r.secret == null) return
+        r.pinnedId = msgId; saveNow(); bump()
+        scope.launch(Dispatchers.Default) {
+            val payload = JSONObject().put("k", "pin").put("t", msgId ?: "")
+            val content = if (r.private && r.sharedKey != null) seal(r.sharedKey!!, payload.toString()) else payload.toString()
+            net.publish(NostrWire.build(r.secret!!.fromHex(), KIND_ROOM, listOf(listOf("e", roomId, "", "root")), content))
+        }
+    }
+
     private fun broadcastMeta(r: Room, photo: ByteArray?) {
         val sec = r.secret ?: return
         scope.launch(Dispatchers.Default) {
@@ -263,6 +310,22 @@ class RoomEngine(
                 saveNow(); bump()
             }
             return
+        }
+        when (p.optString("k")) {
+            "d" -> {
+                val m = synchronized(messages) { messages[roomId]?.firstOrNull { it.id == p.optString("t") } }
+                if (m != null && (senderPub == m.senderPub || senderPub == roomId)) { m.deleted = true; m.text = ""; bump(); saveNow() }
+                return
+            }
+            "e" -> {
+                val m = synchronized(messages) { messages[roomId]?.firstOrNull { it.id == p.optString("t") } }
+                if (m != null && !m.deleted && (senderPub == m.senderPub || senderPub == roomId)) { m.text = p.optString("b"); m.edited = true; bump(); saveNow() }
+                return
+            }
+            "pin" -> {
+                if (senderPub == roomId) { r.pinnedId = p.optString("t").ifEmpty { null }; bump(); saveNow() }
+                return
+            }
         }
         if (p.optString("k") != "t") return
         val msgId = p.optString("id").ifEmpty { evId }

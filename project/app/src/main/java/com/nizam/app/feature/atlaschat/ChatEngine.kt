@@ -157,6 +157,38 @@ class ChatEngine(
         persist.save(o.toString().toByteArray(Charsets.UTF_8))
     }
 
+    /** A full account backup (your key, username, contacts and chats) as text to save before uninstalling. */
+    fun exportAccount(): String? {
+        val id = identity ?: return null
+        val o = JSONObject().put("v", 1).put("name", myName).put("claim", claimedAt).put("rr", sendReadReceipts)
+        o.put("id", id.toJson()).put("relays", JSONArray(relays))
+        synchronized(messages) {
+            o.put("contacts", JSONArray(contacts.values.map { it.toJson() }))
+            o.put("msgs", JSONObject().also { m -> messages.forEach { (k, v) -> m.put(k, JSONArray(v.map { it.toJson() })) } })
+        }
+        return o.toString()
+    }
+
+    /** Restores an account from a backup string: your username, key, contacts and chats all come back. */
+    fun importAccount(backup: String): Boolean = runCatching {
+        val o = JSONObject(backup.trim())
+        val id = o.optJSONObject("id")?.let { Identity.fromJson(it) } ?: return false
+        identity = id
+        myName = o.optString("name")
+        claimedAt = o.optLong("claim", now())
+        sendReadReceipts = o.optBoolean("rr", true)
+        o.optJSONArray("relays")?.let { a -> relays = (0 until a.length()).map { a.getString(it) }.toMutableList().ifEmpty { DEFAULT_RELAYS.toMutableList() } }
+        synchronized(messages) {
+            contacts.clear(); messages.clear()
+            o.optJSONArray("contacts")?.let { a -> for (i in 0 until a.length()) Contact.fromJson(a.getJSONObject(i)).let { contacts[it.pub] = it } }
+            o.optJSONObject("msgs")?.let { m -> m.keys().forEach { k -> val a = m.getJSONArray(k); messages[k] = (0 until a.length()).map { Msg.fromJson(a.getJSONObject(it)) }.toMutableList() } }
+        }
+        saveNow()
+        if (registered) { net.start(relays); publishBundle(); subscribeInbox() }
+        bump()
+        true
+    }.getOrDefault(false)
+
     // ───────────────────────── connecting ─────────────────────────
     fun start() {
         if (started) return

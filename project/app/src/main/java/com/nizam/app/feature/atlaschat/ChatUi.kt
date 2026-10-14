@@ -169,8 +169,33 @@ private fun Onboarding(engine: ChatEngine) {
         Button(onClick = { busy = true; scope.launch { err = engine.register(name).orEmpty(); busy = false } }, enabled = name.length >= 3 && !busy, modifier = Modifier.fillMaxWidth().height(52.dp)) {
             if (busy) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary) else Text("Create my Atlas ID")
         }
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(8.dp))
+        var restoreOpen by remember { mutableStateOf(false) }
+        TextButton(onClick = { restoreOpen = true }) { Text("I already have an account — restore from backup") }
+        Spacer(Modifier.height(6.dp))
         Text(if (engine.relays.isEmpty()) "" else "Network: ${relayStatus(engine, rev)}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+        if (restoreOpen) {
+            var code by remember { mutableStateOf("") }
+            var restoring by remember { mutableStateOf(false) }
+            var restoreErr by remember { mutableStateOf("") }
+            AlertDialog(
+                onDismissRequest = { restoreOpen = false },
+                title = { Text("Restore account") },
+                text = {
+                    Column {
+                        Text("Paste the backup code you saved from Messenger settings.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        OutlinedTextField(code, { code = it; restoreErr = "" }, placeholder = { Text("Backup code") }, isError = restoreErr.isNotEmpty(),
+                            supportingText = { if (restoreErr.isNotEmpty()) Text(restoreErr) }, modifier = Modifier.fillMaxWidth().padding(top = 8.dp), minLines = 3, maxLines = 6,
+                            textStyle = androidx.compose.ui.text.TextStyle(fontFamily = FontFamily.Monospace, fontSize = 11.sp))
+                    }
+                },
+                confirmButton = { TextButton(enabled = code.isNotBlank() && !restoring, onClick = {
+                    restoring = true; if (engine.importAccount(code)) restoreOpen = false else { restoreErr = "That backup code doesn't look right."; restoring = false }
+                }) { Text("Restore") } },
+                dismissButton = { TextButton(onClick = { restoreOpen = false }) { Text("Cancel") } }
+            )
+        }
     }
 }
 
@@ -775,10 +800,20 @@ private fun SettingsPage(engine: ChatEngine, rev: Int, back: () -> Unit) {
                 }
             }
         }
+        val clip = LocalClipboardManager.current
+        var backupShown by remember { mutableStateOf(false) }
+        var backupCode by remember { mutableStateOf("") }
         Card(Modifier.fillMaxWidth().padding(16.dp)) {
             Column(Modifier.padding(16.dp)) {
-                Text("Your identity", fontWeight = FontWeight.SemiBold)
-                Text("Keys are stored only on this phone, sealed by the phone's secure hardware. If you uninstall Atlas or lose the phone, the identity and chats cannot be recovered.", Modifier.padding(top = 6.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Back up your account", fontWeight = FontWeight.SemiBold)
+                Text("Your username, key and chats live only on this phone. Save this backup code somewhere safe (notes, email to yourself). On a new install, paste it to restore your account. Without it, uninstalling loses your username forever.",
+                    Modifier.padding(top = 6.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (!backupShown) Button(onClick = { backupCode = engine.exportAccount().orEmpty(); backupShown = true }, modifier = Modifier.padding(top = 10.dp)) { Text("Show backup code") }
+                else {
+                    OutlinedTextField(backupCode, {}, readOnly = true, modifier = Modifier.fillMaxWidth().padding(top = 10.dp), minLines = 3, maxLines = 6,
+                        textStyle = androidx.compose.ui.text.TextStyle(fontFamily = FontFamily.Monospace, fontSize = 11.sp))
+                    Button(onClick = { clip.setText(AnnotatedString(backupCode)); com.nizam.app.ui.components.Feedback.show("Backup code copied") }, modifier = Modifier.padding(top = 8.dp)) { Text("Copy backup code") }
+                }
             }
         }
         Spacer(Modifier.height(24.dp))
