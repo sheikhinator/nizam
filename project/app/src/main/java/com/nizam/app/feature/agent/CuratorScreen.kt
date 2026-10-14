@@ -1,5 +1,6 @@
 package com.nizam.app.feature.agent
 
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.TravelExplore
@@ -351,7 +352,7 @@ fun CuratorScreen(container: AppContainer) {
                 com.nizam.app.ui.components.ComposerToggle("Private", "Nothing from this chat is remembered or learned",
                     androidx.compose.material.icons.Icons.Filled.VisibilityOff, ChatModes.private) { ChatModes.private = it },
                 com.nizam.app.ui.components.ComposerToggle("Review", "Check and redact the context before each message is sent",
-                    androidx.compose.material.icons.Icons.Outlined.Visibility, ChatModes.review) { ChatModes.review = it }
+                    androidx.compose.material.icons.Icons.Filled.Visibility, ChatModes.review) { ChatModes.review = it }
             )
         )
     }
