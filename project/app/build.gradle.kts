@@ -20,8 +20,9 @@ android {
         targetSdk = 34
         versionCode = 11
         versionName = "1.0-beta"
-        // Only the processor type the Infinix GT 50 Pro uses (64-bit ARM) — about half the download size
-        ndk { abiFilters += listOf("arm64-v8a") }
+        // 64-bit ARM for real phones; x86_64 so the game cores can be load-tested on a CI emulator.
+        ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // Your own API keys, built in: taken from the build machine's environment (GitHub Actions secrets
         // named ATLAS_KEY_…), never written in the source. Empty when a secret isn't set.
         listOf("GEMINI", "OPENROUTER", "CUSTOM", "CUSTOM_URL", "CUSTOM_MODEL", "FAST", "FAST_URL", "FAST_MODEL", "HADITH",
@@ -184,6 +185,9 @@ dependencies {
     testImplementation("org.robolectric:robolectric:4.14.1")
     testImplementation("androidx.test:core:1.6.1")
     testImplementation(composeBom)
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test:runner:1.6.2")
+    androidTestImplementation("androidx.test:rules:1.6.1")
     testImplementation("androidx.compose.ui:ui-test-junit4")
 }
 
