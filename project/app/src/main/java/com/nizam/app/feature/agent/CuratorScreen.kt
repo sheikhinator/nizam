@@ -351,7 +351,7 @@ fun CuratorScreen(container: AppContainer) {
                 com.nizam.app.ui.components.ComposerToggle("Private", "Nothing from this chat is remembered or learned",
                     androidx.compose.material.icons.Icons.Filled.VisibilityOff, ChatModes.private) { ChatModes.private = it },
                 com.nizam.app.ui.components.ComposerToggle("Review", "Check and redact the context before each message is sent",
-                    androidx.compose.material.icons.Icons.Filled.FactCheck, ChatModes.review) { ChatModes.review = it }
+                    androidx.compose.material.icons.Icons.Filled.Visibility, ChatModes.review) { ChatModes.review = it }
             )
         )
     }

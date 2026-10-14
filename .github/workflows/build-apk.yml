@@ -104,7 +104,7 @@ jobs:
           mkdir -p "$DEST"
           BASE="https://buildbot.libretro.com/nightly/android/latest/$ABI"
           # appCoreName:buildbotCoreName (ArcadeCore.kt expects lib<appCoreName>_libretro_android.so)
-          CORES="gambatte:gambatte mgba:mgba fceumm:fceumm snes9x:snes9x mupen64plus_next_gles3:mupen64plus_next melonds:melonds pcsx_rearmed:pcsx_rearmed ppsspp:ppsspp genesis_plus_gx:genesis_plus_gx mednafen_pce_fast:mednafen_pce_fast stella:stella handy:handy mednafen_wswan:mednafen_wswan"
+          CORES="gambatte:gambatte mgba:mgba fceumm:fceumm snes9x:snes9x mupen64plus_next_gles3:mupen64plus_next_gles3melonds:melonds pcsx_rearmed:pcsx_rearmed ppsspp:ppsspp genesis_plus_gx:genesis_plus_gx mednafen_pce_fast:mednafen_pce_fast stella:stella handy:handy mednafen_wswan:mednafen_wswan"
           ok=0; miss=0
           for PAIR in $CORES; do
             APP="${PAIR%%:*}"; BB="${PAIR##*:}"
