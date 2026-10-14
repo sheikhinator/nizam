@@ -32,7 +32,7 @@ object Powers {
         Power("ar", "🧭", "AR view", "The Qibla and your places, floating where they really are", "ar augmented reality qibla direction camera compass places", "Senses", 0xFF4F8A6B),
         Power("photos", "🖼", "Photo search", "Find any photo by describing it", "photo search gallery find picture receipt cnic screenshot", "Senses", 0xFFD4A24C),
         Power("earbuds", "🎧", "Earbud mode", "Messages whispered into your earbuds, hands-free", "earbuds headphones whisper read messages hands free ambient", "Senses", 0xFF9B8CD6),
-        Power("agent", "🤖", "App agent", "Say it — Atlas does it inside your other apps", "app agent do it for me operate apps automate whatsapp youtube careem daraz", "Agent", 0xFF1A73E8),
+        Power("agent", "🤖", "App automations", "Your saved & scheduled app tasks — the Atlas chat runs them in your apps", "app agent automations saved scheduled tasks do it for me operate apps automate whatsapp youtube careem daraz", "Agent", 0xFF1A73E8),
         Power("twin", "💬", "Digital twin", "Replies in your own words; answers for you while busy", "digital twin reply whatsapp auto reply busy style catch up missed", "Agent", 0xFF25D366),
         Power("guardian", "🛡", "Guardian", "Scam shield, SOS, crash & fall detection, family alerts", "guardian sos emergency scam fraud crash fall safety family", "Agent", 0xFFD93025),
         Power("money", "📈", "Money autopilot", "Payments logged as they happen; month-end forecast", "money autopilot expenses forecast budget subscriptions bills jazzcash easypaisa", "Agent", 0xFF0F9D58),

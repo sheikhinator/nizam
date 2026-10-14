@@ -51,7 +51,7 @@ fun AppAgentScreen(container: AppContainer) {
         if (r.resultCode == Activity.RESULT_OK) r.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()?.let { goal = it } }
     val on = AtlasAccessibilityService.instance != null
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 18.dp)) {
-        ModuleTitle("App agent", "Say it — Atlas does it inside your apps")
+        ModuleTitle("App automations", "Save and schedule the app tasks Atlas does for you — the Atlas chat is the agent")
         if (!on) Group(Modifier.padding(bottom = 10.dp)) {
             Text("Needs screen control", style = MaterialTheme.typography.titleSmall)
             Text("Settings › Accessibility › Installed apps › Atlas › On. Atlas then sees the screen and taps for you — never inside banking, " +
@@ -115,7 +115,7 @@ object AgentSchedule {
             val locked = c.getSystemService(android.app.KeyguardManager::class.java).isKeyguardLocked
             if (!locked && AtlasAccessibilityService.instance != null) android.os.Handler(android.os.Looper.getMainLooper()).post { AppAgent.start(c, container, r.name) }
             else com.nizam.app.feature.notify.Notifications.post(c, com.nizam.app.feature.notify.Notifications.CHANNEL_NUDGE, 960,
-                "Time for: ${r.name}", "Unlock and open Atlas › Superpowers › App agent to run it")
+                "Time for: ${r.name}", "Unlock and open Atlas › Superpowers › App automations to run it")
         }
     }
 }
