@@ -6,7 +6,7 @@ import androidx.activity.ComponentActivity
 import com.swordfish.libretrodroid.GLRetroView
 import com.swordfish.libretrodroid.GLRetroViewData
 
-/** A bare host for a real GLRetroView, used by GameplayTest to run a game on the CI emulator. */
+/** Debug-only host for a real GLRetroView, used by GameplayTest to run a game on the CI emulator. */
 class GLTestActivity : ComponentActivity() {
     var view: GLRetroView? = null
     override fun onCreate(savedInstanceState: Bundle?) {
