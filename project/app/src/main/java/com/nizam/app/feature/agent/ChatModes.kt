@@ -25,6 +25,8 @@ object ChatModes {
     var private by mutableStateOf(false)
     var imagine by mutableStateOf(false)
     var contemplate by mutableStateOf(false)
+    /** Off by default: messages send straight away. On: show the context preview to check/redact first. */
+    var review by mutableStateOf(false)
     var persona by mutableStateOf("Atlas")
     val PERSONAS = listOf("Atlas", "Fun", "Concise", "Coach", "Scholar", "Roast")
 

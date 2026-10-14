@@ -199,16 +199,21 @@ fun CuratorScreen(container: AppContainer) {
         if (message.isBlank() && files.isEmpty()) return
         scope.launch {
             busy = true
-            busyLabel = "Preparing context preview"
+            busyLabel = if (ChatModes.review) "Preparing context preview" else null
             val prepared = runCatching { RunContextPreview.prepare(container, message, files) }.getOrElse {
                 listOf(RunContextPart("message", "Your message", "Typed by you for this run", "Current",
                     message.ifBlank { "Look at what I attached and help me with it." }, editable = false))
             }
-            reviewMessage = message
-            reviewFiles = files
-            reviewParts = prepared
             busyLabel = null
             busy = false
+            // Straight through by default; only pause on the preview when Review is on.
+            if (ChatModes.review) {
+                reviewMessage = message
+                reviewFiles = files
+                reviewParts = prepared
+            } else {
+                performSend(message, files, prepared)
+            }
         }
     }
 
@@ -344,7 +349,9 @@ fun CuratorScreen(container: AppContainer) {
                 com.nizam.app.ui.components.ComposerToggle("Imagine", "Turn your words into an image",
                     androidx.compose.material.icons.Icons.Filled.Brush, ChatModes.imagine) { ChatModes.imagine = it },
                 com.nizam.app.ui.components.ComposerToggle("Private", "Nothing from this chat is remembered or learned",
-                    androidx.compose.material.icons.Icons.Filled.VisibilityOff, ChatModes.private) { ChatModes.private = it }
+                    androidx.compose.material.icons.Icons.Filled.VisibilityOff, ChatModes.private) { ChatModes.private = it },
+                com.nizam.app.ui.components.ComposerToggle("Review", "Check and redact the context before each message is sent",
+                    androidx.compose.material.icons.Icons.Filled.FactCheck, ChatModes.review) { ChatModes.review = it }
             )
         )
     }
