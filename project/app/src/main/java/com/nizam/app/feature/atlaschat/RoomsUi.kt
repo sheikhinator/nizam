@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -184,7 +185,7 @@ private fun RoomBubble(m: Msg, channel: Boolean) {
     val fg = if (mine) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
     val shape = RoundedCornerShape(18.dp, 18.dp, if (mine) 4.dp else 18.dp, if (mine) 18.dp else 4.dp)
     Column(Modifier.fillMaxWidth(), horizontalAlignment = if (mine) Alignment.End else Alignment.Start) {
-        Column(Modifier.widthIn().clip(shape).background(bg).padding(horizontal = 12.dp, vertical = 8.dp)) {
+        Column(Modifier.widthIn(max = 300.dp).clip(shape).background(bg).padding(horizontal = 12.dp, vertical = 8.dp)) {
             if (!mine && !channel) Text(m.senderName ?: "", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
             Text(m.text, color = fg, fontSize = 16.sp)
             Text(SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(m.ts)), fontSize = 10.sp, color = fg.copy(alpha = 0.55f), modifier = Modifier.align(Alignment.End).padding(top = 2.dp))
