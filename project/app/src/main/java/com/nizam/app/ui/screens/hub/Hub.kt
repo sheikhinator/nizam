@@ -111,7 +111,7 @@ HubRow("Agent memory", "What it remembers from your chats", Routes.AGENT),
         HubRow("What Atlas knows", "Beliefs about you and lessons it learned — edit or forget any", Routes.KNOWSME),
         HubRow("Skills", "Saved action sequences, run in one tap or by name", Routes.SKILLS),
         HubRow("Agent firewall", "Categories Atlas is never allowed to do", Routes.FIREWALL),
-        HubRow("Activity", "Receipts for everything Atlas did", Routes.ACTIVITY)
+        HubRow("Activity", "Receipts for everything Atlas did", Routes.ATLAS_ACTIVITY)
     ))
 ), onOpen)
 

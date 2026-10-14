@@ -67,7 +67,7 @@ fun MeScreen(container: AppContainer, onOpen: (String) -> Unit) {
             Triple("Live gauges and trends for your whole life", "Dashboards", "nx/dashboards"),
             Triple("Database, saved data, permissions and repairs", "Self-Check", "nx/selfcheck"),
             Triple("What Atlas can access and what it has done", "Trust Center", "nx/trust"),
-            Triple("Everything Atlas did on its own, newest first", "What Atlas did", Routes.ACTIVITY),
+            Triple("Everything Atlas did on its own, newest first", "What Atlas did", Routes.ATLAS_ACTIVITY),
             Triple("Theme, sound, motion and chart style", "Look & sound", "nx/instruments")
         ), onOpen)
         Group("", listOf(

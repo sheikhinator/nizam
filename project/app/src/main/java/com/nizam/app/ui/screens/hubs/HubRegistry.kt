@@ -172,7 +172,7 @@ object HubRegistry {
         Feature(Routes.WHEREIS, "Where is it?", "Remember where you put things", Icons.Outlined.Place, Hub.Home, words = "lost keys find object kahan"),
         Feature(Routes.RADAR, "Radar", "Trends caught early", Icons.Outlined.Radar, Hub.Work, words = "trend warning spending"),
         Feature(Routes.PASSWORDS, "Passwords", "Logins, encrypted on this phone", Icons.Outlined.Key, Hub.Tools, words = "password login vault"),
-        Feature(Routes.ACTIVITY, "Activity", "Receipts for everything Atlas did", Icons.Outlined.ReceiptLong, Hub.Tools, words = "log history actions"),
+        Feature(Routes.ATLAS_ACTIVITY, "Activity", "Receipts for everything Atlas did", Icons.Outlined.ReceiptLong, Hub.Tools, words = "log history actions"),
         Feature(Routes.SAFETY, "Safety", "Lost mode, caller check, follow-ups", Icons.Outlined.Security, Hub.Tools, true, "lost stolen phone scam call"),
         Feature(Routes.AUTOFILL, "Autofill", "Fill forms in any app from your details", Icons.Outlined.EditNote, Hub.Tools, words = "form fill cnic address profile"),
         Feature(Routes.MYWIDGET, "My widget", "Choose what your home-screen widget shows", Icons.Outlined.Widgets, Hub.Tools, words = "widget home screen"),
