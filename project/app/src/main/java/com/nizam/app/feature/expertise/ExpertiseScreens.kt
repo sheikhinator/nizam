@@ -51,6 +51,8 @@ import java.util.Date
 /** Registered in the catalogue, so search, hubs and Ask can all reach them. */
 object ExpertiseSpecs {
     val all = listOf(
+        ScreenSpec("talk", "Talk to Atlas", "Ask, plan or get things done in one conversation", Icons.Outlined.AutoAwesome, Hub.Tools,
+            "talk chat ask atlas curator assistant do powers command") { c, _ -> com.nizam.app.feature.agent.CuratorScreen(c) },
         ScreenSpec("expertise", "Atlas expertise", "378 kinds of expert thinking, all one Atlas", Icons.Outlined.Psychology, Hub.Work,
             "agents expertise expert specialist lawyer accountant coach consultant advisor lycho workforce think as") { c, open -> ExpertiseScreen(c, open) },
         ScreenSpec("expertisestudio", "Expertise Studio", "Write a kind of expertise of your own for Atlas to think with", Icons.Outlined.EditNote, Hub.Work,

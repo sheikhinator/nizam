@@ -6,6 +6,7 @@ package com.nizam.app.feature.nx
  */
 internal val SELF_WRAPPED: Set<String> = setOf(
     "expertise",
+    "talk",
     "pulse",
     "arcade",
     "atlaschat",

@@ -177,7 +177,7 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
         }
         val tilt = com.nizam.app.ui.design.rememberTilt()
         Dock(Modifier.align(Alignment.BottomCenter).parallax(tilt, 0.6f), accent,
-            onAsk = { open(Routes.ASK) }, onTalk = { open(Routes.VOICE) }, onAll = { open(Routes.MODULES) },
+            onAsk = { openOrPeek(com.nizam.app.feature.nx.Nx.route("talk")) }, onTalk = { open(Routes.VOICE) }, onAll = { open(Routes.MODULES) },
             onSearch = { searching = true },
             onLycho = { open(com.nizam.app.feature.nx.Nx.route("expertise")) }, onLychoHold = { open(com.nizam.app.feature.nx.Nx.route("pulse")) }, tilt = tilt)
         QuickCaptureFab(container, Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 92.dp))

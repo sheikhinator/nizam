@@ -354,6 +354,9 @@ object KeyNav {
     }
 }
 
+/** Off since the merge: one navigation (spaces + dock). Kept so it can be switched back on in one place. */
+private const val SHOW_CLASSIC_TABS = false
+
 private val bottomItems = listOf(
     BottomItem(Routes.TODAY, "Today", Icons.Filled.Today, Icons.Outlined.OutlinedToday),
     BottomItem(Routes.ASK, "Ask", Icons.Filled.AutoAwesome, Icons.Outlined.OutlinedAutoAwesome),
@@ -491,7 +494,8 @@ fun NizamApp(container: AppContainer, startOnCurator: Boolean = false, startRout
             if (currentRoute != Routes.PLAYER && currentRoute != Routes.BEDSIDE && currentRoute != Routes.IPTV_PLAYER && currentRoute != Routes.AMBIENT && currentRoute != Routes.TODAY) {
                 androidx.compose.foundation.layout.Column(Modifier.padding(start = if (wide) 80.dp else 0.dp)) {
                 com.nizam.app.ui.design.ContextStrip(currentRoute) { r -> navController.navigate(r) { launchSingleTop = true } }
-                if (!wide) FloatingNav(
+                // the classic tab bar is retired: the spaces and the dock are Atlas's one navigation (back returns home)
+                if (!wide && SHOW_CLASSIC_TABS) FloatingNav(
                     items = bottomItems.map { NavTab(it.route, it.label, it.icon, it.idle) },
                     current = currentRoute,
                     onSelect = { route ->
