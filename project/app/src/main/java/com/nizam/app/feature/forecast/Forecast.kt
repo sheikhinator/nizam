@@ -340,14 +340,14 @@ object Outlook {
                 val p = Forecast.predict(container.appContext, spend, 7)
                 val now = spend.takeLast(7).sum(); val next = p.median.sum()
                 if (next > now * 1.3 && next - now > 2000) out += com.nizam.app.feature.nx.Noticer.Notice("fc_spend", "Spending is heading up",
-                    "The next 7 days look like about Rs ${"%,.0f".format(next)}, against Rs ${"%,.0f".format(now)} over the last 7.", "nx/forecast", 2)
+                    "The next 7 days look like about Rs ${"%,.0f".format(next)}, against Rs ${"%,.0f".format(now)} over the last 7.", "nx/forecastlive", 2)
             }
             val mood = Forecast.clean(loadSeries(container, Series.Mood))
             if (mood.size >= 14) {
                 val p = Forecast.predict(container.appContext, mood, 7)
                 val now = mood.takeLast(7).average(); val next = p.median.average()
                 if (now > 0 && next < now * 0.85) out += com.nizam.app.feature.nx.Noticer.Notice("fc_mood", "Mood may dip this week",
-                    "Your check-ins point to a lower week ahead. A little planning now can soften it.", "nx/forecast", 1)
+                    "Your check-ins point to a lower week ahead. A little planning now can soften it.", "nx/forecastlive", 1)
             }
         }
         notices = out
@@ -356,7 +356,7 @@ object Outlook {
 
 object ForecastSpecs {
     val all: List<Spec> = listOf(
-        ScreenSpec("forecast", "Forecast", "Where your spending, mood and habits are heading, with TimesFM on your phone", Icons.Outlined.Timeline, Hub.Tools,
+        ScreenSpec("forecastlive", "Forecast", "Where your spending, mood and habits are heading, with TimesFM on your phone", Icons.Outlined.Timeline, Hub.Tools,
             "forecast predict future trend spending mood prediction timesfm projection") { c, _ -> ForecastScreen(c) },
     )
 }

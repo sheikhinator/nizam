@@ -53,7 +53,7 @@ object ExpertiseSpecs {
     val all = listOf(
         ScreenSpec("find", "Find", "Records, screens, your phone and the web, with quick filters", Icons.Outlined.Search, Hub.Tools,
             "find search records sleep focus wins azkar everything") { c, open -> com.nizam.app.ui.screens.search.SearchScreen(c, open) },
-        ScreenSpec("talk", "Talk to Atlas", "Ask, plan or get things done in one conversation", Icons.Outlined.AutoAwesome, Hub.Tools,
+        ScreenSpec("atlastalk", "Talk to Atlas", "Ask, plan or get things done in one conversation", Icons.Outlined.AutoAwesome, Hub.Tools,
             "talk chat ask atlas curator assistant do powers command") { c, _ -> com.nizam.app.feature.agent.CuratorScreen(c) },
         ScreenSpec("expertise", "Atlas expertise", "378 kinds of expert thinking, all one Atlas", Icons.Outlined.Psychology, Hub.Work,
             "agents expertise expert specialist lawyer accountant coach consultant advisor lycho workforce think as") { c, open -> ExpertiseScreen(c, open) },
