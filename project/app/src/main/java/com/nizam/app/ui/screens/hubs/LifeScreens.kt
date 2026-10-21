@@ -220,9 +220,7 @@ private fun RecentChip(f: Feature, onClick: () -> Unit) {
     val tint = f.hub.tint()
     Row(Modifier.clip(Radius.pill).background(MaterialTheme.colorScheme.surface).pressable(onClick = onClick)
         .padding(start = Space.s, end = Space.l, top = Space.s, bottom = Space.s), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(28.dp).clip(Radius.pill).background(wash(tint, 0.22f)), contentAlignment = Alignment.Center) {
-            Icon(f.icon, null, tint = tint, modifier = Modifier.size(16.dp))
-        }
+        com.nizam.app.ui.design.LivingIcon(f.icon, tint, size = 28.dp, iconSize = 16.dp, shape = Radius.pill)
         Spacer(Modifier.width(Space.s))
         Text(f.title, style = MaterialTheme.typography.labelLarge, maxLines = 1)
     }

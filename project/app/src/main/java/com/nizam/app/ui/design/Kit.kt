@@ -134,9 +134,7 @@ fun EmptyState(spec: EmptySpec, modifier: Modifier = Modifier) {
             com.nizam.app.feature.companion.Creature(pet, com.nizam.app.feature.companion.Companion.Mood.SLEEPY, 0, Modifier.size(96.dp))
         else if (Style.s.art) Art3D(listOf("sparkles", "crystal_ball", "seedling", "package", "glowing_star", "gem_stone", "rocket", "books", "potted_plant", "magic_wand")
             [kotlin.math.abs(spec.title.hashCode()) % 10], 112.dp)
-        else Box(Modifier.size(72.dp).clip(Radius.tile).background(wash(c.primary, 0.16f)), contentAlignment = Alignment.Center) {
-            Icon(spec.icon, null, tint = c.primary, modifier = Modifier.size(34.dp))
-        }
+        else LivingIcon(spec.icon, c.primary, size = 72.dp, iconSize = 34.dp, shape = Radius.tile)
         Spacer(Modifier.height(Space.l))
         Text(spec.title, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center)
         Spacer(Modifier.height(Space.xs))
@@ -197,9 +195,7 @@ fun ActionTile(icon: ImageVector, label: String, modifier: Modifier = Modifier, 
                hint: String? = null, onClick: () -> Unit) {
     val c = MaterialTheme.colorScheme
     Column(modifier.clip(Radius.tile).background(c.surface).pressable(onClick = onClick).padding(Space.l)) {
-        Box(Modifier.size(40.dp).clip(Radius.field).background(wash(tint, 0.18f)), contentAlignment = Alignment.Center) {
-            Icon(icon, null, tint = tint, modifier = Modifier.size(22.dp))
-        }
+        LivingIcon(icon, tint, size = 40.dp, iconSize = 22.dp)
         Spacer(Modifier.height(Space.m))
         Text(label, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
         if (hint != null) Text(hint, style = MaterialTheme.typography.bodySmall, color = c.onSurfaceVariant, maxLines = 1,
@@ -241,9 +237,7 @@ fun ListRow(title: String, modifier: Modifier = Modifier, supporting: String? = 
     Row(modifier.fillMaxWidth().then(if (onClick != null) Modifier.pressable(onClick = onClick) else Modifier)
         .padding(horizontal = Space.page, vertical = Space.m), verticalAlignment = Alignment.CenterVertically) {
         if (icon != null) {
-            Box(Modifier.size(40.dp).clip(Radius.field).background(wash(tint, 0.16f)), contentAlignment = Alignment.Center) {
-                Icon(icon, null, tint = tint, modifier = Modifier.size(20.dp))
-            }
+            LivingIcon(icon, tint, size = 40.dp, iconSize = 20.dp)
             Spacer(Modifier.width(Space.m))
         }
         Column(Modifier.weight(1f)) {

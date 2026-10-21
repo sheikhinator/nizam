@@ -1,6 +1,14 @@
 package com.nizam.app.core
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -66,6 +74,10 @@ fun LineChart(
     val reveal = remember(points) { Animatable(0f) }
     LaunchedEffect(points) { reveal.animateTo(1f, Motion.enter()) }
     var touch by remember { mutableStateOf<Int?>(null) }
+    val haptic = LocalHapticFeedback.current
+    // the latest point breathes, so a live number looks alive
+    val breath = if (Motion.still) null else rememberInfiniteTransition(label = "lineLive").animateFloat(0f, 1f,
+        infiniteRepeatable(tween(2200, easing = LinearEasing), RepeatMode.Restart), label = "breath")
 
     Column {
         Box(Modifier.fillMaxWidth().padding(bottom = 2.dp)) {
@@ -75,7 +87,11 @@ fun LineChart(
         }
         Canvas(Modifier.fillMaxWidth().height(height.dp).padding(vertical = 6.dp)
             .pointerInput(points) {
-                fun pick(x: Float) { touch = (x / size.width * (points.size - 1)).roundToInt().coerceIn(0, points.lastIndex) }
+                fun pick(x: Float) {
+                    val i = (x / size.width * (points.size - 1)).roundToInt().coerceIn(0, points.lastIndex)
+                    if (i != touch) haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    touch = i
+                }
                 detectDragGestures(onDragStart = { pick(it.x) }, onDragEnd = { touch = null }, onDragCancel = { touch = null }) { c, _ -> pick(c.position.x) }
             }
             .pointerInput(points) { detectTapGestures { o -> touch = (o.x / size.width * (points.size - 1)).roundToInt().coerceIn(0, points.lastIndex) } }
@@ -105,6 +121,8 @@ fun LineChart(
                     val area = Path().apply { addPath(path); lineTo(w, h); lineTo(0f, h); close() }
                     drawPath(area, Brush.verticalGradient(listOf(accent.copy(alpha = 0.28f), accent.copy(alpha = 0f))))
                 }
+                // a soft glow under the line gives it depth
+                drawPath(path, accent.copy(alpha = 0.16f), style = Stroke(width = 12f, cap = StrokeCap.Round))
                 drawPath(path, accent, style = Stroke(width = 3.5f, cap = StrokeCap.Round))
             }
 
@@ -112,8 +130,11 @@ fun LineChart(
             val p = pts[sel]
             if (touch != null) drawLine(ink.copy(alpha = 0.25f), Offset(p.x, 0f), Offset(p.x, h), strokeWidth = 1.5f)
             if (reveal.value > 0.98f || touch != null) {
+                val b = if (touch == null) breath?.value else null
+                if (b != null) drawCircle(accent.copy(alpha = 0.35f * (1f - b)), radius = 8f + 16f * b, center = p)
                 drawCircle(accent.copy(alpha = 0.25f), radius = 11f, center = p)
                 drawCircle(accent, radius = 5.5f, center = p)
+                drawCircle(Color.White.copy(alpha = 0.7f), radius = 2f, center = Offset(p.x - 1.5f, p.y - 1.5f))
             }
         }
 
@@ -135,6 +156,7 @@ fun BarChart(points: List<Point>, accent: Color, height: Int = 110) {
     val grow = remember(points) { Animatable(0f) }
     LaunchedEffect(points) { grow.animateTo(1f, Motion.settle()) }
     var touch by remember { mutableStateOf<Int?>(null) }
+    val haptic = LocalHapticFeedback.current
 
     Column {
         touch?.let { i ->
@@ -144,21 +166,35 @@ fun BarChart(points: List<Point>, accent: Color, height: Int = 110) {
             .pointerInput(points) {
                 detectTapGestures { o -> val i = (o.x / (size.width / points.size)).toInt().coerceIn(0, points.lastIndex); touch = if (touch == i) null else i }
             }
+            .pointerInput(points) {
+                // drag across to read each bar, with a tick as you cross one
+                detectDragGestures(onDragEnd = { touch = null }, onDragCancel = { touch = null }) { c, _ ->
+                    val i = (c.position.x / (size.width / points.size)).toInt().coerceIn(0, points.lastIndex)
+                    if (i != touch) haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    touch = i
+                }
+            }
         ) {
             val w = size.width
             val h = size.height
             val slot = w / points.size
             val barWidth = min(slot * 0.62f, 34f)
             points.forEachIndexed { index, point ->
-                val barHeight = max(((point.value / maxValue) * h * grow.value).toFloat(), 3f)
+                // bars rise one after another, left to right
+                val local = ((grow.value * 1.35f) - index * 0.35f / points.size).coerceIn(0f, 1f)
+                val barHeight = max(((point.value / maxValue) * h * local).toFloat(), 3f)
                 val x = index * slot + (slot - barWidth) / 2f
                 val on = touch == null || touch == index
-                drawRoundRect(
-                    color = if (point.value > 0) accent.copy(alpha = if (on) 1f else 0.35f) else grid,
-                    topLeft = Offset(x, h - barHeight),
-                    size = Size(barWidth, barHeight),
-                    cornerRadius = CornerRadius(min(barWidth / 2, 8f))
-                )
+                val lift = if (touch == index) 4f else 0f
+                val r = CornerRadius(min(barWidth / 2, 8f))
+                if (point.value > 0) {
+                    // soft shadow, a lit body and a highlight on top: real depth
+                    drawRoundRect(Color.Black.copy(alpha = 0.10f), Offset(x + 2f, h - barHeight + 3f - lift), Size(barWidth, barHeight), r)
+                    drawRoundRect(Brush.verticalGradient(listOf(accent.copy(alpha = if (on) 0.75f else 0.25f), accent.copy(alpha = if (on) 1f else 0.35f)),
+                        h - barHeight - lift, h), Offset(x, h - barHeight - lift), Size(barWidth, barHeight), r)
+                    drawRoundRect(Color.White.copy(alpha = if (on) 0.22f else 0.08f), Offset(x + barWidth * 0.18f, h - barHeight - lift + 2f),
+                        Size(barWidth * 0.64f, min(4f, barHeight / 3)), CornerRadius(2f))
+                } else drawRoundRect(grid, Offset(x, h - barHeight), Size(barWidth, barHeight), r)
             }
         }
     }
@@ -174,6 +210,10 @@ fun Heatmap(values: List<Double>, accent: Color, columns: Int = 15) {
     val maxValue = values.max().takeIf { it > 0.0 } ?: 1.0
     val empty = MaterialTheme.colorScheme.surfaceVariant
     val rows = (values.size + columns - 1) / columns
+    val fade = remember(values) { Animatable(0f) }
+    LaunchedEffect(values) { fade.animateTo(1f, Motion.enter()) }
+    val pulse = if (Motion.still) null else rememberInfiniteTransition(label = "heatToday").animateFloat(0f, 1f,
+        infiniteRepeatable(tween(2400, easing = LinearEasing), RepeatMode.Restart), label = "today")
 
     Canvas(Modifier.fillMaxWidth().height((rows * 16).dp).padding(vertical = 4.dp)) {
         val cell = size.width / columns
@@ -182,8 +222,15 @@ fun Heatmap(values: List<Double>, accent: Color, columns: Int = 15) {
             val col = index % columns
             val row = index / columns
             val intensity = (value / maxValue).toFloat().coerceIn(0f, 1f)
+            // cells settle in like a wave, and today's square breathes
+            val shown = ((fade.value * 1.5f) - index * 0.5f / values.size).coerceIn(0f, 1f)
+            if (index == values.lastIndex && pulse != null) {
+                val b = pulse.value
+                drawRoundRect(accent.copy(alpha = 0.35f * (1f - b)), Offset(col * cell + pad - 3f * b, row * cell + pad - 3f * b),
+                    Size(cell - pad * 2 + 6f * b, cell - pad * 2 + 6f * b), CornerRadius((cell - pad * 2) * 0.32f))
+            }
             drawRoundRect(
-                color = if (value <= 0.0) empty else accent.copy(alpha = 0.25f + intensity * 0.75f),
+                color = (if (value <= 0.0) empty else accent.copy(alpha = 0.25f + intensity * 0.75f)).let { it.copy(alpha = it.alpha * shown) },
                 topLeft = Offset(col * cell + pad, row * cell + pad),
                 size = Size(cell - pad * 2, cell - pad * 2),
                 cornerRadius = CornerRadius((cell - pad * 2) * 0.28f)

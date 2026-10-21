@@ -258,7 +258,7 @@ private fun Tile(f: Feature, tint: Color, modifier: Modifier, onLongClick: () ->
     Column(modifier.height(92.dp).clip(RoundedCornerShape(20.dp)).background(wash(tint, 0.10f))
         .pointerInput(f.route) { detectTapGestures(onTap = { onClick() }, onLongPress = { onLongClick() }) }.padding(10.dp),
         verticalArrangement = Arrangement.SpaceBetween) {
-        Icon(f.icon, null, tint = tint, modifier = Modifier.size(22.dp))
+        com.nizam.app.ui.design.LivingIcon(f.icon, tint, size = 34.dp, iconSize = 20.dp)
         Text(f.title, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Medium, maxLines = 2, overflow = TextOverflow.Ellipsis)
     }
 }
@@ -268,7 +268,7 @@ private fun Chip(f: Feature, tint: Color, modifier: Modifier, onLongClick: () ->
     Column(modifier.clip(RoundedCornerShape(16.dp)).background(wash(tint, 0.14f))
         .pointerInput(f.route) { detectTapGestures(onTap = { onClick() }, onLongPress = { onLongClick() }) }.padding(horizontal = 8.dp, vertical = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(f.icon, null, tint = tint, modifier = Modifier.size(20.dp))
+        com.nizam.app.ui.design.LivingIcon(f.icon, tint, size = 30.dp, iconSize = 18.dp)
         Text(f.title, style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
