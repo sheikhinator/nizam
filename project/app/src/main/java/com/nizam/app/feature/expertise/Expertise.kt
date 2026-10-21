@@ -114,7 +114,7 @@ object Expertise {
      */
     fun pick(c: Context, question: String): Expert? {
         val q = question.lowercase()
-        if (q.length < 24) return null
+        if (q.length < 24 || q.length > 400) return null
         val words = Regex("[a-z]{4,}").findAll(q).map { it.value }.filter { it !in STOP }.toSet()
         if (words.size < 3) return null
         var best: Expert? = null
@@ -123,20 +123,40 @@ object Expertise {
             if (e.sector == "Core" || e.sector == "Yours" && e.prompt == null) continue
             val hay = (e.name + " " + e.role).lowercase()
             var s = 0.0
-            for (w in words) if (hay.contains(w)) s += if (e.name.lowercase().contains(w)) 2.0 else 1.0
-            if (s > bestScore) { bestScore = s; best = e }
+            var hits = 0
+            // whole words only, so "located" never matches "network locate", "spent" never matches "spending policy"
+            val hayWords = wordsOf(e)
+            for (w in words) if (w in hayWords) { hits++; s += if (e.name.lowercase().contains(w)) 2.0 else 1.0 }
+            if (hits >= 2 && s > bestScore) { bestScore = s; best = e }
         }
-        return if (bestScore >= 3.0) best else null
+        return if (bestScore >= 4.0) best else null
     }
 
     /** Used by Ai.generate: the expertise block for a foreground question, or "" when plain Atlas is right. */
     fun autoBlock(c: Context?, prompt: String, system: String?): String {
         if (c == null || !autoOn(c) || system?.contains(MARK) == true) return ""
-        val e = pick(c, prompt.takeLast(1200)) ?: run { _current.value = null; return "" }
+        val question = lastUserText(prompt)
+        // commands ("spent 500 on…", "remind me…") are Atlas's own job: no expertise, no extra words
+        if (com.nizam.app.net.Router.classify(question, false, false, emptyList()) == com.nizam.app.net.Router.Lane.ACT) { _current.value = null; return "" }
+        val e = pick(c, question) ?: run { _current.value = null; return "" }
         _current.value = e
         noteUse(c, e)
         Pulse.emit(Pulse.Kind.THINKING, "Thinking as ${e.name}", e.sector)
-        return block(e)
+        // a short hint, not the full instructions: keeps every request small and fast
+        return "$MARK\nFor this question, answer with the knowledge of a ${e.name.lowercase()} (${e.role.substringBefore('.').lowercase()}). You are still Atlas."
+    }
+
+    /** The user's latest words, without Atlas's snapshot, history or data blocks around them. */
+    fun lastUserText(prompt: String): String {
+        val t = prompt.trimEnd().removeSuffix("You:").removeSuffix("Atlas:").trimEnd()
+        val cut = listOf("\nYou:", "\nUser:", "\nuser:", "\nMe:", "\nQuestion:").maxOfOrNull { t.lastIndexOf(it) } ?: -1
+        val tail = if (cut >= 0) t.substring(cut).substringAfter(':') else t.substringAfterLast("\n\n")
+        return tail.trim().takeLast(400)
+    }
+
+    private val wordCache = java.util.concurrent.ConcurrentHashMap<String, Set<String>>()
+    private fun wordsOf(e: Expert): Set<String> = wordCache.getOrPut(e.id) {
+        (e.name + " " + e.role).lowercase().split(Regex("[^a-z]+")).filter { it.length >= 4 }.toSet()
     }
 
     fun using(e: Expert?) { _current.value = e }

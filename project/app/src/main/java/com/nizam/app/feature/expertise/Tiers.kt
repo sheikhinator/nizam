@@ -23,10 +23,13 @@ object Tiers {
         RegexOption.IGNORE_CASE,
     )
 
+    /**
+     * Heavy only when the user's own words ask for deep work (or a heavy expertise was chosen by hand).
+     * The prompt carries Atlas's snapshot and history, so its length says nothing about the question.
+     */
     fun isHeavy(prompt: String, expertHeavy: Boolean): Boolean {
         if (expertHeavy) return true
-        val tail = prompt.takeLast(700)
-        return HEAVY.containsMatchIn(tail) || tail.length >= 650 && tail.count { it == '\n' } < 3
+        return HEAVY.containsMatchIn(Expertise.lastUserText(prompt))
     }
 
     /** 2 = strongest, 1 = balanced, 0 = fast. Patterns, so new model names keep working. */
@@ -41,5 +44,7 @@ object Tiers {
 
     /** Stable re-order: strongest first for heavy work; health order is kept within each strength. */
     fun order(list: List<Router.Endpoint>, heavy: Boolean): List<Router.Endpoint> =
-        if (!heavy) list else list.sortedByDescending { if (it.kind == "LOCAL" || it.kind == "FOLAX") -1 else strength(it.model) }
+        // Groq caps request size and rate hard, so its big models are never moved ahead: a long Atlas prompt
+        // there fails with 413/429 and only adds delay. Strong Gemini/OpenRouter models move up; health decides the rest.
+        if (!heavy) list else list.sortedByDescending { if (it.kind == "LOCAL" || it.kind == "FOLAX" || it.isGroq) 0 else strength(it.model) }
 }
