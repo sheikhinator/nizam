@@ -175,11 +175,10 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
                 }
             }
         }
-        val tilt = com.nizam.app.ui.design.rememberTilt()
-        Dock(Modifier.align(Alignment.BottomCenter).parallax(tilt, 0.6f), accent,
+        Dock(Modifier.align(Alignment.BottomCenter).parallax(0.3f), accent,
             onAsk = { openOrPeek(com.nizam.app.feature.nx.Nx.route("talk")) }, onTalk = { open(Routes.VOICE) }, onAll = { open(Routes.MODULES) },
             onSearch = { openOrPeek(com.nizam.app.feature.nx.Nx.route("find")) },
-            onLycho = { open(com.nizam.app.feature.nx.Nx.route("expertise")) }, onLychoHold = { open(com.nizam.app.feature.nx.Nx.route("pulse")) }, tilt = tilt)
+            onLycho = { open(com.nizam.app.feature.nx.Nx.route("expertise")) }, onLychoHold = { open(com.nizam.app.feature.nx.Nx.route("pulse")) })
         QuickCaptureFab(container, Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 92.dp))
         com.nizam.app.feature.next.ShakeToUndo()
         val peek = sheetRoute
@@ -294,7 +293,7 @@ private fun Wide(f: Feature, onClick: () -> Unit) {
  */
 @Composable
 private fun Dock(modifier: Modifier, accent: Color, onAsk: () -> Unit, onTalk: () -> Unit, onAll: () -> Unit, onSearch: () -> Unit,
-                 onLycho: () -> Unit, onLychoHold: () -> Unit, tilt: androidx.compose.runtime.State<androidx.compose.ui.geometry.Offset>) {
+                 onLycho: () -> Unit, onLychoHold: () -> Unit) {
     val halo by com.nizam.app.feature.agentic.AgentHalo.state.collectAsState()
     val expert by com.nizam.app.feature.expertise.Expertise.current.collectAsState()
     val mindState = when { halo.active -> OrbState.Working; expert != null -> OrbState.Thinking; else -> OrbState.Idle }
@@ -305,10 +304,10 @@ private fun Dock(modifier: Modifier, accent: Color, onAsk: () -> Unit, onTalk: (
             Icon(Icons.Outlined.Search, "Search", tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Box(Modifier.size(56.dp).pointerInput(Unit) { detectTapGestures(onTap = { onAsk() }, onLongPress = { onTalk() }) }, contentAlignment = Alignment.Center) {
-            AtlasOrb(OrbState.Idle, Modifier.parallax(tilt, 0.9f), diameter = 52.dp)
+            AtlasOrb(OrbState.Idle, Modifier.parallax(0.6f), diameter = 52.dp)
         }
         Box(Modifier.size(56.dp).pointerInput(Unit) { detectTapGestures(onTap = { onLycho() }, onLongPress = { onLychoHold() }) }, contentAlignment = Alignment.Center) {
-            com.nizam.app.ui.design.LychoOrb(mindState, Modifier.parallax(tilt, 0.9f), diameter = 50.dp)
+            com.nizam.app.ui.design.LychoOrb(mindState, Modifier.parallax(0.6f), diameter = 50.dp)
         }
         Box(Modifier.size(44.dp).clip(RoundedCornerShape(22.dp)).pressable { onAll() }, contentAlignment = Alignment.Center) {
             Icon(Icons.Outlined.Apps, "All tools", tint = MaterialTheme.colorScheme.onSurfaceVariant)
