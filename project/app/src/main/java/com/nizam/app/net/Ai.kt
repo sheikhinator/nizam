@@ -53,12 +53,15 @@ object Ai {
         val expertise = if (bg) "" else runCatching { com.nizam.app.feature.expertise.Expertise.autoBlock(Router.appContext, prompt, system) }.getOrDefault("")
         val system = listOfNotNull(system, expertise.ifBlank { null }, model.ifBlank { null }, dataBlock.ifBlank { null }, com.nizam.app.feature.future.Lang.instruction().ifBlank { null }).joinToString("\n\n").ifBlank { null }
         val tag = kotlin.coroutines.coroutineContext[com.nizam.app.feature.wild.AgentMeter.Tag]?.name
-        com.nizam.app.feature.agentic.AgentHalo.begin(tag?.let { "$it is working" } ?: if (bg) "Working in the background" else "Atlas is thinking")
+        val expert = if (expertise.isBlank()) null else com.nizam.app.feature.expertise.Expertise.current.value
+        val heavy = !bg && com.nizam.app.feature.expertise.Tiers.isHeavy(prompt, expert?.heavy == true)
+        com.nizam.app.feature.agentic.AgentHalo.begin(tag?.let { "$it is working" } ?: if (bg) "Working in the background"
+            else expert?.let { "Atlas is thinking as ${it.name}" } ?: "Atlas is thinking")
         if (!bg) com.nizam.app.feature.agentic.MemorySources.record(Router.appContext, prompt)
         try { return AnswerCache.get(AnswerCache.key(prompt, system, maxOutputTokens, useWeb), if (bg) 30 * 60_000L else if (useWeb) 60_000L else 3 * 60_000L) {
             com.nizam.app.feature.agentic.AgentHalo.check()
             if (bg && !Budget.allowBackground()) throw IllegalStateException("Atlas has used today's background AI allowance — it resets at midnight.")
-            Engine.limited {
+            withContext(if (heavy) com.nizam.app.feature.expertise.Tiers.Heavy() else kotlin.coroutines.EmptyCoroutineContext) { Engine.limited {
                 val list = com.nizam.app.feature.agentic.Hybrid.apply(com.nizam.app.feature.nx.Sensitivity.route(Router.appContext, prompt, Router.endpoints(settings, Router.appContext, Router.Lane.ACT)),
                     com.nizam.app.feature.agentic.Hybrid.mode(Router.appContext, tag))
                 if (list.isEmpty()) throw MissingKeyException("No AI provider set up. Add a key in Settings › API keys.")
@@ -74,7 +77,7 @@ object Ai {
                     if (t is kotlinx.coroutines.CancellationException || t is MissingKeyException) throw t
                     throw friendly(t)
                 }
-            }
+            } }
         } } finally { com.nizam.app.feature.agentic.AgentHalo.end() }
     }
 

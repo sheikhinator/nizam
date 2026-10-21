@@ -130,7 +130,9 @@ object Engine {
         hedgeAfterMs: Long? = if (isBackground()) null else 7_000L,
         call: suspend (Router.Endpoint) -> T
     ): T {
-        val ordered = Health.order(candidates)
+        // heavy work (marked by Ai.generate) tries the strongest models first; health orders within each strength
+        val ordered = com.nizam.app.feature.expertise.Tiers.order(Health.order(candidates),
+            currentCoroutineContext()[com.nizam.app.feature.expertise.Tiers.Heavy] != null)
         // Don't spend quota on endpoints that are resting when a ready one exists
         val ready = ordered.filter { Health.resting(it) == 0L }
         val queue = ArrayDeque(if (ready.isNotEmpty()) ready + ordered.filter { it !in ready }.take(1) else ordered.take(3))
@@ -154,6 +156,7 @@ object Engine {
                 val t0 = System.currentTimeMillis()
                 val r = try { Result.success(call(pick)) } catch (t: Throwable) { if (t is CancellationException) throw t; Result.failure(t) }
                 if (r.isSuccess) Health.ok(pick, System.currentTimeMillis() - t0)
+                runCatching { com.nizam.app.feature.expertise.EngineLog.record(pick.name, pick.model, r.isSuccess, System.currentTimeMillis() - t0, r.exceptionOrNull()?.message) }
                 results.send(pick to r)
             }
             return pick

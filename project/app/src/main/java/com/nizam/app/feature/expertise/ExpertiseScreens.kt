@@ -9,11 +9,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.EditNote
+import androidx.compose.material.icons.outlined.Memory
 import androidx.compose.material.icons.outlined.MonitorHeart
 import androidx.compose.material.icons.outlined.Psychology
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -48,14 +52,18 @@ import java.util.Date
 object ExpertiseSpecs {
     val all = listOf(
         ScreenSpec("expertise", "Atlas expertise", "378 kinds of expert thinking, all one Atlas", Icons.Outlined.Psychology, Hub.Work,
-            "agents expertise expert specialist lawyer accountant coach consultant advisor lycho workforce think as") { c, _ -> ExpertiseScreen(c) },
+            "agents expertise expert specialist lawyer accountant coach consultant advisor lycho workforce think as") { c, open -> ExpertiseScreen(c, open) },
+        ScreenSpec("expertisestudio", "Expertise Studio", "Write a kind of expertise of your own for Atlas to think with", Icons.Outlined.EditNote, Hub.Work,
+            "agent studio create agent custom expertise build my own expert persona lycho") { c, _ -> ExpertiseStudio(c) },
+        ScreenSpec("engineroom", "Engine room", "Atlas's machinery: model calls, providers, expertise use", Icons.Outlined.Memory, Hub.Tools,
+            "master panel engine room router log model calls providers ai usage lycho owner") { _, _ -> EngineRoom() },
         ScreenSpec("pulse", "Atlas Pulse", "Everything Atlas is thinking and doing, live", Icons.Outlined.MonitorHeart, Hub.Tools,
             "pulse activity live events nervous system what is atlas doing lycho") { _, _ -> PulseScreen() },
     )
 }
 
 @Composable
-fun ExpertiseScreen(container: AppContainer) {
+fun ExpertiseScreen(container: AppContainer, open: (String) -> Unit = {}) {
     val ctx = LocalContext.current
     var q by remember { mutableStateOf("") }
     var sector by remember { mutableStateOf<String?>(null) }
@@ -82,6 +90,7 @@ fun ExpertiseScreen(container: AppContainer) {
 
     val list = remember(q, sector) { Expertise.search(ctx, q, sector) }
     AtlasScreen(title = "Atlas expertise", subtitle = "One Atlas, thinking like the expert each question needs", hub = Hub.Work,
+        actions = { IconButton(onClick = { open(com.nizam.app.feature.nx.Nx.route("expertisestudio")) }) { Icon(Icons.Outlined.Add, "Write your own expertise") } },
         empty = if (list.isEmpty()) EmptySpec(Icons.Outlined.Search, "Nothing matches", "Try a different word, or clear the sector.") else null) {
         item("auto") {
             Group(Modifier.padding(horizontal = Space.page)) {

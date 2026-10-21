@@ -36,14 +36,52 @@ object Expertise {
                     o.optString("fields"), o.optString("prompt").ifBlank { null }, o.optBoolean("heavy"),
                 )
             }
-        }.getOrDefault(emptyList()).also { cache = it }
+        }.getOrDefault(emptyList()).let { custom(c) + it }.also { cache = it }
+    }
+
+    // ── Expertise Studio: kinds of expertise you write yourself (absorbed from LYCHO's Agent Studio) ──
+
+    fun custom(c: Context): List<Expert> = runCatching {
+        val arr = JSONArray(prefs(c).getString("custom", "[]"))
+        (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            Expert(o.getString("id"), o.getString("name"), "Yours", o.getString("role"), "", o.optString("prompt").ifBlank { null }, o.optBoolean("heavy"))
+        }
+    }.getOrDefault(emptyList())
+
+    fun saveCustom(c: Context, id: String?, name: String, role: String, prompt: String, heavy: Boolean): Expert {
+        val e = Expert(id ?: "mine_${System.currentTimeMillis()}", name.trim(), "Yours", role.trim(), "", prompt.trim().ifBlank { null }, heavy)
+        val list = custom(c).filter { it.id != e.id } + e
+        val arr = JSONArray()
+        list.forEach { x -> arr.put(org.json.JSONObject().put("id", x.id).put("name", x.name).put("role", x.role).put("prompt", x.prompt ?: "").put("heavy", x.heavy)) }
+        prefs(c).edit().putString("custom", arr.toString()).apply()
+        cache = null
+        Pulse.emit(Pulse.Kind.CHANGED, "New expertise: ${e.name}", "Expertise Studio")
+        return e
+    }
+
+    fun deleteCustom(c: Context, id: String) {
+        val arr = JSONArray()
+        custom(c).filter { it.id != id }.forEach { x -> arr.put(org.json.JSONObject().put("id", x.id).put("name", x.name).put("role", x.role).put("prompt", x.prompt ?: "").put("heavy", x.heavy)) }
+        prefs(c).edit().putString("custom", arr.toString()).apply()
+        cache = null
+    }
+
+    fun noteUse(c: Context, e: Expert) {
+        val p = prefs(c)
+        p.edit().putInt("uses|${e.id}", p.getInt("uses|${e.id}", 0) + 1).apply()
+    }
+
+    fun topUsed(c: Context, n: Int = 8): List<Pair<Expert, Int>> {
+        val p = prefs(c)
+        return all(c).map { it to p.getInt("uses|${it.id}", 0) }.filter { it.second > 0 }.sortedByDescending { it.second }.take(n)
     }
 
     fun find(c: Context, id: String) = all(c).firstOrNull { it.id == id }
 
     fun sectors(c: Context): List<Pair<String, Int>> =
         all(c).groupBy { it.sector }.map { it.key to it.value.size }
-            .sortedWith(compareBy<Pair<String, Int>> { if (it.first == "Core") 0 else 1 }.thenBy { it.first })
+            .sortedWith(compareBy<Pair<String, Int>> { when (it.first) { "Yours" -> 0; "Core" -> 1; else -> 2 } }.thenBy { it.first })
 
     fun search(c: Context, q: String, sector: String?): List<Expert> {
         val terms = q.lowercase().split(' ').filter { it.isNotBlank() }
@@ -82,7 +120,7 @@ object Expertise {
         var best: Expert? = null
         var bestScore = 0.0
         for (e in all(c)) {
-            if (e.sector == "Core") continue
+            if (e.sector == "Core" || e.sector == "Yours" && e.prompt == null) continue
             val hay = (e.name + " " + e.role).lowercase()
             var s = 0.0
             for (w in words) if (hay.contains(w)) s += if (e.name.lowercase().contains(w)) 2.0 else 1.0
@@ -96,6 +134,7 @@ object Expertise {
         if (c == null || !autoOn(c) || system?.contains(MARK) == true) return ""
         val e = pick(c, prompt.takeLast(1200)) ?: run { _current.value = null; return "" }
         _current.value = e
+        noteUse(c, e)
         Pulse.emit(Pulse.Kind.THINKING, "Thinking as ${e.name}", e.sector)
         return block(e)
     }
