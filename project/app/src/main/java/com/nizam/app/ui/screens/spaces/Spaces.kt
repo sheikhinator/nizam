@@ -38,6 +38,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -175,7 +176,8 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
         }
         Dock(Modifier.align(Alignment.BottomCenter), accent,
             onAsk = { open(Routes.ASK) }, onTalk = { open(Routes.VOICE) }, onAll = { open(Routes.MODULES) },
-            onSearch = { searching = true })
+            onSearch = { searching = true },
+            onLycho = { open(com.nizam.app.feature.nx.Nx.route("expertise")) }, onLychoHold = { open(com.nizam.app.feature.nx.Nx.route("pulse")) })
         QuickCaptureFab(container, Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 92.dp))
         com.nizam.app.feature.next.ShakeToUndo()
         val peek = sheetRoute
@@ -284,9 +286,16 @@ private fun Wide(f: Feature, onClick: () -> Unit) {
     }
 }
 
-/** The floating dock: search on the left, the Atlas orb in the middle (tap to ask, hold to talk), every tool on the right. */
+/**
+ * The floating dock: search on the left, the Atlas orb (tap to ask, hold to talk), the LYCHO orb beside it
+ * (Atlas's mind at work: tap for its expertise, hold for Atlas Pulse), every tool on the right.
+ */
 @Composable
-private fun Dock(modifier: Modifier, accent: Color, onAsk: () -> Unit, onTalk: () -> Unit, onAll: () -> Unit, onSearch: () -> Unit) {
+private fun Dock(modifier: Modifier, accent: Color, onAsk: () -> Unit, onTalk: () -> Unit, onAll: () -> Unit, onSearch: () -> Unit,
+                 onLycho: () -> Unit, onLychoHold: () -> Unit) {
+    val halo by com.nizam.app.feature.agentic.AgentHalo.state.collectAsState()
+    val expert by com.nizam.app.feature.expertise.Expertise.current.collectAsState()
+    val mindState = when { halo.active -> OrbState.Working; expert != null -> OrbState.Thinking; else -> OrbState.Idle }
     Row(modifier.windowInsetsPadding(WindowInsets.navigationBars).padding(bottom = 12.dp).height(64.dp)
         .shadow(16.dp, RoundedCornerShape(32.dp)).liquidGlass(RoundedCornerShape(32.dp)).padding(horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -295,6 +304,9 @@ private fun Dock(modifier: Modifier, accent: Color, onAsk: () -> Unit, onTalk: (
         }
         Box(Modifier.size(56.dp).pointerInput(Unit) { detectTapGestures(onTap = { onAsk() }, onLongPress = { onTalk() }) }, contentAlignment = Alignment.Center) {
             AtlasOrb(OrbState.Idle, diameter = 52.dp)
+        }
+        Box(Modifier.size(56.dp).pointerInput(Unit) { detectTapGestures(onTap = { onLycho() }, onLongPress = { onLychoHold() }) }, contentAlignment = Alignment.Center) {
+            com.nizam.app.ui.design.LychoOrb(mindState, diameter = 50.dp)
         }
         Box(Modifier.size(44.dp).clip(RoundedCornerShape(22.dp)).pressable { onAll() }, contentAlignment = Alignment.Center) {
             Icon(Icons.Outlined.Apps, "All tools", tint = MaterialTheme.colorScheme.onSurfaceVariant)

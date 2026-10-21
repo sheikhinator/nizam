@@ -49,7 +49,9 @@ object Ai {
         val dataBlock = if (bg || prompt.contains("recorded data, shared by them")) "" else runCatching {
             Router.appContext?.let { com.nizam.app.feature.nx.Roads.chatContext(it, prompt) }
         }.getOrNull().orEmpty()
-        val system = listOfNotNull(system, model.ifBlank { null }, dataBlock.ifBlank { null }, com.nizam.app.feature.future.Lang.instruction().ifBlank { null }).joinToString("\n\n").ifBlank { null }
+        // one mind: when a question needs an expert, Atlas thinks with that expertise (still Atlas, same memory and voice)
+        val expertise = if (bg) "" else runCatching { com.nizam.app.feature.expertise.Expertise.autoBlock(Router.appContext, prompt, system) }.getOrDefault("")
+        val system = listOfNotNull(system, expertise.ifBlank { null }, model.ifBlank { null }, dataBlock.ifBlank { null }, com.nizam.app.feature.future.Lang.instruction().ifBlank { null }).joinToString("\n\n").ifBlank { null }
         val tag = kotlin.coroutines.coroutineContext[com.nizam.app.feature.wild.AgentMeter.Tag]?.name
         com.nizam.app.feature.agentic.AgentHalo.begin(tag?.let { "$it is working" } ?: if (bg) "Working in the background" else "Atlas is thinking")
         if (!bg) com.nizam.app.feature.agentic.MemorySources.record(Router.appContext, prompt)

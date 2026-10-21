@@ -106,10 +106,10 @@ object AgentHalo {
     private val depth = AtomicInteger(0)
 
     fun begin(label: String) {
-        if (depth.getAndIncrement() == 0) { halted = false; _state.value = State(true, label, listOf(label)) } else step(label)
+        if (depth.getAndIncrement() == 0) { halted = false; _state.value = State(true, label, listOf(label)); com.nizam.app.feature.expertise.Pulse.emit(com.nizam.app.feature.expertise.Pulse.Kind.WORKING, label) } else step(label)
     }
     fun step(text: String) { _state.update { it.copy(label = text, steps = (it.steps + text).takeLast(8)) } }
-    fun end() { if (depth.updateAndGet { maxOf(0, it - 1) } == 0) _state.value = State() }
+    fun end() { if (depth.updateAndGet { maxOf(0, it - 1) } == 0) { val was = _state.value.label; _state.value = State(); if (was.isNotBlank()) com.nizam.app.feature.expertise.Pulse.emit(com.nizam.app.feature.expertise.Pulse.Kind.DONE, "Done: $was") } }
     fun stop() { halted = true; step("Stopping…") }
     fun check() { if (halted) throw IllegalStateException("Stopped from the Atlas pill.") }
 }

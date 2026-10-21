@@ -1,0 +1,124 @@
+package com.nizam.app.feature.expertise
+
+import android.content.Context
+import com.nizam.app.ui.design.Hub
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import org.json.JSONArray
+
+/**
+ * Atlas's expertise library: 378 kinds of expert thinking (absorbed from LYCHO), all of them Atlas.
+ * Nothing here is a separate agent. When a question needs a lawyer, a coach or an accountant, Atlas
+ * thinks with that expertise and says so in one small line; memory, voice and personality stay Atlas's own.
+ */
+object Expertise {
+    data class Expert(
+        val id: String, val name: String, val sector: String, val role: String,
+        val fields: String, val prompt: String?, val heavy: Boolean,
+    ) {
+        val hub: Hub get() = hubFor(sector)
+    }
+
+    /** What Atlas is thinking with right now, for the small "thinking as…" line and the LYCHO orb. */
+    private val _current = MutableStateFlow<Expert?>(null)
+    val current: StateFlow<Expert?> = _current
+
+    @Volatile private var cache: List<Expert>? = null
+
+    fun all(c: Context): List<Expert> = cache ?: synchronized(this) {
+        cache ?: runCatching {
+            val text = c.assets.open("expertise.json").bufferedReader().use { it.readText() }
+            val arr = JSONArray(text)
+            (0 until arr.length()).map { i ->
+                val o = arr.getJSONObject(i)
+                Expert(
+                    o.getString("id"), o.getString("name"), o.getString("sector"), o.getString("role"),
+                    o.optString("fields"), o.optString("prompt").ifBlank { null }, o.optBoolean("heavy"),
+                )
+            }
+        }.getOrDefault(emptyList()).also { cache = it }
+    }
+
+    fun find(c: Context, id: String) = all(c).firstOrNull { it.id == id }
+
+    fun sectors(c: Context): List<Pair<String, Int>> =
+        all(c).groupBy { it.sector }.map { it.key to it.value.size }
+            .sortedWith(compareBy<Pair<String, Int>> { if (it.first == "Core") 0 else 1 }.thenBy { it.first })
+
+    fun search(c: Context, q: String, sector: String?): List<Expert> {
+        val terms = q.lowercase().split(' ').filter { it.isNotBlank() }
+        return all(c).filter { e ->
+            (sector == null || e.sector == sector) &&
+                terms.all { t -> e.name.lowercase().contains(t) || e.role.lowercase().contains(t) || e.sector.lowercase().contains(t) }
+        }
+    }
+
+    /** The instruction that makes Atlas think with one expertise, without becoming someone else. */
+    fun block(e: Expert): String {
+        val base = e.prompt ?: (
+            "You are Atlas, thinking with your ${e.name} expertise (${e.sector}). ${e.role} " +
+                "Be practical, specific and concise; structure longer answers with short headings or bullets. " +
+                "Flag anything with legal, medical or financial risk clearly."
+            )
+        val facts = if (e.fields.isBlank()) "" else " When useful, end with the key facts (${e.fields.replace(",", ", ")})."
+        return "$MARK\n$base$facts\nYou are still Atlas: the same memory, the same voice and the same care. Never call yourself an agent or by another name."
+    }
+
+    const val MARK = "ATLAS EXPERTISE"
+
+    private fun prefs(c: Context) = c.getSharedPreferences("expertise", 0)
+    fun autoOn(c: Context) = prefs(c).getBoolean("auto", true)
+    fun setAuto(c: Context, on: Boolean) = prefs(c).edit().putBoolean("auto", on).apply()
+
+    /**
+     * Picks the expertise a question needs, by meaning words, on the phone (no model call).
+     * Returns null for everyday questions, so plain Atlas answers them.
+     */
+    fun pick(c: Context, question: String): Expert? {
+        val q = question.lowercase()
+        if (q.length < 24) return null
+        val words = Regex("[a-z]{4,}").findAll(q).map { it.value }.filter { it !in STOP }.toSet()
+        if (words.size < 3) return null
+        var best: Expert? = null
+        var bestScore = 0.0
+        for (e in all(c)) {
+            if (e.sector == "Core") continue
+            val hay = (e.name + " " + e.role).lowercase()
+            var s = 0.0
+            for (w in words) if (hay.contains(w)) s += if (e.name.lowercase().contains(w)) 2.0 else 1.0
+            if (s > bestScore) { bestScore = s; best = e }
+        }
+        return if (bestScore >= 3.0) best else null
+    }
+
+    /** Used by Ai.generate: the expertise block for a foreground question, or "" when plain Atlas is right. */
+    fun autoBlock(c: Context?, prompt: String, system: String?): String {
+        if (c == null || !autoOn(c) || system?.contains(MARK) == true) return ""
+        val e = pick(c, prompt.takeLast(1200)) ?: run { _current.value = null; return "" }
+        _current.value = e
+        Pulse.emit(Pulse.Kind.THINKING, "Thinking as ${e.name}", e.sector)
+        return block(e)
+    }
+
+    fun using(e: Expert?) { _current.value = e }
+
+    fun hubFor(sector: String): Hub = when (sector) {
+        "Sales & Marketing" -> Hub.Create
+        "Customer Service", "Non-profit & Social" -> Hub.Social
+        "Healthcare" -> Hub.Health
+        "Legal", "Technology", "Government & Public Sector" -> Hub.Tools
+        "Finance & Accounting", "Ecommerce & Retail", "Insurance" -> Hub.Money
+        "Real Estate", "Construction & Property", "Agriculture" -> Hub.Home
+        "Education" -> Hub.Learn
+        "Hospitality", "Logistics & Supply Chain", "Automotive" -> Hub.Travel
+        "Media & Entertainment" -> Hub.Media
+        else -> Hub.Work
+    }
+
+    private val STOP = setOf(
+        "what", "when", "where", "which", "with", "would", "could", "should", "about", "there", "their", "this", "that",
+        "have", "from", "your", "into", "them", "they", "then", "than", "been", "being", "were", "will", "just", "like",
+        "make", "know", "need", "want", "please", "help", "tell", "give", "some", "more", "also", "very", "much", "many",
+        "does", "doing", "done", "here", "only", "after", "before", "today", "tomorrow", "atlas",
+    )
+}
