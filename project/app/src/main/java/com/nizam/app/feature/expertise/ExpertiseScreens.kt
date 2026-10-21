@@ -101,7 +101,7 @@ fun ExpertiseScreen(container: AppContainer, open: (String) -> Unit = {}) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text("Choose expertise on its own", style = MaterialTheme.typography.titleMedium)
-                        Text("When a question needs an expert, Atlas thinks as one and tells you which.",
+                        Text("Off by default for the fastest replies. When on, Atlas thinks like the right expert and tells you which. Also in the chat box as Expert.",
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Switch(auto, { auto = it; Expertise.setAuto(ctx, it) })

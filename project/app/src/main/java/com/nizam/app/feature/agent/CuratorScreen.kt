@@ -78,6 +78,7 @@ fun CuratorScreen(container: AppContainer) {
     var draft by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var useWeb by remember { mutableStateOf(false) }
+    var expertOn by remember { mutableStateOf(com.nizam.app.feature.expertise.Expertise.autoOn(context)) }
     var speakBack by remember { mutableStateOf(false) }
     var autoApprove by remember { mutableStateOf(false) }
     var pending by remember { mutableStateOf<List<Pair<String, JSONObject>>>(emptyList()) }
@@ -335,6 +336,8 @@ fun CuratorScreen(container: AppContainer) {
                     androidx.compose.material.icons.Icons.Filled.VolumeUp, speakBack) { speakBack = it; if (!it) speaker.stop() },
                 com.nizam.app.ui.components.ComposerToggle("Auto", "Run actions without asking first",
                     androidx.compose.material.icons.Icons.Filled.Bolt, autoApprove) { autoApprove = it },
+                com.nizam.app.ui.components.ComposerToggle("Expert", "Think like the right expert for each question (378 kinds)",
+                    androidx.compose.material.icons.Icons.Filled.School, expertOn) { expertOn = it; com.nizam.app.feature.expertise.Expertise.setAuto(context, it) },
                 com.nizam.app.ui.components.ComposerToggle("Think", "Reason it through before answering",
                     androidx.compose.material.icons.Icons.Filled.Psychology, ChatModes.think) { ChatModes.think = it },
                 com.nizam.app.ui.components.ComposerToggle("DeepSearch", "Many web searches, one sourced report",

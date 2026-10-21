@@ -105,7 +105,7 @@ object Expertise {
     const val MARK = "ATLAS EXPERTISE"
 
     private fun prefs(c: Context) = c.getSharedPreferences("expertise", 0)
-    fun autoOn(c: Context) = prefs(c).getBoolean("auto", true)
+    fun autoOn(c: Context) = prefs(c).getBoolean("auto", false)
     fun setAuto(c: Context, on: Boolean) = prefs(c).edit().putBoolean("auto", on).apply()
 
     /**
