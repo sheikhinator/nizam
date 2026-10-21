@@ -158,7 +158,11 @@ object Roads {
             val t = lineOf(o, spec)
             if (t.isBlank()) null else Item(spec.title, spec.hub, stamp(o, spec), t)
         }
-    } + cache + com.nizam.app.feature.flows.Feeds.items(c)).sortedByDescending { it.ts }
+    } + cache + com.nizam.app.feature.flows.Feeds.items(c)).let { all ->
+        // the privacy dial: a hub switched off is invisible to every insight, lens and chat
+        val blocked = com.nizam.app.feature.expertise.PrivacyDial.blocked(c)
+        if (blocked.isEmpty()) all else all.filter { it.hub !in blocked }
+    }.sortedByDescending { it.ts }
 
     /** Entries made on each of the last [days] days, oldest first. */
     fun pulse(c: Context, days: Int = 7): List<Int> {

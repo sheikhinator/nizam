@@ -11,6 +11,7 @@ import android.speech.RecognizerIntent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.filled.School
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.background
@@ -105,6 +106,10 @@ fun CuratorScreen(container: AppContainer) {
     var reviewMessage by remember { mutableStateOf<String?>(null) }
     var reviewFiles by remember { mutableStateOf<List<com.nizam.app.feature.attach.Attachment>>(emptyList()) }
     var reviewParts by remember { mutableStateOf<List<RunContextPart>>(emptyList()) }
+
+    // an expert's desk can hand over a first question; the expertise stays pinned while it's open
+    val pinnedExpert by com.nizam.app.feature.expertise.Expertise.pinned.collectAsState()
+    androidx.compose.runtime.LaunchedEffect(Unit) { com.nizam.app.feature.expertise.Expertise.takeAsk()?.let { draft = it } }
 
     // Open the connection to the AI and build the app snapshot before the first message is typed
     androidx.compose.runtime.LaunchedEffect(Unit) {
@@ -263,6 +268,20 @@ fun CuratorScreen(container: AppContainer) {
             val n = listState.layoutInfo.totalItemsCount
             if (n > 0) listState.animateScrollToItem(n - 1)
         }
+        pinnedExpert?.let { ex ->
+            Row(Modifier.fillMaxWidth().padding(bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text("Thinking as ${ex.name}", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, modifier = Modifier.weight(1f))
+                val last = turns.lastOrNull()
+                if (last != null && !last.fromUser && !busy) {
+                    val q = turns.lastOrNull { it.fromUser }?.text
+                    if (q != null) Text("Keep as example", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.clickable(role = Role.Button) {
+                            com.nizam.app.feature.expertise.Training.add(context, ex.id, q, last.text)
+                            com.nizam.app.ui.components.Feedback.show("Kept. ${ex.name} will follow this shape.")
+                        }.padding(6.dp))
+                }
+            }
+        }
         LazyColumn(Modifier.weight(1f), state = listState) {
             if (turns.isEmpty()) {
                 item {
@@ -274,6 +293,16 @@ fun CuratorScreen(container: AppContainer) {
                             Text(s.title, style = MaterialTheme.typography.titleMedium)
                             Text(s.body, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
+                    }
+                    // context handoff: carry on from the tool you just used
+                    val came = androidx.compose.runtime.remember { com.nizam.app.feature.nx.Mind.lastVisited(context) }
+                    if (came != null) {
+                        com.nizam.app.ui.design.Label("Carry on")
+                        Text("Help me with what I was doing in ${came.title}",
+                            style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.fillMaxWidth().clickable {
+                                send("I was just using ${came.title} (${came.blurb}). Help me with what I was doing there, using what I've recorded in it.")
+                            }.padding(vertical = 10.dp))
                     }
                     com.nizam.app.ui.design.Label("Try")
                     listOf(

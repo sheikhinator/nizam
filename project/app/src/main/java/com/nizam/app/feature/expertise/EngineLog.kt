@@ -24,7 +24,7 @@ object EngineLog {
         runCatching {
             val p = c.getSharedPreferences("engine_log", 0)
             val day = LocalDate.now().toString()
-            if (p.getString("day", "") != day) p.edit().clear().putString("day", day).apply()
+            if (p.getString("day", "") != day) { archive(c); p.edit().clear().putString("day", day).apply() }
             val k = provider.replace('|', ' ')
             p.edit()
                 .putInt("calls|$k", p.getInt("calls|$k", 0) + 1)
@@ -36,6 +36,27 @@ object EngineLog {
     }
 
     data class Day(val provider: String, val calls: Int, val ok: Int, val avgMs: Long)
+
+    /** Yesterday's totals move into a 60-day history (for Analytics, Economy and the zero-cost report). */
+    private fun archive(c: Context) {
+        val p = c.getSharedPreferences("engine_log", 0)
+        val day = p.getString("day", null) ?: return
+        val st = com.nizam.app.feature.next.JsonStore(c, "engine_days")
+        val rows = p.all.keys.filter { it.startsWith("calls|") }.map { it.removePrefix("calls|") }.map { k ->
+            org.json.JSONObject().put("id", "$day|$k").put("day", day).put("provider", k).put("calls", p.getInt("calls|$k", 0))
+                .put("ok", p.getInt("ok|$k", 0)).put("ms", p.getLong("ms|$k", 0))
+        }
+        if (rows.isNotEmpty()) st.save((st.all().filter { it.optString("day") != day } + rows).takeLast(60 * 8))
+    }
+
+    /** Daily history plus today, as (day, provider, calls, ok, avgMs). */
+    fun history(c: Context): List<Pair<String, Day>> {
+        val past = com.nizam.app.feature.next.JsonStore(c, "engine_days").all().map { o ->
+            val ok = o.optInt("ok")
+            o.optString("day") to Day(o.optString("provider"), o.optInt("calls"), ok, if (ok > 0) o.optLong("ms") / ok else 0)
+        }
+        return past + today(c).map { LocalDate.now().toString() to it }
+    }
 
     fun today(c: Context): List<Day> {
         val p = c.getSharedPreferences("engine_log", 0)

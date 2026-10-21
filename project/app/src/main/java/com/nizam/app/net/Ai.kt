@@ -51,7 +51,8 @@ object Ai {
         }.getOrNull().orEmpty()
         // one mind: when a question needs an expert, Atlas thinks with that expertise (still Atlas, same memory and voice)
         val expertise = if (bg) "" else runCatching { com.nizam.app.feature.expertise.Expertise.autoBlock(Router.appContext, prompt, system) }.getOrDefault("")
-        val system = listOfNotNull(system, expertise.ifBlank { null }, model.ifBlank { null }, dataBlock.ifBlank { null }, com.nizam.app.feature.future.Lang.instruction().ifBlank { null }).joinToString("\n\n").ifBlank { null }
+        val laws = if (bg) "" else runCatching { com.nizam.app.feature.expertise.Laws.block(Router.appContext) }.getOrDefault("")
+        val system = listOfNotNull(system, expertise.ifBlank { null }, laws.ifBlank { null }, model.ifBlank { null }, dataBlock.ifBlank { null }, com.nizam.app.feature.future.Lang.instruction().ifBlank { null }).joinToString("\n\n").ifBlank { null }
         val tag = kotlin.coroutines.coroutineContext[com.nizam.app.feature.wild.AgentMeter.Tag]?.name
         val expert = if (expertise.isBlank()) null else com.nizam.app.feature.expertise.Expertise.current.value
         val heavy = !bg && com.nizam.app.feature.expertise.Tiers.isHeavy(prompt, expert?.heavy == true)

@@ -33,8 +33,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.nizam.app.AppContainer
 import com.nizam.app.feature.agentic.AgentHalo
-import com.nizam.app.feature.nx.ChatSpec
-import com.nizam.app.feature.nx.ChatToolScreen
 import com.nizam.app.feature.nx.ScreenSpec
 import com.nizam.app.ui.design.AtlasScreen
 import com.nizam.app.ui.design.Capsule
@@ -71,24 +69,13 @@ fun ExpertiseScreen(container: AppContainer, open: (String) -> Unit = {}) {
     val ctx = LocalContext.current
     var q by remember { mutableStateOf("") }
     var sector by remember { mutableStateOf<String?>(null) }
-    var chosen by remember { mutableStateOf<Expertise.Expert?>(null) }
+    var chosen by remember { mutableStateOf(Expertise.takeDesk(ctx)) }
     var auto by remember { mutableStateOf(Expertise.autoOn(ctx)) }
     val sectors = remember { Expertise.sectors(ctx) }
 
-    val open = chosen
-    if (open != null) {
-        BackHandler { chosen = null }
-        DisposableEffect(open.id) {
-            Expertise.using(open)
-            Pulse.emit(Pulse.Kind.THINKING, "Thinking as ${open.name}", open.sector, open.hub.label)
-            onDispose { Expertise.using(null) }
-        }
-        val spec = remember(open.id) {
-            ChatSpec("expert_${open.id}", open.name, open.role, Icons.Outlined.Psychology, open.hub,
-                opener = "I'm thinking with my ${open.name.lowercase()} expertise now. What do you need?",
-                persona = { Expertise.block(open) })
-        }
-        ChatToolScreen(spec, container)
+    val desk = chosen
+    if (desk != null) {
+        ExpertDesk(desk, container, open) { chosen = null }
         return
     }
 

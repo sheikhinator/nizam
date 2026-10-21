@@ -28,5 +28,22 @@ object Pulse {
         val e = Event(kind, title, detail, hub)
         _events.tryEmit(e)
         _recent.update { (listOf(e) + it).take(60) }
+        if (kind != Kind.THINKING) keep(e)
     }
+
+    // Audit & Observe: everything except passing thoughts is kept on the phone (last 600), written off the main thread
+    private val writer = java.util.concurrent.Executors.newSingleThreadExecutor()
+    private fun keep(e: Event) {
+        val c = com.nizam.app.net.Router.appContext ?: return
+        writer.execute {
+            runCatching {
+                val st = log(c)
+                val list = st.all() + org.json.JSONObject().put("id", "${e.at}${(0..999).random()}").put("kind", e.kind.name)
+                    .put("title", e.title).put("detail", e.detail).put("hub", e.hub ?: "").put("at", e.at)
+                st.save(list.takeLast(600))
+            }
+        }
+    }
+
+    fun log(c: android.content.Context) = com.nizam.app.feature.next.JsonStore(c, "pulse_log")
 }

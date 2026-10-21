@@ -24,8 +24,28 @@ object Expertise {
     val current: StateFlow<Expert?> = _current
 
     @Volatile private var cache: List<Expert>? = null
+    @Volatile internal var appCtx: Context? = null
+
+    /**
+     * Expertise chosen by hand (an expert's desk, Swarm, Nexus): Atlas thinks with its full instructions,
+     * its trained examples and any improved version Orion wrote, whether or not automatic expertise is on.
+     */
+    private val _pinned = MutableStateFlow<Expert?>(null)
+    val pinned: StateFlow<Expert?> = _pinned
+    fun pin(e: Expert?) { _pinned.value = e; _current.value = e }
+
+    /** A first message waiting for the chat box (from an expert's starter prompts). */
+    @Volatile private var pendingAsk: String? = null
+    fun queueAsk(text: String) { pendingAsk = text }
+    fun takeAsk(): String? = pendingAsk.also { pendingAsk = null }
+
+    /** An expert's desk to open next (from Society, World, Forge or Marketplace). */
+    @Volatile private var pendingDesk: String? = null
+    fun openDesk(id: String) { pendingDesk = id }
+    fun takeDesk(c: Context): Expert? = pendingDesk?.let { id -> pendingDesk = null; find(c, id) }
 
     fun all(c: Context): List<Expert> = cache ?: synchronized(this) {
+        appCtx = c.applicationContext
         cache ?: runCatching {
             val text = c.assets.open("expertise.json").bufferedReader().use { it.readText() }
             val arr = JSONArray(text)
@@ -56,6 +76,7 @@ object Expertise {
         list.forEach { x -> arr.put(org.json.JSONObject().put("id", x.id).put("name", x.name).put("role", x.role).put("prompt", x.prompt ?: "").put("heavy", x.heavy)) }
         prefs(c).edit().putString("custom", arr.toString()).apply()
         cache = null
+        Versions.record(c, e.id, e.prompt.orEmpty(), if (id == null) "Created" else "Edited by you")
         Pulse.emit(Pulse.Kind.CHANGED, "New expertise: ${e.name}", "Expertise Studio")
         return e
     }
@@ -93,7 +114,7 @@ object Expertise {
 
     /** The instruction that makes Atlas think with one expertise, without becoming someone else. */
     fun block(e: Expert): String {
-        val base = e.prompt ?: (
+        val base = appCtx?.let { Versions.override(it, e.id) } ?: e.prompt ?: (
             "You are Atlas, thinking with your ${e.name} expertise (${e.sector}). ${e.role} " +
                 "Be practical, specific and concise; structure longer answers with short headings or bullets. " +
                 "Flag anything with legal, medical or financial risk clearly."
@@ -134,7 +155,12 @@ object Expertise {
 
     /** Used by Ai.generate: the expertise block for a foreground question, or "" when plain Atlas is right. */
     fun autoBlock(c: Context?, prompt: String, system: String?): String {
-        if (c == null || !autoOn(c) || system?.contains(MARK) == true) return ""
+        if (c == null || system?.contains(MARK) == true) return ""
+        _pinned.value?.let { e ->
+            noteUse(c, e)
+            return block(e) + Training.block(c, e.id)
+        }
+        if (!autoOn(c)) return ""
         val question = lastUserText(prompt)
         // commands ("spent 500 on…", "remind me…") are Atlas's own job: no expertise, no extra words
         if (com.nizam.app.net.Router.classify(question, false, false, emptyList()) == com.nizam.app.net.Router.Lane.ACT) { _current.value = null; return "" }

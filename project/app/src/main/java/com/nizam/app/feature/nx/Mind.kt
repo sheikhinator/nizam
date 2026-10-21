@@ -61,6 +61,10 @@ object Mind {
         }
     }
 
+    /** Context handoff: the last tool opened in the past half hour (not Atlas's own chat), so the next screen can carry on from it. */
+    fun lastVisited(c: Context): Spec? = events(c).lastOrNull { it.first !in setOf("atlastalk", "find", "pulse") }
+        ?.takeIf { System.currentTimeMillis() - it.second < 30 * 60_000L }?.let { Nx.find(it.first) }
+
     @Volatile private var countsAt = 0L
     @Volatile private var countsCache: Map<String, Int> = emptyMap()
 
@@ -155,15 +159,25 @@ internal fun MindDock(spec: Spec, open: (String) -> Unit, modifier: Modifier = M
     val learned = remember(spec.id, shown) { if (shown) Mind.learned(c, spec) else emptyList() }
     val next = remember(spec.id, shown) { if (shown) Mind.after(c, spec.id) else emptyList() }
     val related = remember(spec.id, shown) { if (shown) Mind.related(spec) else emptyList() }
+    // a feature the merge upgraded gains its new power here, in place
+    val power = remember(spec.id) { com.nizam.app.feature.expertise.LifeFeatures.attachedTo(spec.id) }
+    var lensOpen by remember { mutableStateOf(false) }
+    if (lensOpen && power != null) com.nizam.app.feature.expertise.LensSheet(power, open) { lensOpen = false }
     Box(modifier) {
         if (!shown) {
             Box(Modifier.size(40.dp).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.88f), CircleShape)
                 .clickable { shown = true }, contentAlignment = Alignment.Center) {
                 Text("✦", color = MaterialTheme.colorScheme.onPrimary)
             }
+            if (power != null) Box(Modifier.align(Alignment.TopEnd).size(10.dp).background(MaterialTheme.colorScheme.tertiary, CircleShape))
         } else {
             Column(Modifier.fillMaxWidth(0.86f).background(MaterialTheme.colorScheme.surface, RoundedCornerShape(18.dp)).padding(14.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                if (power != null) {
+                    Text("Across your life", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
+                    Text(power.what, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    TextButton(onClick = { shown = false; lensOpen = true }) { Text("✦ ${power.title}") }
+                }
                 Text("What Atlas knows here", fontWeight = FontWeight.SemiBold)
                 if (learned.isEmpty() && next.isEmpty() && related.isEmpty()) Text("Still learning how you use this. Use it a few times and I will have more to say.",
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

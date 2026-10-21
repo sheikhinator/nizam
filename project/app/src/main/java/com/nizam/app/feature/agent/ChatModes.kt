@@ -26,7 +26,9 @@ object ChatModes {
     var imagine by mutableStateOf(false)
     var contemplate by mutableStateOf(false)
     var persona by mutableStateOf("Atlas")
-    val PERSONAS = listOf("Atlas", "Fun", "Concise", "Coach", "Scholar", "Roast")
+    private val BUILT_IN = listOf("Atlas", "Fun", "Concise", "Coach", "Scholar", "Roast")
+    /** Atlas's six ways of speaking plus any you made in Personas. */
+    val PERSONAS: List<String> get() = BUILT_IN + com.nizam.app.feature.expertise.Personas.names(com.nizam.app.net.Router.appContext)
 
     fun personaPrompt(): String = when (persona) {
         "Fun" -> "\nPersonality: playful, witty and warm — jokes welcome, still accurate."
@@ -34,7 +36,9 @@ object ChatModes {
         "Coach" -> "\nPersonality: a motivating coach — direct, encouraging, always ends with a concrete next step."
         "Scholar" -> "\nPersonality: a careful scholar — nuanced, cites reasoning and sources, notes uncertainty."
         "Roast" -> "\nPersonality: cheeky and teasing (never cruel), roasts them lightly, then genuinely helps."
-        else -> ""
+        "Atlas" -> ""
+        else -> com.nizam.app.feature.expertise.Personas.styleOf(com.nizam.app.net.Router.appContext, persona)
+            ?.let { "\nWay of speaking ($persona): $it. You are still Atlas." } ?: ""
     } + if (think) "\nThink it through carefully before answering: weigh the options, check your facts and arithmetic, " +
         "then give a short 'Reasoning' section followed by the answer." else ""
 
