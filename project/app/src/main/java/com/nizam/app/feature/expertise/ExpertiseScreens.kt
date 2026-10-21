@@ -1,7 +1,10 @@
 package com.nizam.app.feature.expertise
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -83,6 +86,21 @@ fun ExpertiseScreen(container: AppContainer, open: (String) -> Unit = {}) {
     AtlasScreen(title = "Atlas expertise", subtitle = "One Atlas, thinking like the expert each question needs", hub = Hub.Work,
         actions = { IconButton(onClick = { open(com.nizam.app.feature.nx.Nx.route("expertisestudio")) }) { Icon(Icons.Outlined.Add, "Write your own expertise") } },
         empty = if (list.isEmpty()) EmptySpec(Icons.Outlined.Search, "Nothing matches", "Try a different word, or clear the sector.") else null) {
+        item("engines") {
+            // everything Atlas absorbed, one tap from the orb
+            val engines = remember { MindModules.all }
+            Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = Space.page, vertical = Space.xs),
+                horizontalArrangement = Arrangement.spacedBy(Space.s)) {
+                engines.forEach { sp ->
+                    Column(Modifier.width(76.dp).clickable { open(com.nizam.app.feature.nx.Nx.route(sp.id)) },
+                        horizontalAlignment = Alignment.CenterHorizontally) {
+                        com.nizam.app.ui.design.LivingIcon(sp.icon, sp.hub.tint())
+                        Text(sp.title, style = MaterialTheme.typography.labelSmall, maxLines = 2, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            modifier = Modifier.padding(top = Space.xs))
+                    }
+                }
+            }
+        }
         item("auto") {
             Group(Modifier.padding(horizontal = Space.page)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {

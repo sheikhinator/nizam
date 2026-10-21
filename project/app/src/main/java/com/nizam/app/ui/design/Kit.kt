@@ -79,6 +79,8 @@ fun AtlasScreen(
         if (hub == Hub.Deen) GeometricPattern(Modifier.fillMaxSize())
         LazyColumn(state = state, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = Space.xxl)) {
             item("atlas-title") {
+              Box {
+                if (hub != null) HubScene(hub, Modifier.matchParentSize())
                 Column(Modifier.fillMaxWidth().padding(start = Space.page, end = Space.page, top = Space.s, bottom = Space.l)) {
                     if (hub != null) HubMark(hub)
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -90,6 +92,7 @@ fun AtlasScreen(
                     if (subtitle != null) Text(subtitle, style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = Space.xs))
                 }
+              }
             }
             when {
                 loading -> item("atlas-skeleton") { SkeletonList(Modifier.padding(horizontal = Space.page)) }
