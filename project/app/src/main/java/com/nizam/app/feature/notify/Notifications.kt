@@ -233,6 +233,7 @@ class AtlasWorker(context: Context, params: WorkerParameters) : CoroutineWorker(
         runCatching { if (now in 18.0..20.0) com.nizam.app.feature.brain2.Radar.weekly(applicationContext, container) }
         runCatching { if (now in 9.0..10.0) com.nizam.app.feature.next.DocExpiry.check(applicationContext) }
         runCatching { com.nizam.app.feature.nx.Specials.tick(applicationContext, now) }
+        runCatching { com.nizam.app.feature.expertise.MindModules.tick(applicationContext) }
         runCatching { com.nizam.app.feature.companion.PetWorld.tick(applicationContext, now) }
         runCatching { if (now in 10.0..20.0) com.nizam.app.feature.next.PriceWatch.check(applicationContext) }
         runCatching { legacyAndNudges(applicationContext, now, container) }

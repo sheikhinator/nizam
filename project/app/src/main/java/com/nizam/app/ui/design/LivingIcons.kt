@@ -138,3 +138,12 @@ fun LivingIcon(
         })
     }
 }
+
+/** A value running 0→1 over [periodMs] forever (0 when Reduce motion is on): the clock for slow living motion. */
+@androidx.compose.runtime.Composable
+fun rememberLoop(periodMs: Int): Float {
+    if (Motion.still) return 0f
+    val t = androidx.compose.animation.core.rememberInfiniteTransition(label = "loop")
+    return t.animateFloat(0f, 1f, androidx.compose.animation.core.infiniteRepeatable(
+        androidx.compose.animation.core.tween(periodMs, easing = androidx.compose.animation.core.LinearEasing)), label = "loopv").value
+}

@@ -63,8 +63,8 @@ object Ai {
             com.nizam.app.feature.agentic.AgentHalo.check()
             if (bg && !Budget.allowBackground()) throw IllegalStateException("Atlas has used today's background AI allowance — it resets at midnight.")
             withContext(if (heavy) com.nizam.app.feature.expertise.Tiers.Heavy() else kotlin.coroutines.EmptyCoroutineContext) { Engine.limited {
-                val list = com.nizam.app.feature.agentic.Hybrid.apply(com.nizam.app.feature.nx.Sensitivity.route(Router.appContext, prompt, Router.endpoints(settings, Router.appContext, Router.Lane.ACT)),
-                    com.nizam.app.feature.agentic.Hybrid.mode(Router.appContext, tag))
+                val list = com.nizam.app.feature.expertise.ZeroCost.filter(Router.appContext, com.nizam.app.feature.agentic.Hybrid.apply(com.nizam.app.feature.nx.Sensitivity.route(Router.appContext, prompt, Router.endpoints(settings, Router.appContext, Router.Lane.ACT)),
+                    com.nizam.app.feature.agentic.Hybrid.mode(Router.appContext, tag)))
                 if (list.isEmpty()) throw MissingKeyException("No AI provider set up. Add a key in Settings › API keys.")
                 // too big for Groq's per-minute token limit? go straight to the long-context providers
                 val sized = com.nizam.app.feature.expertise.Tiers.fitToSize(list, com.nizam.app.feature.expertise.Tiers.estimateTokens(prompt, system, maxOutputTokens))
