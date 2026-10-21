@@ -29,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -45,6 +46,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.graphicsLayer
@@ -218,6 +220,9 @@ fun Creature(pet: Pet, mood: Companion.Mood, hearts: Int, modifier: Modifier) {
     val heartAnim = remember { Animatable(1f) }
     LaunchedEffect(hearts) { if (hearts > 0) { heartAnim.snapTo(0f); heartAnim.animateTo(1f, tween(900)) } }
     val base = Companion.colour(pet)
+    // the pet glances toward the dock while Atlas is working, then back to you
+    val halo by com.nizam.app.feature.agentic.AgentHalo.state.collectAsState()
+    val look by androidx.compose.animation.core.animateFloatAsState(if (halo.active) 1f else 0f, tween(500), label = "look")
     Canvas(modifier) {
         val w = size.width; val h = size.height
         if (!pet.hatched) { egg(pet.taps, clock); return@Canvas }
@@ -254,6 +259,14 @@ fun Creature(pet: Pet, mood: Companion.Mood, hearts: Int, modifier: Modifier) {
                 else addOval(Rect(c, r))
             }
             drawPath(bodyPath, base)
+            // depth: light from the top left, a soft shade toward the foot, a gentle rim
+            clipPath(bodyPath) {
+                drawCircle(androidx.compose.ui.graphics.Brush.radialGradient(listOf(Color.White.copy(alpha = 0.30f), Color.Transparent),
+                    c + Offset(-r * 0.38f, -r * 0.5f), r * 0.85f), r * 2f, c)
+                drawCircle(androidx.compose.ui.graphics.Brush.radialGradient(listOf(Color.Transparent, Color.Transparent, Color.Black.copy(alpha = 0.20f)),
+                    c + Offset(-r * 0.25f, -r * 0.35f), r * 1.55f), r * 2f, c)
+            }
+            drawPath(bodyPath, Color.White.copy(alpha = 0.10f), style = Stroke(r * 0.03f))
             // belly / face patch
             when (pet.species) {
                 "Penguin", "Owl" -> drawOval(Color(0xFFF4EFE6), Offset(c.x - r * 0.6f, c.y - r * 0.35f), Size(r * 1.2f, r * 1.25f))
@@ -271,9 +284,10 @@ fun Creature(pet: Pet, mood: Companion.Mood, hearts: Int, modifier: Modifier) {
             if (pet.accessory == "Glasses") { drawCircle(ink, r * 0.22f, Offset(c.x - eyeDx, eyeY), style = Stroke(r * 0.05f)); drawCircle(ink, r * 0.22f, Offset(c.x + eyeDx, eyeY), style = Stroke(r * 0.05f))
                 drawLine(ink, Offset(c.x - eyeDx + r * 0.22f, eyeY), Offset(c.x + eyeDx - r * 0.22f, eyeY), r * 0.05f) }
             fun dotEyes(size: Float, dx: Float = 0f, dy: Float = 0f) {
-                drawCircle(ink, r * size, Offset(c.x - eyeDx + dx, eyeY + dy)); drawCircle(ink, r * size, Offset(c.x + eyeDx + dx, eyeY + dy))
-                drawCircle(Color.White, r * size * 0.36f, Offset(c.x - eyeDx + dx + r * 0.04f, eyeY + dy - r * 0.04f))
-                drawCircle(Color.White, r * size * 0.36f, Offset(c.x + eyeDx + dx + r * 0.04f, eyeY + dy - r * 0.04f))
+                val lx = dx + look * r * 0.06f; val ly = dy + look * r * 0.05f
+                drawCircle(ink, r * size, Offset(c.x - eyeDx + lx, eyeY + ly)); drawCircle(ink, r * size, Offset(c.x + eyeDx + lx, eyeY + ly))
+                drawCircle(Color.White, r * size * 0.36f, Offset(c.x - eyeDx + lx + r * 0.04f, eyeY + ly - r * 0.04f))
+                drawCircle(Color.White, r * size * 0.36f, Offset(c.x + eyeDx + lx + r * 0.04f, eyeY + ly - r * 0.04f))
             }
             when {
                 mood == Companion.Mood.SLEEPY || mood == Companion.Mood.CALM || (blink && mood != Companion.Mood.SURPRISED) -> { arc(Offset(c.x - eyeDx, eyeY), r * 0.12f, ink, down = true); arc(Offset(c.x + eyeDx, eyeY), r * 0.12f, ink, down = true) }

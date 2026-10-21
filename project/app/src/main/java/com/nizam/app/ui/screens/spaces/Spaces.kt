@@ -61,6 +61,7 @@ import com.nizam.app.AppContainer
 import com.nizam.app.ui.design.AtlasOrb
 import com.nizam.app.ui.design.Hub
 import com.nizam.app.ui.design.OrbState
+import com.nizam.app.ui.design.parallax
 import com.nizam.app.ui.design.liquidGlass
 import com.nizam.app.ui.design.pressable
 import com.nizam.app.ui.design.wash
@@ -174,10 +175,11 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
                 }
             }
         }
-        Dock(Modifier.align(Alignment.BottomCenter), accent,
+        val tilt = com.nizam.app.ui.design.rememberTilt()
+        Dock(Modifier.align(Alignment.BottomCenter).parallax(tilt, 0.6f), accent,
             onAsk = { open(Routes.ASK) }, onTalk = { open(Routes.VOICE) }, onAll = { open(Routes.MODULES) },
             onSearch = { searching = true },
-            onLycho = { open(com.nizam.app.feature.nx.Nx.route("expertise")) }, onLychoHold = { open(com.nizam.app.feature.nx.Nx.route("pulse")) })
+            onLycho = { open(com.nizam.app.feature.nx.Nx.route("expertise")) }, onLychoHold = { open(com.nizam.app.feature.nx.Nx.route("pulse")) }, tilt = tilt)
         QuickCaptureFab(container, Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 92.dp))
         com.nizam.app.feature.next.ShakeToUndo()
         val peek = sheetRoute
@@ -292,7 +294,7 @@ private fun Wide(f: Feature, onClick: () -> Unit) {
  */
 @Composable
 private fun Dock(modifier: Modifier, accent: Color, onAsk: () -> Unit, onTalk: () -> Unit, onAll: () -> Unit, onSearch: () -> Unit,
-                 onLycho: () -> Unit, onLychoHold: () -> Unit) {
+                 onLycho: () -> Unit, onLychoHold: () -> Unit, tilt: androidx.compose.runtime.State<androidx.compose.ui.geometry.Offset>) {
     val halo by com.nizam.app.feature.agentic.AgentHalo.state.collectAsState()
     val expert by com.nizam.app.feature.expertise.Expertise.current.collectAsState()
     val mindState = when { halo.active -> OrbState.Working; expert != null -> OrbState.Thinking; else -> OrbState.Idle }
@@ -303,10 +305,10 @@ private fun Dock(modifier: Modifier, accent: Color, onAsk: () -> Unit, onTalk: (
             Icon(Icons.Outlined.Search, "Search", tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Box(Modifier.size(56.dp).pointerInput(Unit) { detectTapGestures(onTap = { onAsk() }, onLongPress = { onTalk() }) }, contentAlignment = Alignment.Center) {
-            AtlasOrb(OrbState.Idle, diameter = 52.dp)
+            AtlasOrb(OrbState.Idle, Modifier.parallax(tilt, 0.9f), diameter = 52.dp)
         }
         Box(Modifier.size(56.dp).pointerInput(Unit) { detectTapGestures(onTap = { onLycho() }, onLongPress = { onLychoHold() }) }, contentAlignment = Alignment.Center) {
-            com.nizam.app.ui.design.LychoOrb(mindState, diameter = 50.dp)
+            com.nizam.app.ui.design.LychoOrb(mindState, Modifier.parallax(tilt, 0.9f), diameter = 50.dp)
         }
         Box(Modifier.size(44.dp).clip(RoundedCornerShape(22.dp)).pressable { onAll() }, contentAlignment = Alignment.Center) {
             Icon(Icons.Outlined.Apps, "All tools", tint = MaterialTheme.colorScheme.onSurfaceVariant)
