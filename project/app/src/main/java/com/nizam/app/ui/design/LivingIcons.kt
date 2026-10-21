@@ -78,7 +78,8 @@ fun LivingIcon(
     val bg = MaterialTheme.colorScheme.background
     val still = Motion.still
     val period = when (nature) { Nature.GLINT -> 4200; Nature.BEAT -> 2400; Nature.GLOW -> 4800; Nature.SPARK -> 3600; Nature.TICK -> 2000; Nature.DRIFT -> 5200; Nature.FLOAT -> 3800 }
-    val phase = if (still) null else livingPhase(period)
+    // plain icons keep their depth but don't move: only icons with a meaning animate, so busy lists stay smooth
+    val phase = if (still || nature == Nature.FLOAT) null else livingPhase(period)
     val top = tint.copy(alpha = 0.30f).compositeOver(bg)
     val foot = tint.copy(alpha = 0.12f).compositeOver(bg)
     Box(

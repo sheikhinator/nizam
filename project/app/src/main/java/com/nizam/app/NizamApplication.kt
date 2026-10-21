@@ -85,6 +85,7 @@ class NizamApplication : Application() {
         container = AppContainer(this, startupSettings)
         com.nizam.app.net.Router.appContext = applicationContext
         com.nizam.app.feature.expertise.EngineLog.context = applicationContext
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch { runCatching { com.nizam.app.feature.expertise.Expertise.all(applicationContext) } }
         // Seed the built-in module specs on first launch.
         kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
             runCatching { container.dynamicRepository.seedIfEmpty() }

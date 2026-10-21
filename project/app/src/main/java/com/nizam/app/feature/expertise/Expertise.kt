@@ -149,7 +149,9 @@ object Expertise {
     /** The user's latest words, without Atlas's snapshot, history or data blocks around them. */
     fun lastUserText(prompt: String): String {
         val t = prompt.trimEnd().removeSuffix("You:").removeSuffix("Atlas:").trimEnd()
-        val cut = listOf("\nYou:", "\nUser:", "\nuser:", "\nMe:", "\nQuestion:").maxOfOrNull { t.lastIndexOf(it) } ?: -1
+        // Atlas's agent writes "User's latest message:", its fast path "Them:"; older tools use the others
+        val cut = listOf("\nUser's latest message:", "\nThem:", "\nYou:", "\nUser:", "\nuser:", "\nMe:", "\nQuestion:", "QUESTION:")
+            .maxOfOrNull { t.lastIndexOf(it) } ?: -1
         val tail = if (cut >= 0) t.substring(cut).substringAfter(':') else t.substringAfterLast("\n\n")
         return tail.trim().takeLast(400)
     }

@@ -32,6 +32,23 @@ object Tiers {
         return HEAVY.containsMatchIn(Expertise.lastUserText(prompt))
     }
 
+    /**
+     * Size-aware routing. Groq's free tier allows roughly 6–12k tokens a minute per model (about 8k for the big
+     * ones), so a long Atlas prompt there fails with 413 "request too large" or 429 and only adds seconds.
+     * Requests that won't fit are sent to the long-context providers first; Groq stays last as a backup.
+     */
+    /** Input tokens of a request (about 3.6 characters a token for mixed English/Urdu text). */
+    fun estimateTokens(prompt: String, system: String?, @Suppress("UNUSED_PARAMETER") maxOut: Int): Int =
+        ((prompt.length + (system?.length ?: 0)) / 3.6).toInt()
+
+    fun fitToSize(list: List<Router.Endpoint>, tokens: Int): List<Router.Endpoint> {
+        // ~8k a minute minus up to 2k of output leaves room for about 5.5k of input
+        val limit = 5500
+        if (tokens <= limit) return list
+        val (small, rest) = list.partition { it.isGroq }
+        return if (rest.isEmpty()) list else rest + small
+    }
+
     /** 2 = strongest, 1 = balanced, 0 = fast. Patterns, so new model names keep working. */
     fun strength(model: String): Int {
         val m = model.lowercase()

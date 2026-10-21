@@ -78,6 +78,7 @@ object Health {
             "404" in m || "not found" in m || "does not exist" in m || "decommissioned" in m || "no longer" in m || "not supported" in m ->
                 rest(modelId(e), 12 * 3600_000L, "model unavailable", persist = true)
             "402" in m || "credits" in m -> rest(modelId(e), 12 * 3600_000L, "needs credits", persist = true)
+            "413" in m || "too large" in m || "request entity" in m -> rest(endId(e), 2 * 60_000L, "request too large")
             "429" in m || "rate" in m || "quota" in m || "exhausted" in m -> {
                 val daily = "per day" in m || "perday" in m || "daily" in m || "requests per day" in m
                 val asked = Regex("(?:retry in|retrydelay\"?:?\\s*\"?|try again in)\\s*([0-9.]+)\\s*(ms|s|m)?").find(m)?.let {
@@ -127,7 +128,7 @@ object Engine {
 
     suspend fun <T> run(
         candidates: List<Router.Endpoint>,
-        hedgeAfterMs: Long? = if (isBackground()) null else 7_000L,
+        hedgeAfterMs: Long? = if (isBackground()) null else 4_000L,
         call: suspend (Router.Endpoint) -> T
     ): T {
         // heavy work (marked by Ai.generate) tries the strongest models first; health orders within each strength

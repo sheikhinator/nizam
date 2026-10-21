@@ -36,9 +36,11 @@ object Router {
         val isGroq get() = url.contains("groq.com")
         /** Groq counts declared max_tokens against its per-minute budget, so ask for less there. */
         fun cap(tokens: Int) = when {
+            // Groq counts max_tokens against a small per-minute budget (about 8k), so asking for 4k output alone
+            // triggers 413/429; its reasoning models get a little thinking room, never more than 2k in total
+            isGroq -> if (Compat.reasoning(model)) minOf(tokens + 768, 2048) else minOf(tokens, 1024)
             // reasoning models think before they answer — give them room, or the answer comes back empty
             Compat.reasoning(model) -> (tokens + 2048).coerceAtMost(8000)
-            isGroq -> minOf(tokens, 1024)
             else -> tokens
         }
     }

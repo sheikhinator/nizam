@@ -50,7 +50,9 @@ object Streaming {
         } ?: configured
         if (configured.isEmpty()) throw Ai.MissingKeyException("No AI provider set up. Add a key in Settings › API keys.")
         if (matching.isEmpty()) throw IllegalArgumentException("Model “$requestedModel” is not available in Atlas.")
-        val all = Health.order(matching)
+        // a request too big for Groq's per-minute token limit goes to the long-context providers first
+        val all = com.nizam.app.feature.expertise.Tiers.fitToSize(Health.order(matching),
+            com.nizam.app.feature.expertise.Tiers.estimateTokens(prompt, system, maxTokens))
         // resting keys and models (just rate-limited, rejected or missing) are skipped while a ready one exists
         val ready = all.filter { Health.resting(it) == 0L }
         val endpoints = if (ready.isNotEmpty()) ready + all.filter { it !in ready }.take(1) else all.take(3)
@@ -70,11 +72,13 @@ object Streaming {
                     else stream(e, com.nizam.app.feature.future.Privacy.redact(prompt, m)!!, com.nizam.app.feature.future.Privacy.redact(system, m)!!,
                         maxTokens, attachments) { piece -> restorer.push(piece) }.also { restorer.flush() }
                 Health.ok(e, System.currentTimeMillis() - t0)
+                runCatching { com.nizam.app.feature.expertise.EngineLog.record(e.name, e.model, true, System.currentTimeMillis() - t0, null) }
                 return@withContext if (shield) com.nizam.app.feature.future.Privacy.restore(answer, m) else answer
             } catch (t: Throwable) {
                 if (t is kotlinx.coroutines.CancellationException) throw t
                 if (first == null) first = t
                 Health.fail(e, t)
+                runCatching { com.nizam.app.feature.expertise.EngineLog.record(e.name, e.model, false, System.currentTimeMillis() - t0, t.message) }
                 // Once words are on screen, switching model mid-answer would splice two voices — stop here.
                 if (produced) throw t
                 val m = t.message.orEmpty()

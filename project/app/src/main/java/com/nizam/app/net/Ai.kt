@@ -65,8 +65,10 @@ object Ai {
                 val list = com.nizam.app.feature.agentic.Hybrid.apply(com.nizam.app.feature.nx.Sensitivity.route(Router.appContext, prompt, Router.endpoints(settings, Router.appContext, Router.Lane.ACT)),
                     com.nizam.app.feature.agentic.Hybrid.mode(Router.appContext, tag))
                 if (list.isEmpty()) throw MissingKeyException("No AI provider set up. Add a key in Settings › API keys.")
+                // too big for Groq's per-minute token limit? go straight to the long-context providers
+                val sized = com.nizam.app.feature.expertise.Tiers.fitToSize(list, com.nizam.app.feature.expertise.Tiers.estimateTokens(prompt, system, maxOutputTokens))
                 try {
-                    Engine.run(list) { e ->
+                    Engine.run(sized) { e ->
                         // online sources get placeholders instead of numbers, IDs and emails; the phone's own model sees everything
                         if (e.kind == "LOCAL" || e.kind == "FOLAX" || !com.nizam.app.feature.future.Privacy.on()) call(e, prompt, system, maxOutputTokens, useWeb)
                         else { val m = com.nizam.app.feature.future.Privacy.Map()
