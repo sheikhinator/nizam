@@ -203,18 +203,14 @@ fun CuratorScreen(container: AppContainer) {
     fun send(message: String) {
         val files = attachments
         if (message.isBlank() && files.isEmpty()) return
+        // seamless: no review step before sending; Atlas uses the usual context (receipts stay in Run context receipts)
         scope.launch {
             busy = true
-            busyLabel = "Preparing context preview"
             val prepared = runCatching { RunContextPreview.prepare(container, message, files) }.getOrElse {
                 listOf(RunContextPart("message", "Your message", "Typed by you for this run", "Current",
                     message.ifBlank { "Look at what I attached and help me with it." }, editable = false))
             }
-            reviewMessage = message
-            reviewFiles = files
-            reviewParts = prepared
-            busyLabel = null
-            busy = false
+            performSend(message, files, prepared)
         }
     }
 

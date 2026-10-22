@@ -304,7 +304,7 @@ private fun Dock(modifier: Modifier, accent: Color, onAsk: () -> Unit, onTalk: (
             Icon(Icons.Outlined.Search, "Search", tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Box(Modifier.size(56.dp).pointerInput(Unit) { detectTapGestures(onTap = { onAsk() }, onLongPress = { onTalk() }) }, contentAlignment = Alignment.Center) {
-            AtlasOrb(OrbState.Idle, Modifier.parallax(0.6f), diameter = 52.dp)
+            com.nizam.app.ui.design.AtlasGem(if (halo.active) OrbState.Thinking else OrbState.Idle, Modifier.parallax(0.6f), size = 54.dp, accent = accent)
         }
         Box(Modifier.size(56.dp).pointerInput(Unit) { detectTapGestures(onTap = { onLycho() }, onLongPress = { onLychoHold() }) }, contentAlignment = Alignment.Center) {
             com.nizam.app.ui.design.LychoOrb(mindState, Modifier.parallax(0.6f), diameter = 50.dp)

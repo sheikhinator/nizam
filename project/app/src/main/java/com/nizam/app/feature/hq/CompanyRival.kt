@@ -125,9 +125,9 @@ object Clients {
 @Composable
 fun RivalTab(container: AppContainer) {
     val c = LocalContext.current
-    remember { Rival.settle(c) }
+    remember { Rival.settle(c); true }
     val ours = remember { Rival.ourScore(c) }; val theirs = remember { Rival.theirScore(c) }
-    remember(ours, theirs) { Rival.record(c, ours, theirs) }
+    remember(ours, theirs) { Rival.record(c, ours, theirs); true }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text("This week vs Nova Labs", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         val total = (ours + theirs).coerceAtLeast(1)

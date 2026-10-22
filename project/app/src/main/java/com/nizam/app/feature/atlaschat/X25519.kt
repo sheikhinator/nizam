@@ -49,6 +49,6 @@ object X25519 {
             z2 = (e * (aa + A24 * e).mod(P)).mod(P)
         }
         if (swap) { val tx = x2; x2 = x3; x3 = tx; val tz = z2; z2 = z3; z3 = tz }
-        return encodeLE((x2 * z2.modPow(P - BigInteger.TWO, P)).mod(P))
+        return encodeLE((x2 * z2.modPow(P - BigInteger.valueOf(2), P)).mod(P))
     }
 }

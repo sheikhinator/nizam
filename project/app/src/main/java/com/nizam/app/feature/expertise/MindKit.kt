@@ -37,7 +37,7 @@ object MindKit {
     }
 
     /** The Core expertise used to plan, judge and synthesise. */
-    fun core(c: android.content.Context, id: String) = Expertise.find(c, id) ?: Expertise.all(c).first()
+    fun core(c: android.content.Context, id: String) = Expertise.find(c, id) ?: Expertise.all(c).firstOrNull() ?: Expertise.Expert(id, "Atlas", "Core", "Thinks it through.", "", null, false)
 
     /** A short directory of expertise for a planner prompt: Core plus one line per sector. */
     fun directory(c: android.content.Context): String = Expertise.all(c).filter { it.sector != "Yours" || it.prompt != null }

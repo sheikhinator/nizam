@@ -125,6 +125,12 @@ jobs:
           head -n 150 app/build/audit/tools.txt 2>/dev/null || echo "no tools report"
           echo "=================== AUDIT REPORT: SCREENS ==================="
           head -n 400 app/build/audit/screens.txt 2>/dev/null || echo "no screens report"
+          echo "screens ok: $(wc -l < app/build/audit/screens_ok.txt 2>/dev/null || echo 0)"
+          echo "=================== CRASHES ==================="
+          cat app/build/audit/screens_crash.txt 2>/dev/null | head -n 400 || echo "none"
+          echo "=================== TEST RESULTS ==================="
+          for f in app/build/test-results/testDebugUnitTest/*.xml; do grep -o '<testsuite [^>]*' "$f" | grep -o 'name="[^"]*"\|tests="[0-9]*"\|failures="[0-9]*"\|errors="[0-9]*"' | tr '\n' ' '; echo; done 2>/dev/null | head -20
+          grep -h -A4 "<failure\|<error" app/build/test-results/testDebugUnitTest/*.xml 2>/dev/null | head -n 80 || true
 
       - name: Lint for likely crashes
         if: success() && contains(github.event.head_commit.message, '[lint]')

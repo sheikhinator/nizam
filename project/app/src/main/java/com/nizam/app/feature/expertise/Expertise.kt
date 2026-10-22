@@ -70,7 +70,7 @@ object Expertise {
     }.getOrDefault(emptyList())
 
     fun saveCustom(c: Context, id: String?, name: String, role: String, prompt: String, heavy: Boolean): Expert {
-        val e = Expert(id ?: "mine_${System.currentTimeMillis()}", name.trim(), "Yours", role.trim(), "", prompt.trim().ifBlank { null }, heavy)
+        val e = Expert(id ?: "mine_${System.currentTimeMillis()}${(100..999).random()}", name.trim(), "Yours", role.trim(), "", prompt.trim().ifBlank { null }, heavy)
         val list = custom(c).filter { it.id != e.id } + e
         val arr = JSONArray()
         list.forEach { x -> arr.put(org.json.JSONObject().put("id", x.id).put("name", x.name).put("role", x.role).put("prompt", x.prompt ?: "").put("heavy", x.heavy)) }
