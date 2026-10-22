@@ -96,28 +96,42 @@ object SyncBundle {
     }
 }
 
-/** Checks your GitHub releases for a newer Atlas build and installs it. Stable waits 24 hours after a build; Beta takes it at once. */
+/** Checks your GitHub releases for a newer Atlas build and installs it. Builds are compared by their number (build-N). */
 object Updater {
-    data class Info(val tag: String, val published: Long, val url: String, val notes: String, val size: Long)
-    private const val API = "https://api.github.com/repos/sheikhinator/nizam/releases?per_page=6"
+    data class Info(val tag: String, val published: Long, val url: String, val notes: String, val size: Long, val number: Int = 0, val sha: String = "", val branch: String = "")
+    private const val API = "https://api.github.com/repos/sheikhinator/nizam/releases?per_page=10"
     fun installedAt(c: Context): Long = runCatching { c.packageManager.getPackageInfo(c.packageName, 0).lastUpdateTime }.getOrDefault(0L)
+    val myBuild: Int get() = com.nizam.app.BuildConfig.BUILD_NUMBER
 
-    suspend fun latest(c: Context): Info? = withContext(Dispatchers.IO) {
-        val beta = Labs.on(c, "beta_updates")
-        // with a GitHub token saved in Chief, this also works if the repository is private
+    /** The newest builds with an APK, newest first. */
+    suspend fun recent(c: Context): List<Info> = withContext(Dispatchers.IO) {
         val token = com.nizam.app.feature.chief.ChiefStore.githubToken(c)
         val arr = JSONArray(com.nizam.app.net.Http.getJson(API, mapOf("Accept" to "application/vnd.github+json") + (if (token.isBlank()) emptyMap() else mapOf("Authorization" to "Bearer $token"))))
         (0 until arr.length()).map { arr.getJSONObject(it) }.filter { !it.optBoolean("draft") }.mapNotNull { r ->
             val asset = r.optJSONArray("assets")?.let { a -> (0 until a.length()).map { a.getJSONObject(it) }.firstOrNull { it.optString("name").endsWith(".apk") } } ?: return@mapNotNull null
-            val t = Instant.parse(r.optString("published_at")).toEpochMilli()
-            if (!beta && System.currentTimeMillis() - t < 24 * 3_600_000L) null else Info(r.optString("tag_name"), t, if (token.isBlank()) asset.optString("browser_download_url") else asset.optString("url"), r.optString("body").take(400), asset.optLong("size"))
-        }.maxByOrNull { it.published }
+            val body = r.optString("body")
+            Info(r.optString("tag_name"), Instant.parse(r.optString("published_at")).toEpochMilli(),
+                if (token.isBlank()) asset.optString("browser_download_url") else asset.optString("url"), body.take(600), asset.optLong("size"),
+                r.optString("tag_name").substringAfter("build-", "").toIntOrNull() ?: 0,
+                Regex("at ([0-9a-f]{7})").find(body)?.groupValues?.get(1).orEmpty(),
+                Regex("Built from ([^ ]+) at").find(body)?.groupValues?.get(1).orEmpty())
+        }.sortedByDescending { if (it.number > 0) it.number.toLong() else it.published }
     }
 
-    fun newer(c: Context, i: Info) = i.published > installedAt(c) + 120_000L
+    /** For the daily check: Stable waits 24 hours after a build; Beta takes it at once. */
+    suspend fun latest(c: Context): Info? {
+        val beta = Labs.on(c, "beta_updates")
+        return recent(c).firstOrNull { beta || System.currentTimeMillis() - it.published >= 24 * 3_600_000L }
+    }
+
+    fun newer(c: Context, i: Info) = if (myBuild > 0 && i.number > 0) i.number > myBuild else i.published > installedAt(c) + 120_000L
 
     suspend fun download(c: Context, i: Info, progress: (Int) -> Unit): File = withContext(Dispatchers.IO) {
-        val f = File(File(c.cacheDir, "update").apply { mkdirs() }, "Atlas.apk")
+        val dir = File(c.cacheDir, "update").apply { mkdirs() }
+        val f = File(dir, "Atlas-${i.tag.ifBlank { "latest" }}.apk")
+        // already fetched this exact build: no need to download it again
+        if (i.size > 0 && f.length() == i.size) { progress(100); return@withContext f }
+        dir.listFiles().orEmpty().filter { it != f }.forEach { it.delete() }
         if (i.url.contains("api.github.com")) {
             // private repository: the asset API needs the token, and the redirect to storage must not carry it (OkHttp handles that)
             val token = com.nizam.app.feature.chief.ChiefStore.githubToken(c)
@@ -128,12 +142,13 @@ object Updater {
                 resp.body!!.byteStream().use { input -> f.outputStream().use { out -> val buf = ByteArray(1 shl 16); var done = 0L
                     while (true) { val n = input.read(buf); if (n < 0) break; out.write(buf, 0, n); done += n; if (total > 0) progress((done * 100 / total).toInt()) } } }
             }
-            return@withContext f
+            if (i.size > 0 && f.length() != i.size) { f.delete(); throw IllegalStateException("The download was cut off. Tap Update now again.") }; return@withContext f
         }
         val conn = (URL(i.url).openConnection() as HttpURLConnection).apply { instanceFollowRedirects = true; connectTimeout = 20_000; readTimeout = 60_000 }
         val total = conn.contentLengthLong.takeIf { it > 0 } ?: i.size
         conn.inputStream.use { input -> f.outputStream().use { out -> val buf = ByteArray(1 shl 16); var done = 0L
             while (true) { val n = input.read(buf); if (n < 0) break; out.write(buf, 0, n); done += n; if (total > 0) progress((done * 100 / total).toInt()) } } }
+        if (i.size > 0 && f.length() != i.size) { f.delete(); throw IllegalStateException("The download was cut off. Tap Update now again.") }
         f
     }
 
@@ -189,19 +204,102 @@ private fun SyncScreen() {
 @Composable
 private fun UpdatesScreen() {
     val c = LocalContext.current; val scope = com.nizam.app.ui.design.rememberSafeScope()
-    var info by remember { mutableStateOf<Updater.Info?>(null) }; var status by remember { mutableStateOf("Checking…") }; var pct by remember { mutableStateOf(-1) }
-    fun check() = scope.launch { status = "Checking…"; val i = runCatching { Updater.latest(c) }.getOrNull(); info = i
-        status = when { i == null -> "Couldn't reach GitHub, or no build is published yet."; Updater.newer(c, i) -> "A newer build is available: ${i.tag}"; else -> "You're on the latest build (${i.tag})." } }
+    val cs = MaterialTheme.colorScheme
+    var builds by remember { mutableStateOf<List<Updater.Info>>(emptyList()) }
+    var status by remember { mutableStateOf("Checking GitHub…") }; var pct by remember { mutableStateOf(-1) }
+    var busy by remember { mutableStateOf(false) }; var error by remember { mutableStateOf("") }
+    var tokenOpen by remember { mutableStateOf(false) }; var token by remember { mutableStateOf("") }
+    val when_ = remember { java.time.format.DateTimeFormatter.ofPattern("d MMM yyyy · h:mm a").withZone(java.time.ZoneId.systemDefault()) }
+    fun date(ms: Long) = if (ms <= 0) "—" else when_.format(Instant.ofEpochMilli(ms))
+    fun mb(b: Long) = if (b <= 0) "—" else "%.0f MB".format(b / 1_048_576.0)
+    fun check() = scope.launch {
+        status = "Checking GitHub…"; error = ""
+        val r = runCatching { Updater.recent(c) }
+        builds = r.getOrDefault(emptyList())
+        status = r.fold({ l -> val top = l.firstOrNull()
+            when { top == null -> "No builds published yet."; Updater.newer(c, top) -> "New build ready"; else -> "You're up to date" } },
+            { "Couldn't reach GitHub" + (if (com.nizam.app.feature.chief.ChiefStore.githubToken(c).isBlank()) ". If the repo is private, add a token below." else ".") })
+    }
+    fun update(i: Updater.Info) = scope.launch {
+        busy = true; error = ""; pct = 0
+        runCatching { val f = Updater.download(c, i) { pct = it }; pct = 100; Updater.install(c, f) }
+            .onSuccess { status = "Downloaded — tap Install on Android's prompt" }
+            .onFailure { error = it.message ?: "Download failed"; pct = -1 }
+        busy = false
+    }
     LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { check() } }
-    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("Channel: ${if (Labs.on(c, "beta_updates")) "Beta (new builds at once)" else "Stable (builds after 24 hours)"}. Change it in Labs.", style = MaterialTheme.typography.bodySmall)
-        Text(status, style = MaterialTheme.typography.titleMedium)
-        info?.let { i -> if (i.notes.isNotBlank()) Text(i.notes, style = MaterialTheme.typography.bodySmall)
-            if (Updater.newer(c, i)) Row(verticalAlignment = Alignment.CenterVertically) {
-                TextButton(onClick = { scope.launch { pct = 0; status = runCatching { val f = Updater.download(c, i) { pct = it }; pct = 100; Updater.install(c, f); "Downloaded. Android will ask you to confirm the install." }.getOrElse { "Download failed: ${it.message}" } } }) { Text("Download and install") }
-                if (pct in 0..99) Text("$pct%") } }
-        TextButton(onClick = { check() }) { Text("Check again") }
-        Text("Your data is kept when you update, because the app is signed with the same key.", style = MaterialTheme.typography.bodySmall)
+    val latest = builds.firstOrNull()
+    val isNew = latest != null && Updater.newer(c, latest)
+
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        // ── status hero ──
+        androidx.compose.material3.Surface(shape = androidx.compose.foundation.shape.RoundedCornerShape(22.dp),
+            color = if (isNew) cs.primaryContainer else cs.surfaceVariant.copy(alpha = 0.6f), modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(status, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                if (latest != null) Text(if (isNew) "build-${Updater.myBuild.takeIf { it > 0 } ?: "?"} → ${latest.tag}" else "Atlas ${latest.tag} is the newest build",
+                    style = MaterialTheme.typography.bodyMedium, color = cs.onSurfaceVariant)
+                if (latest != null) {
+                    androidx.compose.material3.Button(enabled = !busy, onClick = { update(latest) }, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                        Text(when { busy && pct in 0..99 -> "Downloading… $pct%"; busy -> "Working…"; isNew -> "Update now"; else -> "Reinstall ${latest.tag}" })
+                    }
+                    if (busy && pct in 0..99) androidx.compose.material3.LinearProgressIndicator(progress = { pct / 100f }, modifier = Modifier.fillMaxWidth())
+                    if (busy && pct in 0..99) Text("${mb(latest.size * pct / 100)} of ${mb(latest.size)}", style = MaterialTheme.typography.labelSmall, color = cs.onSurfaceVariant)
+                }
+                if (error.isNotBlank()) Text(error, color = cs.error, style = MaterialTheme.typography.bodySmall)
+            }
+        }
+
+        // ── tally: this phone vs GitHub ──
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            BuildCard("ON THIS PHONE", Updater.myBuild.takeIf { it > 0 }?.let { "build-$it" } ?: "Older build",
+                listOf("Installed" to date(Updater.installedAt(c)), "Built" to date(com.nizam.app.BuildConfig.BUILD_TIME), "Commit" to com.nizam.app.BuildConfig.BUILD_SHA), Modifier.weight(1f))
+            BuildCard("LATEST ON GITHUB", latest?.tag ?: "—",
+                listOf("Published" to date(latest?.published ?: 0), "Size" to mb(latest?.size ?: 0), "Commit" to (latest?.sha?.ifBlank { "—" } ?: "—")), Modifier.weight(1f), highlight = isNew)
+        }
+        latest?.notes?.lineSequence()?.firstOrNull { it.isNotBlank() }?.let {
+            Text("What's in ${latest.tag}: $it", style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant)
+        }
+
+        // ── recent builds ──
+        if (builds.size > 1) {
+            Text("RECENT BUILDS", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = cs.onSurfaceVariant, modifier = Modifier.padding(top = 6.dp))
+            builds.take(8).forEach { b ->
+                val mine = b.number > 0 && b.number == Updater.myBuild
+                Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(b.tag + if (mine) "  ·  installed" else "", fontWeight = if (mine) FontWeight.Bold else FontWeight.Normal, color = if (mine) cs.primary else cs.onSurface)
+                        Text("${date(b.published)} · ${mb(b.size)}" + (b.notes.lineSequence().firstOrNull()?.takeIf { it.isNotBlank() && !it.startsWith("Built from") }?.let { " · $it" } ?: ""),
+                            style = MaterialTheme.typography.labelSmall, color = cs.onSurfaceVariant, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                    }
+                }
+            }
+        }
+
+        Row { TextButton(enabled = !busy, onClick = { check() }) { Text("Check again") }
+            TextButton(onClick = { tokenOpen = !tokenOpen }) { Text("Private repo token") } }
+        if (tokenOpen) {
+            Text("Only needed if you make the nizam repo private: a fine-grained GitHub token with Contents: Read-only on nizam. Stored encrypted on this phone.",
+                style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant)
+            OutlinedTextField(token, { token = it }, label = { Text(if (com.nizam.app.feature.chief.ChiefStore.githubToken(c).isBlank()) "Paste token" else "Token saved — paste to replace") },
+                singleLine = true, modifier = Modifier.fillMaxWidth(), visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation())
+            TextButton(enabled = token.isNotBlank(), onClick = { com.nizam.app.feature.chief.ChiefStore.setGithubToken(c, token); token = ""; tokenOpen = false; check() }) { Text("Save token") }
+        }
+        Text("Your data stays when you update — every build is signed with the same key. Daily check: ${if (Labs.on(c, "beta_updates")) "Beta (tells you about new builds at once)" else "Stable (tells you a day after a build)"}, change it in Labs.",
+            style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun BuildCard(label: String, title: String, rows: List<Pair<String, String>>, modifier: Modifier, highlight: Boolean = false) {
+    val cs = MaterialTheme.colorScheme
+    androidx.compose.material3.Surface(modifier, shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
+        color = cs.surfaceVariant.copy(alpha = 0.45f), border = androidx.compose.foundation.BorderStroke(1.dp, if (highlight) cs.primary else cs.outlineVariant.copy(alpha = 0.5f))) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            Text(label, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = cs.onSurfaceVariant)
+            Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Black, color = if (highlight) cs.primary else cs.onSurface)
+            rows.forEach { (k, v) -> Text("$k  $v", style = MaterialTheme.typography.labelSmall, color = cs.onSurfaceVariant) }
+        }
     }
 }
 

@@ -18,8 +18,13 @@ android {
         applicationId = "com.nizam.app"
         minSdk = 26
         targetSdk = 34
-        versionCode = 11
-        versionName = "1.0-beta"
+        // The GitHub build number is the version, so the in-app updater can tell exactly which build you have
+        val run = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 0
+        versionCode = maxOf(11, run)
+        versionName = if (run > 0) "build-$run" else "1.0-dev"
+        buildConfigField("int", "BUILD_NUMBER", run.toString())
+        buildConfigField("String", "BUILD_SHA", "\"" + (System.getenv("GITHUB_SHA") ?: "local").take(7) + "\"")
+        buildConfigField("long", "BUILD_TIME", System.currentTimeMillis().toString() + "L")
         // Only the processor type the Infinix GT 50 Pro uses (64-bit ARM) — about half the download size
         ndk { abiFilters += listOf("arm64-v8a") }
         // Your own API keys, built in: taken from the build machine's environment (GitHub Actions secrets

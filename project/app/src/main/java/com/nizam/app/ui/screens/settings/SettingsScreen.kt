@@ -182,6 +182,11 @@ fun SettingsScreen(container: AppContainer, onOpen: (String) -> Unit = {}) {
             }
         }
 
+        Spacer(Modifier.height(10.dp))
+        com.nizam.app.ui.design.ListRow("Update Atlas",
+            supporting = "You have " + (com.nizam.app.BuildConfig.BUILD_NUMBER.takeIf { it > 0 }?.let { "build-$it" } ?: "an older build") + " · get the latest from GitHub",
+            icon = androidx.compose.material.icons.Icons.Outlined.SystemUpdate) { onOpen("nx/updates") }
+
         Spacer(Modifier.height(20.dp))
 
         SectionHeader("THEME")

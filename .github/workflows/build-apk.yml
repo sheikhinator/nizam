@@ -215,11 +215,13 @@ jobs:
           set -e
           cp "${{ steps.apk.outputs.path }}" Atlas.apk
           TAG="build-${{ github.run_number }}"
+          SUBJECT="$(git log -1 --format=%s | sed -E 's/\[[a-z]+\]//g; s/ +$//')"
+          printf '%s\n\nBuilt from %s at %s. Download Atlas.apk below and install it over the previous version.\n' "$SUBJECT" "${{ github.ref_name }}" "${GITHUB_SHA::7}" > notes.md
           gh release create "$TAG" Atlas.apk \
             --repo "${{ github.repository }}" \
             --target "${{ github.sha }}" \
             --title "Atlas build ${{ github.run_number }}" \
-            --notes "Built from ${{ github.ref_name }} at ${GITHUB_SHA::7}. Download Atlas.apk below and install it over the previous version." \
+            --notes-file notes.md \
             --latest
 
       - name: Screenshots of the main screens
