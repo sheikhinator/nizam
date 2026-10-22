@@ -55,7 +55,9 @@ object Ai {
         // answers people read get the rich answer view's formats (tables, charts, diagrams…); structured JSON requests don't
         val rich = if (bg || (system?.contains("JSON") == true) || prompt.contains("JSON") || (system?.contains("Output only") == true)) ""
             else com.nizam.app.ui.components.RichFormat.GUIDE
-        val system = listOfNotNull(system, rich.ifBlank { null }, expertise.ifBlank { null }, laws.ifBlank { null }, model.ifBlank { null }, dataBlock.ifBlank { null }, com.nizam.app.feature.future.Lang.instruction().ifBlank { null }).joinToString("\n\n").ifBlank { null }
+        // inside a chat project: the project's instructions and notes
+        val projectBlock = if (bg || !com.nizam.app.feature.chats.ChatHistory.atlasOpen) "" else com.nizam.app.feature.chats.ChatHistory.activeProjectBlock
+        val system = listOfNotNull(system, projectBlock.ifBlank { null }, rich.ifBlank { null }, expertise.ifBlank { null }, laws.ifBlank { null }, model.ifBlank { null }, dataBlock.ifBlank { null }, com.nizam.app.feature.future.Lang.instruction().ifBlank { null }).joinToString("\n\n").ifBlank { null }
         val tag = kotlin.coroutines.coroutineContext[com.nizam.app.feature.wild.AgentMeter.Tag]?.name
         val expert = if (expertise.isBlank()) null else com.nizam.app.feature.expertise.Expertise.current.value
         val heavy = !bg && com.nizam.app.feature.expertise.Tiers.isHeavy(prompt, expert?.heavy == true)

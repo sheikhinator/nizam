@@ -296,10 +296,14 @@ fun ChatToolScreen(spec: ChatSpec, container: AppContainer) {
         if (spec.persistent) JsonStore(ctx, "nx_story_${spec.id}", sealed = true) else null
     }
     val setup = remember(spec.id) { mutableStateMapOf<String, String>().apply { spec.setup.forEach { put(it.key, it.default) } } }
-    var started by remember(spec.id) { mutableStateOf(spec.setup.isEmpty()) }
+    // a chat reopened from history comes back with its messages
+    val restored = remember(spec.id) { if (spec.persistent) null else com.nizam.app.feature.chats.ChatHistory.takeRestore(spec.id) }
+    val historySession = remember(spec.id) { restored?.first ?: System.currentTimeMillis().toString() }
+    var started by remember(spec.id) { mutableStateOf(spec.setup.isEmpty() || restored != null) }
     val msgs = remember(spec.id) {
         mutableStateListOf<Pair<Boolean, String>>().apply {
-            if (spec.setup.isEmpty() && spec.opener.isNotBlank()) add(false to spec.opener)
+            if (restored != null) addAll(restored.second)
+            else if (spec.setup.isEmpty() && spec.opener.isNotBlank()) add(false to spec.opener)
         }
     }
     var input by remember(spec.id) { mutableStateOf("") }
@@ -402,6 +406,8 @@ fun ChatToolScreen(spec: ChatSpec, container: AppContainer) {
             }.onSuccess {
                 if (!spec.persistent || activeStoryId == storyAtSend) {
                     msgs += false to it.trim().removePrefix("You:").trim()
+                    // kept in the chat history drawer (stories keep their own shelf)
+                    if (!spec.persistent) runCatching { com.nizam.app.feature.chats.ChatHistory.syncTool(ctx, spec.id, spec.title, historySession, msgs.toList()) }
                     if (spec.persistent && persistStory()) {
                         while (msgs.size > MAX_STORY_MESSAGES) msgs.removeAt(0)
                     }

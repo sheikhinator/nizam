@@ -1,5 +1,6 @@
 package com.nizam.app.feature.agent
 
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.TravelExplore
@@ -223,13 +224,32 @@ fun CuratorScreen(container: AppContainer) {
     // A question handed over from Search ("Ask Atlas") is reviewed before its first network request.
     androidx.compose.runtime.LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { AskAtlas.take()?.let { send(it) } } }
 
+    // every conversation is kept: the open one is saved as it grows, and the drawer (swipe from the left) holds them all
+    val drawer = androidx.compose.material3.rememberDrawerState(androidx.compose.material3.DrawerValue.Closed)
+    androidx.compose.runtime.LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { com.nizam.app.feature.chats.ChatHistory.migrate(container); com.nizam.app.feature.chats.ChatHistory.warm(context) } } }
+    androidx.compose.runtime.LaunchedEffect(turns.size) { com.nizam.app.ui.design.guard {
+        val snapshot = turns.map { it.fromUser to it.text }
+        val agent = pinnedExpert?.name
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { com.nizam.app.feature.chats.ChatHistory.syncAtlas(context, snapshot, agent) } } }
+    DisposableEffect(Unit) { com.nizam.app.feature.chats.ChatHistory.atlasOpen = true; onDispose { com.nizam.app.feature.chats.ChatHistory.atlasOpen = false } }
+    fun newChat(project: String? = null) { scope.launch { com.nizam.app.feature.chats.ChatHistory.newAtlas(container, project); pending = emptyList(); lastSteps = emptyList(); drawer.close() } }
+
+    androidx.compose.material3.ModalNavigationDrawer(drawerState = drawer, gesturesEnabled = true, drawerContent = {
+        androidx.compose.material3.ModalDrawerSheet(Modifier.fillMaxWidth(0.88f)) {
+            com.nizam.app.feature.chats.ChatsDrawer(container, onNewChat = { p -> newChat(p) }, onOpened = { scope.launch { pending = emptyList(); lastSteps = emptyList(); drawer.close() } })
+        }
+    }) {
     // next-step buttons under an answer send their follow-up right here
     androidx.compose.runtime.CompositionLocalProvider(com.nizam.app.ui.components.LocalChatAsk provides { t: String -> send(t) }) {
     Column(Modifier.fillMaxSize().imePadding().padding(horizontal = 18.dp)) {
         Row(Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+            androidx.compose.material3.IconButton(onClick = { scope.launch { drawer.open() } }) {
+                androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Filled.Menu, contentDescription = "Chat history")
+            }
             Text("Atlas", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.weight(1f))
             if (turns.isNotEmpty()) Text("New chat", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.clickable(role = Role.Button) { scope.launch { container.agentMemory.clearChat() } }
+                modifier = Modifier.clickable(role = Role.Button) { newChat() }
                     .padding(8.dp))
         }
 
@@ -396,6 +416,7 @@ fun CuratorScreen(container: AppContainer) {
             performSend(message, files, parts)
         }
     )
+    }
     }
 }
 

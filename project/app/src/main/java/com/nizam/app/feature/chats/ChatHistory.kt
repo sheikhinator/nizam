@@ -55,6 +55,8 @@ object ChatHistory {
 
     /** A project's instructions for the chat that's open, so Atlas answers inside that context. */
     @Volatile var activeProjectBlock: String = ""
+    /** True while the Atlas chat is on screen (project context applies only there). */
+    @Volatile var atlasOpen: Boolean = false
 
     private fun refreshActive(c: Context) {
         val p = get(c, currentId(c))?.optString("project").orEmpty().let { if (it.isBlank()) null else project(c, it) }
@@ -147,7 +149,7 @@ object ChatHistory {
     }
 
     // ── editing ───────────────────────────────────────────────────────────────────
-    fun rename(c: Context, id: String, title: String) { store(c).update(id) { it.put("title", title.trim().take(80)).put("titled", true) }; changed() }
+    fun rename(c: Context, id: String, title: String) { store(c).update(id) { it.put("title", title.trim().take(80)).put("titled", true).put("renamed", true) }; changed() }
     fun star(c: Context, id: String, on: Boolean) { store(c).update(id) { it.put("starred", on) }; changed() }
     fun archive(c: Context, id: String, on: Boolean) { store(c).update(id) { it.put("archived", on) }; changed() }
     fun setLabel(c: Context, id: String, label: String) { store(c).update(id) { it.put("label", label).put("labelSet", true) }; changed() }
