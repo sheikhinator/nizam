@@ -277,6 +277,12 @@
             android:excludeFromRecents="true" android:noHistory="true" android:taskAffinity=""
             android:launchMode="singleInstance" />
 
+        <activity android:name=".feature.arcade.ArcadeActivity" android:exported="false"
+            android:label="Atlas Arcade" android:launchMode="singleTop"
+            android:screenOrientation="unspecified" android:hardwareAccelerated="true"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|navigation|uiMode|density"
+            android:theme="@style/Theme.Atlas.Game" />
+
         <activity android:name=".feature.toolchain.TerminalActivity" android:exported="false"
             android:label="Atlas build tools" />
 

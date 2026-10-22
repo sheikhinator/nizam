@@ -8,7 +8,7 @@ import com.nizam.app.ui.design.Hub
 
 object ArcadeSpecs {
     val all: List<Spec> = listOf(
-        ScreenSpec("arcade", "Atlas Arcade", "Play Game Boy, GBA, NES, SNES, PS1, PSP, N64 and more, with a free games store",
-            Icons.Outlined.SportsEsports, Hub.Media, "games emulator arcade psp ps1 playstation nintendo gameboy gba nes snes n64 retro rom play") { _, _ -> AtlasArcadeScreen() },
+        ScreenSpec("arcade", "Atlas Arcade", "21 consoles built in: Game Boy to PSP, N64, Dreamcast, Saturn and arcade, a free games store and controller support",
+            Icons.Outlined.SportsEsports, Hub.Media, "games emulator arcade psp ps1 playstation nintendo gameboy gba nes snes n64 ds dreamcast saturn sega neo geo mame fbneo controller gamepad retro rom play") { _, _ -> AtlasArcadeScreen() },
     )
 }

@@ -85,6 +85,8 @@ android {
     }
 
     packaging {
+        // emulator cores must exist as real files in the app's native library folder so the Arcade can load them by path
+        jniLibs { useLegacyPackaging = true }
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
             excludes += setOf("META-INF/NOTICE.md", "META-INF/LICENSE.md", "META-INF/NOTICE", "META-INF/LICENSE")

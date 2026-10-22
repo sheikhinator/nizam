@@ -94,6 +94,24 @@ jobs:
         with:
           gradle-version: '8.14.3'
 
+      - name: Bundle the Arcade emulator cores
+        working-directory: ${{ steps.proj.outputs.dir }}
+        run: |
+          D=app/src/main/jniLibs/arm64-v8a
+          mkdir -p "$D"
+          for c in gambatte mgba fceumm snes9x mupen64plus_next_gles3 melonds mednafen_vb pcsx_rearmed ppsspp genesis_plus_gx picodrive yabasanshiro flycast fbneo mednafen_pce_fast stella prosystem handy mednafen_ngp mednafen_wswan bluemsx; do
+            rm -rf "/tmp/core_$c"; mkdir -p "/tmp/core_$c"
+            if curl -fsSL --retry 4 --retry-delay 5 -o "/tmp/$c.zip" "https://buildbot.libretro.com/nightly/android/latest/arm64-v8a/${c}_libretro_android.so.zip" \
+               && unzip -o -q "/tmp/$c.zip" -d "/tmp/core_$c"; then
+              SO=$(find "/tmp/core_$c" -name "*.so" | head -n 1)
+              if [ -n "$SO" ]; then mv "$SO" "$D/lib${c}_libretro_android.so"; else echo "::warning::no .so inside the $c download"; fi
+            else
+              echo "::warning::couldn't download the $c core; the app will offer to download it"
+            fi
+          done
+          ls -la "$D"
+          du -sh "$D"
+
       - name: Build debug APK
         working-directory: ${{ steps.proj.outputs.dir }}
         env:

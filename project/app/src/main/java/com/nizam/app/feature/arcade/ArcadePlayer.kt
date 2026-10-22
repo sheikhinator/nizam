@@ -88,30 +88,20 @@ private fun activityOf(c: Context): Activity? { var x = c; while (x is ContextWr
 /** Consoles that are wider than tall play best sideways; handhelds with a tall screen play best upright. */
 private fun defaultRotation(s: ArcadeSystem) = if (s.id in setOf("gb", "nds", "ws")) "port" else "land"
 
-/**
- * The game runs in its own full-screen window on top of everything: no Atlas tabs, no title bars, system bars hidden
- * (swipe from the edge to peek at them), and the screen turns to the way that console is best played.
- */
-@Composable
-fun ArcadePlayerWindow(game: ArcadeGame, onExit: () -> Unit) {
-    var backTick by remember { mutableIntStateOf(0) }
-    Dialog(onDismissRequest = { backTick++ },
-        properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = false, usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
-        val window = (LocalView.current.parent as? DialogWindowProvider)?.window
-        SideEffect {
-            if (window != null) {
-                WindowCompat.setDecorFitsSystemWindows(window, false)
-                window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-                window.setBackgroundDrawableResource(android.R.color.black)
-                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                if (android.os.Build.VERSION.SDK_INT >= 28) window.attributes = window.attributes.apply { layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES }
-                val c = WindowInsetsControllerCompat(window, window.decorView)
-                c.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                c.hide(WindowInsetsCompat.Type.systemBars())
-            }
-        }
-        ArcadePlayer(game, backTick, onExit)
-    }
+/** Shared with [ArcadeActivity]: the running emulator view, so physical controllers reach it directly. */
+object ArcadeSession {
+    @Volatile var view: GLRetroView? = null
+    /** A game controller has been used this session: the on-screen pad steps aside. */
+    var controller by mutableStateOf(false)
+    fun controllerConnected(c: Context): Boolean = android.view.InputDevice.getDeviceIds().any { id ->
+        android.view.InputDevice.getDevice(id)?.let { d -> !d.isVirtual && (d.sources and android.view.InputDevice.SOURCE_GAMEPAD == android.view.InputDevice.SOURCE_GAMEPAD ||
+            d.sources and android.view.InputDevice.SOURCE_JOYSTICK == android.view.InputDevice.SOURCE_JOYSTICK) } == true }
+}
+
+/** Opens the game in its own full-screen player (its own window, orientation and controller handling). */
+fun launchGame(c: Context, game: ArcadeGame) {
+    c.startActivity(android.content.Intent(c, ArcadeActivity::class.java).putExtra("game", game.id)
+        .addFlags(if (c is Activity) 0 else android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -119,10 +109,30 @@ fun ArcadePlayerWindow(game: ArcadeGame, onExit: () -> Unit) {
 fun ArcadePlayer(game: ArcadeGame, backTick: Int, onExit: () -> Unit) {
     val ctx = LocalContext.current
     val system = remember(game.id) { ArcadeSystems.byId(game.system)!! }
-    if (!ArcadeSystems.coreReady(ctx, system) || !File(game.path).exists()) {
+    var coreTick by remember { mutableIntStateOf(0) }
+    val coreOk = remember(coreTick) { ArcadeSystems.coreReady(ctx, system) }
+    val missingBios = remember(coreTick) { ArcadeSystems.biosMissing(ctx, system) }
+    if (!coreOk || !File(game.path).exists() || missingBios.isNotEmpty()) {
+        val dl by ArcadeCores.progress.collectAsState()
+        val dscope = com.nizam.app.ui.design.rememberSafeScope()
+        var err by remember { mutableStateOf("") }
         Column(Modifier.fillMaxSize().background(Color.Black).padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-            Text(if (!File(game.path).exists()) "This game's file is gone. Remove it from the library and add it again." else "The ${system.name} emulator isn't included in this build.", color = Color.White)
-            Spacer(Modifier.height(16.dp)); Button(onClick = onExit) { Text("Back to library") }
+            Text(game.title, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+            Spacer(Modifier.height(10.dp))
+            when {
+                !File(game.path).exists() -> Text("This game's file is gone. Remove it from the library and add it again.", color = Color.White.copy(alpha = 0.8f))
+                !coreOk -> {
+                    Text("The ${system.name} emulator isn't on this phone yet. It's a one-time download.", color = Color.White.copy(alpha = 0.8f))
+                    Spacer(Modifier.height(16.dp))
+                    val p = dl[system.id]
+                    if (p != null) LinearProgressIndicator(progress = { p }, Modifier.fillMaxWidth(0.7f))
+                    else Button(onClick = { err = ""; dscope.launch { ArcadeCores.download(ctx, system).onFailure { err = "Couldn't download: ${it.message}" }; coreTick++ } }) { Text("Download the emulator") }
+                }
+                else -> Text("${system.name} needs its own startup file to play: " + missingBios.joinToString { it.file } +
+                    ". Add it from your own console in Arcade › Consoles › System files.", color = Color.White.copy(alpha = 0.8f))
+            }
+            if (err.isNotEmpty()) Text(err, color = Color(0xFFFF8A80), modifier = Modifier.padding(top = 10.dp))
+            Spacer(Modifier.height(16.dp)); OutlinedButton(onClick = onExit) { Text("Back to library", color = Color.White) }
         }
         return
     }
@@ -135,7 +145,8 @@ fun ArcadePlayer(game: ArcadeGame, backTick: Int, onExit: () -> Unit) {
     var sound by remember { mutableStateOf(true) }
     var note by remember { mutableStateOf("") }
     var problem by remember { mutableStateOf("") }
-    var pad by remember { mutableStateOf(prefs.getBoolean("pad", true)) }
+    var pad by remember { mutableStateOf(prefs.getBoolean("pad", true) && !ArcadeSession.controllerConnected(ctx)) }
+    LaunchedEffect(ArcadeSession.controller) { com.nizam.app.ui.design.guard { if (ArcadeSession.controller) pad = false } }
     val activity = remember { activityOf(ctx) }
     val originalOrientation = remember { activity?.requestedOrientation ?: ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED }
     var rotation by remember { mutableStateOf(prefs.getString("rot_" + system.id, null) ?: defaultRotation(system)) }
@@ -166,8 +177,9 @@ fun ArcadePlayer(game: ArcadeGame, backTick: Int, onExit: () -> Unit) {
             this.shader = shaderFor(prefs.getString("shader", "Default") ?: "Default")
         }
         prefs.edit().putString("launching", game.title + " (" + system.name + ")").commit()
-        GLRetroView(ctx, d).apply { isFocusable = true; isFocusableInTouchMode = true }
+        GLRetroView(ctx, d).apply { isFocusable = true; isFocusableInTouchMode = true }.also { ArcadeSession.view = it }
     }
+    DisposableEffect(view) { onDispose { if (ArcadeSession.view === view) ArcadeSession.view = null } }
 
     val started1 = remember(game.id) { booleanArrayOf(false) }
     val savedFlag = remember(game.id) { booleanArrayOf(false) }
@@ -234,7 +246,7 @@ fun ArcadePlayer(game: ArcadeGame, backTick: Int, onExit: () -> Unit) {
     val cfg = LocalConfiguration.current
     val scale = (minOf(cfg.screenWidthDp, cfg.screenHeightDp) / 400f).coerceIn(0.78f, 1.3f)
     val controls: @Composable (Modifier) -> Unit = { m ->
-        if (pad) GamePad(system, landscape, scale, m, ::key) { src, x, y -> view.sendMotionEvent(src, x, y) }
+        if (pad) GamePad(system, landscape, scale, m, ::key, { on -> view.frameSpeed = if (on) 3 else speed }) { src, x, y -> view.sendMotionEvent(src, x, y) }
     }
 
     Box(Modifier.fillMaxSize().background(Color.Black)) {
@@ -365,7 +377,7 @@ private fun Stick(size: Dp, source: Int, onMove: (Int, Float, Float) -> Unit) {
 }
 
 @Composable
-private fun GamePad(system: ArcadeSystem, landscape: Boolean, u: Float, modifier: Modifier, key: (Int, Boolean) -> Unit, motion: (Int, Float, Float) -> Unit) {
+private fun GamePad(system: ArcadeSystem, landscape: Boolean, u: Float, modifier: Modifier, key: (Int, Boolean) -> Unit, fast: (Boolean) -> Unit, motion: (Int, Float, Float) -> Unit) {
     val A = KeyEvent.KEYCODE_BUTTON_A; val B = KeyEvent.KEYCODE_BUTTON_B; val X = KeyEvent.KEYCODE_BUTTON_X; val Y = KeyEvent.KEYCODE_BUTTON_Y
     val face = 62.dp * u
     Box(modifier) {
@@ -414,6 +426,10 @@ private fun GamePad(system: ArcadeSystem, landscape: Boolean, u: Float, modifier
         if (system.rightStick && system.layout == ArcadeSystem.Layout.PLAYSTATION) {
             if (landscape) Box(Modifier.align(Alignment.BottomEnd).padding(end = 150.dp * u, bottom = 8.dp)) { Stick(76.dp * u, GLRetroView.MOTION_SOURCE_ANALOG_RIGHT, motion) }
             else Box(Modifier.align(Alignment.BottomCenter).padding(bottom = 6.dp)) { Stick(76.dp * u, GLRetroView.MOTION_SOURCE_ANALOG_RIGHT, motion) }
+        }
+        // hold to fast-forward (skip slow dialogue, grinding)
+        Box(Modifier.align(if (landscape) Alignment.BottomCenter else Alignment.TopCenter).padding(bottom = if (landscape) 10.dp else 0.dp, top = if (landscape) 0.dp else 6.dp)) {
+            HoldButton("»", 38.dp * u, wide = true, color = Color(0xFF33334A)) { fast(it) }
         }
         // start / select: tucked into the bottom corners sideways, centred upright
         if (landscape) {
