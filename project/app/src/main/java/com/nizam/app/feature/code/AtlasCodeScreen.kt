@@ -241,7 +241,7 @@ object Slash {
 fun AtlasCodeScreen(container: AppContainer, open: (String) -> Unit) {
     val c = LocalContext.current
     LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { AtlasCode.pending?.let { AtlasCode.pending = null; AtlasCode.restore(c, container, it) } } }
-    androidx.compose.material3.MaterialTheme(colorScheme = androidx.compose.material3.darkColorScheme(primary = ACCENT, background = INK, surface = PANEL, onSurface = TEXT, onSurfaceVariant = MUTED, outlineVariant = LINE)) {
+    androidx.compose.material3.MaterialTheme(colorScheme = androidx.compose.material3.darkColorScheme(primary = ACCENT, onPrimary = Color.Black, background = INK, surface = PANEL, onSurface = TEXT, onSurfaceVariant = MUTED, outlineVariant = LINE)) {
         Box(Modifier.fillMaxSize().background(INK).statusBarsPadding()) {
             val s = AtlasCode.open
             if (s == null) Home(container, open) else SessionView(container, s, open)
