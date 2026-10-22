@@ -36,10 +36,12 @@ data class ModuleSpec(
             val array = JSONArray(fieldsJson)
             (0 until array.length()).map { i ->
                 val o = array.getJSONObject(i)
+                // models write "number", "Integer", "dropdown"; and sometimes only a label, no key
+                val label = o.optString("label").ifBlank { o.optString("name") }
                 SpecField(
-                    key = o.optString("key"),
-                    label = o.optString("label"),
-                    type = o.optString("type", "TEXT"),
+                    key = o.optString("key").ifBlank { label.lowercase().replace(Regex("[^a-z0-9]+"), "_").trim('_') },
+                    label = label.ifBlank { o.optString("key") },
+                    type = normaliseType(o.optString("type", "TEXT")),
                     options = o.optJSONArray("options")?.let { opts ->
                         (0 until opts.length()).map { opts.optString(it) }
                     } ?: emptyList(),
@@ -51,6 +53,22 @@ data class ModuleSpec(
                 )
             }.filter { it.key.isNotBlank() }
         }.getOrElse { emptyList() }
+}
+
+/** The field types Atlas knows, from any spelling a person or a model uses. */
+fun normaliseType(raw: String): String = when (val t = raw.trim().uppercase().replace(' ', '_').replace('-', '_')) {
+    "", "STRING", "SHORT_TEXT", "TEXTFIELD", "NAME", "TITLE" -> "TEXT"
+    "LONG_TEXT", "PARAGRAPH", "TEXTAREA", "NOTES", "NOTE", "MULTILINE" -> "LONGTEXT"
+    "INT", "INTEGER", "FLOAT", "DOUBLE", "DECIMAL", "CURRENCY", "MONEY", "AMOUNT", "PRICE", "NUM", "QUANTITY", "PERCENT" -> "NUMBER"
+    "STARS", "STAR", "SCORE" -> "RATING"
+    "SELECT", "DROPDOWN", "ENUM", "OPTION", "OPTIONS", "SINGLE_SELECT", "RADIO" -> "CHOICE"
+    "MULTISELECT", "MULTI", "CHECKBOXES", "MULTIPLE_CHOICE" -> "MULTI_SELECT"
+    "TAG", "LABELS" -> "TAGS"
+    "DATETIME", "DATE_TIME", "DAY", "TIME" -> "DATE"
+    "BOOLEAN", "CHECKBOX", "TOGGLE", "YES_NO", "YESNO", "SWITCH" -> "BOOL"
+    "IMAGE", "PHOTO", "ATTACHMENT", "AUDIO", "VIDEO", "PDF", "MEDIA" -> "FILE"
+    "FORMULA", "CALCULATED", "CALC" -> "COMPUTED"
+    else -> t
 }
 
 data class SpecField(

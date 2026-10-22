@@ -120,12 +120,14 @@ jobs:
         continue-on-error: true
         working-directory: ${{ steps.proj.outputs.dir }}
         run: |
-          gradle testDebugUnitTest --tests 'com.nizam.app.SpecLogicAudit' --tests 'com.nizam.app.Audit' --no-daemon --continue 2>&1 | tail -n 25
+          gradle testDebugUnitTest --tests 'com.nizam.app.SpecLogicAudit' --tests 'com.nizam.app.MappingTest' --tests 'com.nizam.app.Audit' --no-daemon --continue 2>&1 | tail -n 25
           echo "=================== AUDIT REPORT: TOOLS ==================="
           head -n 150 app/build/audit/tools.txt 2>/dev/null || echo "no tools report"
           echo "=================== AUDIT REPORT: SCREENS ==================="
           head -n 400 app/build/audit/screens.txt 2>/dev/null || echo "no screens report"
           echo "screens ok: $(wc -l < app/build/audit/screens_ok.txt 2>/dev/null || echo 0)"
+          echo "=================== MAPPING ==================="
+          cat app/build/audit/mapping.txt 2>/dev/null || echo "no mapping report"
           echo "=================== CRASHES ==================="
           cat app/build/audit/screens_crash.txt 2>/dev/null | head -n 400 || echo "none"
           echo "=================== TEST RESULTS ==================="

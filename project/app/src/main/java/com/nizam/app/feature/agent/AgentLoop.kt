@@ -213,7 +213,7 @@ class AgentLoop(private val container: () -> AppContainer) {
             }
 
             val actions = parsed.optJSONArray("actions")
-            if (actions == null || actions.length() == 0) return Outcome(reply, steps, pending)
+            if (actions == null || actions.length() == 0) return Outcome(honest(reply, steps), steps, pending)
             val assumptions = parsed.optJSONArray("assumptions")?.let { a ->
                 (0 until a.length()).map { a.optString(it).trim() }.filter { it.isNotBlank() }.distinct()
             }.orEmpty()
@@ -263,17 +263,24 @@ class AgentLoop(private val container: () -> AppContainer) {
             observations = results.toString()
 
             // Nothing left to react to
-            if (pending.isNotEmpty() && steps.isEmpty()) return Outcome(reply, steps, pending)
-            if (iteration == MAX_ITERATIONS - 1) return Outcome(reply, steps, pending)
+            if (pending.isNotEmpty() && steps.isEmpty()) return Outcome(honest(reply, steps), steps, pending)
+            if (iteration == MAX_ITERATIONS - 1) return Outcome(honest(reply, steps), steps, pending)
             if (steps.none { !it.ok }) {
                 // Discovery steps are never the answer: finding a tool or reading its schema only
                 // matters if the loop runs again to use it. Those always continue.
                 val discovery = steps.any { it.action in setOf("mcp_tools", "mcp_schema", "search_web", "read_link") ||
                     it.summary.contains("tool slug", true) || it.summary.contains("input schema", true) }
-                if (!discovery && !parsed.optBoolean("continue", false)) return Outcome(reply, steps, pending)
+                if (!discovery && !parsed.optBoolean("continue", false)) return Outcome(honest(reply, steps), steps, pending)
             }
         }
-        return Outcome(reply, steps, pending)
+        return Outcome(honest(reply, steps), steps, pending)
+    }
+
+    /** Never claim what didn't happen: when every action failed, the reply says so instead of the model's optimistic text. */
+    private fun honest(reply: String, steps: List<Step>): String {
+        if (steps.isEmpty() || steps.any { it.ok }) return reply
+        val why = steps.last().summary.substringAfter("failed: ").take(160)
+        return "I couldn't do that yet: $why"
     }
 
     companion object {

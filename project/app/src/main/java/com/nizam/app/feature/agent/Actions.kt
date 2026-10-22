@@ -106,8 +106,10 @@ object Actions {
         log_expense        {amount, category, note}
         log_income         {amount, category, note}
         log_set            {exercise, weight, reps}
-        log_food           {name, kcal, protein, slot}
-        log_water          {ml}
+        log_food           {name, kcal, protein, slot}   ONE call per food (6 nuggets = one call, name "6 chicken nuggets",
+                           kcal and protein for all of them). kcal and protein are plain numbers (280, not "~280").
+                           slot: Breakfast | Lunch | Dinner | Snack
+        log_water          {ml}   a glass is 250
         log_prayer         {prayer, status}   prayer: fajr|dhuhr|asr|maghrib|isha
                                               status: ON_TIME|LATE|JAMAAH|QADA|NOT_PRAYED
         log_study          {trackId, minutes}
@@ -150,9 +152,44 @@ object Actions {
                            Adds a calculated field to an existing module — cost per km, volume,
                            pace, whatever the numbers support. Runs over past entries too.
         set_prayer_method  {method, hanafiAsr}  KARACHI|MWL|ISNA|EGYPT|UMM_AL_QURA
+        log_expense_on     {date, amount, category, note}   an expense on another day; date YYYY-MM-DD
+        list_tasks         {}   open tasks with their #id
+        rename_task        {id, title}
+        delete_task        {id}
+        list_transactions  {days}   recent money entries with their #id
+        edit_transaction   {id, amount?, category?, note?, date?}
+        delete_transaction {id}
+        list_goals         {}            delete_goal {id}
+        list_missions      {}            edit_mission {id, title, detail}   delete_mission {id}
+        list_entries       {moduleKey}   delete_entry {id}
+        read_notes         {query}       read_courses {}
+        set_alarm          {hour, minute, label, days[]}   hour 0-23; days 1=Sunday … 7=Saturday for repeating
+        set_timer          {seconds, label}
+        add_calendar_event {title, date, time, durationMinutes, location}   date YYYY-MM-DD, time HH:mm (24h)
+        read_calendar      {days}
+        delete_event       {title}       rename_event {title, newTitle}
+        call               {who}         a contact name or number
+        send_sms           {who, body}   opens the message ready to send; the user sends it
+        whatsapp           {who, body}   opens WhatsApp with the message ready; the user sends it
+        email              {to, subject, body}
+        open_app           {name}        list_apps {}
+        navigate           {destination, mode}   mode: driving | walking | transit
+        open_url           {url}         share_text {text}   copy_text {text}   read_clipboard {}
+        flashlight         {on}          do_not_disturb {on}
+        set_volume         {stream, percent}   stream: media | ring | alarm
+        set_brightness     {percent}     open_settings {page}   e.g. wifi, bluetooth, battery, display
+        media              {command}     play | pause | toggle | next | previous
+        screen_time        {days}        battery {}   open_camera {}
+        open_in            {service, query}   e.g. youtube, spotify, maps, daraz, foodpanda
+        plan_day           {note}        builds today's plan around prayers and tasks
+        shield_on          {minutes}     shield_off {}   focus shield that holds distracting apps
+        search_web         {query}       read_link {url}
+        read_notifications {limit}       reply_notification {match, message}
     """.trimIndent()
 
-    suspend fun run(container: AppContainer, action: String, args: JSONObject): Result {
+    suspend fun run(container: AppContainer, action: String, given: JSONObject): Result {
+        // what the model wrote, mapped onto exactly what each action expects (names, numbers, enums, dates, module keys)
+        val args = runCatching { ArgFix.fix(container, action, given) }.getOrDefault(given)
         // the firewall is checked here, below the AI: a blocked category can't be talked around
         com.nizam.app.feature.brain2.Firewall.check(container.appContext, action)?.let { reason ->
             runCatching { com.nizam.app.feature.next.Activity.log(container.appContext, action, reason, false) }
@@ -320,6 +357,8 @@ object Actions {
             }
 
             "log_prayer" -> {
+                if (args.optString("prayer") !in listOf("fajr", "dhuhr", "asr", "maghrib", "isha"))
+                    return Result(false, "Which prayer? (Fajr, Dhuhr, Asr, Maghrib or Isha)")
                 val day = container.prayerRepository.day(today()).first()
                 container.prayerRepository.setStatus(
                     today(), args.optString("prayer"), args.optString("status", "ON_TIME"), day
@@ -830,7 +869,17 @@ object Actions {
             }
             "list_screens" -> Result(true, com.nizam.app.ui.screens.search.DESTINATIONS.joinToString { it.name })
             "open_screen" -> {
-                val want = args.optString("screen").trim()
+                val want = args.optString("screen").ifBlank { args.optString("name") }.trim()
+                if (want.isBlank()) return Result(false, "Which screen?")
+                // every tool in the catalogue too (Oracle, Forge, Life Compass…), not only the main screens
+                val tool = com.nizam.app.feature.nx.Nx.all.let { all -> all.firstOrNull { it.title.equals(want, true) || it.id.equals(want, true) }
+                    ?: all.firstOrNull { want.length >= 4 && it.title.contains(want, true) } }
+                val exact = com.nizam.app.ui.screens.search.DESTINATIONS.firstOrNull { it.name.equals(want, true) }
+                if (exact == null && tool != null) {
+                    val go = com.nizam.app.ui.screens.search.AtlasNav.go ?: return Result(false, "Atlas isn't open on screen right now")
+                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) { go(com.nizam.app.feature.nx.Nx.route(tool.id)) }
+                    return Result(true, "Opened ${tool.title}")
+                }
                 val d = com.nizam.app.ui.screens.search.DESTINATIONS.let { all ->
                     all.firstOrNull { it.name.equals(want, true) } ?: all.firstOrNull { it.name.contains(want, true) || want.contains(it.name, true) }
                         ?: all.firstOrNull { it.words.contains(want, true) } }
