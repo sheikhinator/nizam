@@ -217,6 +217,24 @@ private fun Desktop(container: AppContainer, id: String, changed: () -> Unit) {
     var mouse by remember { mutableStateOf(Offset(200f, 200f)) }   // pointer position on the PC
     val mods = remember { androidx.compose.runtime.mutableStateListOf<String>() }
     LaunchedEffect(id) { Vnc.connect() }
+    // auto-fit: the PC's screen takes the phone's shape (tall in portrait, wide in landscape), live as you rotate
+    var autoFit by remember { mutableStateOf(c.getSharedPreferences("pc", 0).getBoolean("autofit", true)) }
+    LaunchedEffect(boxSize, autoFit, Vnc.connected, Vnc.extended) {
+        if (!Vnc.connected || boxSize.width < 100 || boxSize.height < 100) return@LaunchedEffect
+        kotlinx.coroutines.delay(500)
+        if (!autoFit) {
+            // back to the size chosen at install
+            val (fw, fh) = (PcEnv.info(c, id)?.optString("size", "1280x720") ?: "1280x720").split('x').mapNotNull { it.toIntOrNull() }.let { (it.getOrNull(0) ?: 1280) to (it.getOrNull(1) ?: 720) }
+            if (fw != Vnc.width || fh != Vnc.height) Thread { Vnc.setSize(fw, fh) }.start()
+            return@LaunchedEffect
+        }
+        val long = (PcEnv.info(c, id)?.optString("size", "1280x720") ?: "1280x720").split('x').mapNotNull { it.toIntOrNull() }.maxOrNull()?.coerceIn(960, 1920) ?: 1280
+        val wide = boxSize.width >= boxSize.height
+        var w = if (wide) long else (long * boxSize.width / boxSize.height.toFloat()).toInt()
+        var h = if (wide) (long * boxSize.height / boxSize.width.toFloat()).toInt() else long
+        w = (w / 8 * 8).coerceAtLeast(480); h = (h / 8 * 8).coerceAtLeast(480)
+        if (kotlin.math.abs(w - Vnc.width) > 16 || kotlin.math.abs(h - Vnc.height) > 16) { zoom = 1f; pan = Offset.Zero; Thread { Vnc.setSize(w, h) }.start() }
+    }
     // the screen stays on while you use the PC
     androidx.compose.runtime.DisposableEffect(Unit) { view.keepScreenOn = true; onDispose { view.keepScreenOn = false } }
     // full screen: landscape, no system bars
@@ -346,6 +364,8 @@ private fun Desktop(container: AppContainer, id: String, changed: () -> Unit) {
                 Fab(if (trackpad) "🖱" else "👆") { trackpad = !trackpad; c.getSharedPreferences("pc", 0).edit().putBoolean("trackpad", trackpad).apply() }
                 Fab("⌨") { keysOpen = true; focus.requestFocus(); kb?.show() }
                 if (zoom > 1.05f) Fab("1:1") { zoom = 1f; pan = Offset.Zero }
+                Fab(if (autoFit) "◱" else "▭") { autoFit = !autoFit; c.getSharedPreferences("pc", 0).edit().putBoolean("autofit", autoFit).apply()
+                    android.widget.Toast.makeText(c, if (autoFit) "Screen fits the phone" else "Fixed screen size", android.widget.Toast.LENGTH_SHORT).show() }
                 Fab(if (full) "⤡" else "⤢") { full = !full }
                 if (full) Fab(if (panelOpen) "▾" else "✳") { panelOpen = !panelOpen }
             }

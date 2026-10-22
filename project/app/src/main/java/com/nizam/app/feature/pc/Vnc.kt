@@ -60,8 +60,8 @@ object Vnc {
         synchronized(lock) {
             o.writeByte(0); o.write(ByteArray(3)); o.writeByte(32); o.writeByte(24); o.writeByte(0); o.writeByte(1)
             o.writeShort(255); o.writeShort(255); o.writeShort(255); o.writeByte(16); o.writeByte(8); o.writeByte(0); o.write(ByteArray(3))
-            // encodings: CopyRect, Raw, DesktopSize
-            o.writeByte(2); o.writeByte(0); o.writeShort(3); o.writeInt(1); o.writeInt(0); o.writeInt(-223)
+            // encodings: CopyRect, Raw, DesktopSize, ExtendedDesktopSize (so the PC can change shape to fit the phone)
+            o.writeByte(2); o.writeByte(0); o.writeShort(4); o.writeInt(1); o.writeInt(0); o.writeInt(-223); o.writeInt(-308)
             o.flush()
         }
         connected = true; error = ""
@@ -93,6 +93,7 @@ object Vnc {
                                     for (j in 0 until rh) System.arraycopy(tmp, j * rw, pixels, (y + j) * width + x, rw)
                                 }
                                 -223 -> resize(rw, rh)
+                                -308 -> { val n = inp.readUnsignedByte(); inp.skipBytes(3 + n * 16); extended = true; if (rw != width || rh != height) resize(rw, rh) }
                                 else -> throw IllegalStateException("Unsupported screen encoding $enc")
                             }
                         }
@@ -108,14 +109,26 @@ object Vnc {
         } finally { connected = false; ticker.interrupt() }
     }
 
+    @Volatile var extended = false
+
+    /** Asks the PC to change its screen to w×h (it fits the phone's shape). */
+    fun setSize(w: Int, h: Int) = send { o ->
+        o.writeByte(251); o.writeByte(0); o.writeShort(w); o.writeShort(h); o.writeByte(1); o.writeByte(0)
+        o.writeInt(0); o.writeShort(0); o.writeShort(0); o.writeShort(w); o.writeShort(h); o.writeInt(0)
+    }
+
     private fun resize(w: Int, h: Int) {
-        width = w; height = h; pixels = IntArray(w * h)
-        bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        synchronized(lock) {
+            pixels = IntArray(w * h)
+            bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+            width = w; height = h
+        }
+        if (connected) request(false)
     }
 
     private fun publish() {
         val b = bitmap ?: return
-        runCatching { b.setPixels(pixels, 0, width, 0, 0, width, height) }
+        synchronized(lock) { if (b.width == width && pixels.size == width * height) runCatching { b.setPixels(pixels, 0, width, 0, 0, width, height) } }
         frame++
     }
 
