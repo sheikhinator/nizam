@@ -93,7 +93,7 @@ object LifeSim {
 fun LifeSimScreen(container: AppContainer) {
     val scope = com.nizam.app.ui.design.rememberWorkScope()
     var base by remember { mutableStateOf<Baseline?>(null) }
-    LaunchedEffect(Unit) { base = runCatching { LifeSim.baseline(container) }.getOrNull() }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { base = runCatching { LifeSim.baseline(container) }.getOrNull() } }
     var years by remember { mutableStateOf("5") }
     var studyPlus by remember { mutableFloatStateOf(0f) }
     var stepsPlus by remember { mutableFloatStateOf(0f) }

@@ -89,7 +89,7 @@ import kotlin.math.sin
 fun VoiceCommandBar(container: AppContainer, onOpen: (String) -> Unit, modifier: Modifier = Modifier) {
     val c = LocalContext.current
     val cs = MaterialTheme.colorScheme
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val focus = LocalFocusManager.current
     var text by remember { mutableStateOf("") }
     var listening by remember { mutableStateOf(false) }

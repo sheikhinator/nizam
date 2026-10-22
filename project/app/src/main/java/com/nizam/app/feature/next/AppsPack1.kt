@@ -109,14 +109,14 @@ fun MasjidFinderScreen(container: AppContainer) {
     val ctx = LocalContext.current
     var list by remember { mutableStateOf<List<com.nizam.app.feature.maps.Place>?>(null) }
     var err by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         val lat = container.settingsRepository.latitude.first(); val lng = container.settingsRepository.longitude.first()
         val d = 0.03
         list = runCatching {
             com.nizam.app.feature.maps.Geo.nearby("[amenity=place_of_worship][religion=muslim]", doubleArrayOf(lng - d, lat + d, lng + d, lat - d),
                 org.osmdroid.util.GeoPoint(lat, lng))
         }.getOrElse { err = Feedback.friendly(it); emptyList() }
-    }
+    } }
     AtlasScreen(title = "Masjid finder", hub = Hub.Deen, subtitle = err ?: list?.let { "${it.size} nearby, nearest first" } ?: "Searching…", loading = list == null) {
         list.orEmpty().forEach { p ->
             item(p.osm + p.name) {

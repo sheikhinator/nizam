@@ -213,14 +213,14 @@ fun PetHomeScreen(container: AppContainer, open: (String) -> Unit) {
     var hearts by remember { mutableIntStateOf(0) }
     var mood by remember { mutableStateOf(Companion.mood(pet, null, null)) }
     var floating by remember { mutableStateOf(PetOverlayService.running) }
-    LaunchedEffect(container) {
+    LaunchedEffect(container) { com.nizam.app.ui.design.guard {
         progress = runCatching { com.nizam.app.feature.progress.Xp.summarise(container) }.getOrNull()
         progress?.let { summary ->
             val latest = Companion.load(ctx).copy(lastTotalXp = summary.totalXp)
             Companion.save(ctx, latest)
             pet = latest
         }
-    }
+    } }
     val lvl = Companion.level(Companion.xp(pet, progress)); val stage = PetWorld.stage(lvl)
     fun act(n: PetWorld.Needs, m: Companion.Mood, xp: Int = 1) { needs = n; PetWorld.set(ctx, n); mood = m; hearts++; PetWorld.reward(ctx, xp); pet = Companion.load(ctx) }
     AtlasScreen(title = pet.name, subtitle = "$stage ${pet.species.lowercase()} · level $lvl · ${pet.trait.lowercase()}", hub = Hub.Social) {
@@ -304,12 +304,12 @@ private fun CatchGame(done: (Int) -> Unit) {
     var left by remember { mutableIntStateOf(0) }
     var box by remember { mutableStateOf(Size.Zero) }
     val treats = listOf("🍎", "🍛", "🥟", "🍫", "🍪", "💣")
-    LaunchedEffect(left) {
+    LaunchedEffect(left) { com.nizam.app.ui.design.guard {
         if (left <= 0) return@LaunchedEffect
         repeat(20) { delay(50); for (i in items.indices.reversed()) { val (x, y, e) = items[i]; if (y > 1.05f) items.removeAt(i) else items[i] = Triple(x, y + 0.012f + score * 0.0002f, e) }
             if ((0..9).random() < 2) items += Triple((0..90).random() / 100f, -0.05f, treats.random()) }
         left--; if (left == 0) { items.clear(); done(score) }
-    }
+    } }
     Column {
         Text(if (left > 0) "Score $score · ${left}s" else if (score > 0) "Final score $score! Tap Start to play again" else "Tap the treats, avoid the bombs",
             style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
@@ -331,7 +331,7 @@ private fun MemoryGame(done: (Int) -> Unit) {
     var open by remember { mutableStateOf(listOf<Int>()) }
     var matched by remember { mutableStateOf(setOf<Int>()) }
     var moves by remember { mutableIntStateOf(0) }
-    LaunchedEffect(open) { if (open.size == 2) { delay(700); if (cards[open[0]] == cards[open[1]]) { matched = matched + open; if (matched.size == cards.size) done(moves) }; open = emptyList() } }
+    LaunchedEffect(open) { com.nizam.app.ui.design.guard { if (open.size == 2) { delay(700); if (cards[open[0]] == cards[open[1]]) { matched = matched + open; if (matched.size == cards.size) done(moves) }; open = emptyList() } } }
     Column {
         Text(if (matched.size == cards.size) "All matched in $moves moves! 🎉" else "Moves: $moves", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         (0 until 4).forEach { r -> Row(Modifier.padding(top = Space.s), horizontalArrangement = Arrangement.spacedBy(Space.s)) {
@@ -371,7 +371,7 @@ private fun RpsGame(done: (Boolean) -> Unit) {
 @Composable
 fun PetPhotoScreen() {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val pet = remember { Companion.load(ctx) }
     var photo by remember { mutableStateOf<android.graphics.Bitmap?>(null) }
     var pos by remember { mutableStateOf(Offset(200f, 400f)) }
@@ -471,7 +471,7 @@ class PetOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner {
             val pet = remember { com.nizam.app.feature.companion.Companion.load(this) }
             var mood by remember { mutableStateOf(com.nizam.app.feature.companion.Companion.mood(pet, null, null)) }
             var hearts by remember { mutableIntStateOf(0) }
-            LaunchedEffect(Unit) { while (true) { delay(20_000); mood = listOf(mood, com.nizam.app.feature.companion.Companion.Mood.CONTENT, com.nizam.app.feature.companion.Companion.Mood.SILLY, com.nizam.app.feature.companion.Companion.Mood.THINKING, com.nizam.app.feature.companion.Companion.Mood.HAPPY).random() } }
+            LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { while (true) { delay(20_000); mood = listOf(mood, com.nizam.app.feature.companion.Companion.Mood.CONTENT, com.nizam.app.feature.companion.Companion.Mood.SILLY, com.nizam.app.feature.companion.Companion.Mood.THINKING, com.nizam.app.feature.companion.Companion.Mood.HAPPY).random() } } }
             Creature(pet, mood, hearts, Modifier.fillMaxSize().pointerInput(Unit) {
                 detectDragGestures(onDragEnd = {
                     if (params.y > resources.displayMetrics.heightPixels * 0.85f) stopSelf()

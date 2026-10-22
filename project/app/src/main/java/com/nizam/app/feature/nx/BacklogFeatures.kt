@@ -165,10 +165,10 @@ private fun duplicateScore(a: ModuleEntry, b: ModuleEntry, spec: ModuleSpec): Do
 @Composable
 fun CompareMergeScreen(container: AppContainer) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val specs by container.dynamicRepository.allSpecs().collectAsState(initial = emptyList())
     var moduleKey by remember { mutableStateOf("") }
-    LaunchedEffect(specs) { if (moduleKey.isBlank() && specs.isNotEmpty()) moduleKey = specs.first().key }
+    LaunchedEffect(specs) { com.nizam.app.ui.design.guard { if (moduleKey.isBlank() && specs.isNotEmpty()) moduleKey = specs.first().key } }
     val entries by remember(container, moduleKey) {
         if (moduleKey.isBlank()) flowOf(emptyList()) else container.dynamicRepository.entries(moduleKey)
     }.collectAsState(initial = emptyList())

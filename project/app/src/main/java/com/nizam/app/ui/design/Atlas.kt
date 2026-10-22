@@ -102,10 +102,10 @@ fun OutlinedTextField(
     var picked by remember { mutableStateOf<String?>(null) }
     var web by remember { mutableStateOf<List<String>>(emptyList()) }
     val typing = value.trim()
-    if (suggests && isSearch) LaunchedEffect(typing, focused) {
+    if (suggests && isSearch) LaunchedEffect(typing, focused) { com.nizam.app.ui.design.guard {
         web = emptyList()
         if (focused && typing.length >= 2) { kotlinx.coroutines.delay(250); web = TypingMemory.web(typing) }
-    }
+    } }
     val options = if (!suggests || !focused || typing.isEmpty() || typing.length > 80 || picked == value) emptyList()
         else (TypingMemory.suggest(ctx, key, typing) + web).distinctBy { it.lowercase() }.filter { !it.equals(typing, true) }.take(6)
     fun keep() { if (suggests) TypingMemory.keep(ctx, key, value) }
@@ -204,7 +204,7 @@ fun Button(
     val haptic = LocalHapticFeedback.current
     val pressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) 0.96f else 1f, spring(dampingRatio = Spring.DampingRatioMediumBouncy), label = "press")
-    LaunchedEffect(ack) { if (ack) { kotlinx.coroutines.delay(900); ack = false } }
+    LaunchedEffect(ack) { com.nizam.app.ui.design.guard { if (ack) { kotlinx.coroutines.delay(900); ack = false } } }
     androidx.compose.material3.Button(
         onClick = { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove); ack = true; onClick() },
         modifier = modifier.scale(scale), enabled = enabled, shape = shape, colors = colors, elevation = elevation,
@@ -322,7 +322,21 @@ fun Capsule(text: String, on: Boolean, onClick: () -> Unit) {
  */
 @Composable
 fun rememberWorkScope(): kotlinx.coroutines.CoroutineScope =
-    remember { kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main + kotlinx.coroutines.SupervisorJob()) }
+    remember { kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main + kotlinx.coroutines.SupervisorJob() +
+        com.nizam.app.feature.safe.CoroutineSafetyNet.inScope) }
+
+/**
+ * Like rememberCoroutineScope (cancelled when the screen leaves, animations work), but a failed job — a lost
+ * connection, a bad file — is caught, logged and said in one line instead of closing Atlas.
+ */
+@Composable
+fun rememberSafeScope(): kotlinx.coroutines.CoroutineScope {
+    val base = androidx.compose.runtime.rememberCoroutineScope()
+    return remember(base) {
+        kotlinx.coroutines.CoroutineScope(base.coroutineContext + kotlinx.coroutines.SupervisorJob(base.coroutineContext[kotlinx.coroutines.Job]) +
+            com.nizam.app.feature.safe.CoroutineSafetyNet.inScope)
+    }
+}
 
 /** One-tap audio (a tool's reply, a recitation): one player at a time, released when it finishes. Files or URLs. */
 object QuickAudio {
@@ -340,4 +354,14 @@ object QuickAudio {
         }.getOrNull()
     }
     fun stop() { runCatching { player?.release() }; player = null }
+}
+
+/**
+ * Runs a screen's start-up work (inside LaunchedEffect) so a failure — no internet, a corrupt file, a missing
+ * key — is caught, logged and said in one line instead of closing Atlas. Cancellation passes through as normal.
+ */
+inline fun guard(block: () -> Unit) {
+    try { block() }
+    catch (c: kotlinx.coroutines.CancellationException) { throw c }
+    catch (e: Exception) { com.nizam.app.feature.safe.CoroutineSafetyNet.report(e) }
 }

@@ -107,7 +107,7 @@ import kotlin.math.sin
 @Composable
 fun TalkScreen(container: AppContainer, open: (String) -> Unit) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var state by remember { mutableStateOf("idle") }          // idle | listening | thinking | speaking
     var heard by remember { mutableStateOf("") }
     var said by remember { mutableStateOf("Tap anywhere and talk.") }

@@ -97,20 +97,20 @@ private fun adaptiveOrder(c: android.content.Context): List<Hub> {
 @Composable
 fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     // a light tool (an nx/ screen) peeks open in a sheet over the home; anything else leaves the home as before
     var sheetRoute by rememberSaveable { mutableStateOf<String?>(null) }
     fun openOrPeek(r: String) { if (r.startsWith("nx/") && r != "nx/chief" && r != "nx/flows") sheetRoute = r else open(r) }
     val spaces = remember { listOf(Space.Today) + adaptiveOrder(c).map { Space.Life(it) } + Space.You }
     var start by rememberSaveable { mutableStateOf(0) }
     val pager = rememberPagerState(initialPage = start, pageCount = { spaces.size })
-    LaunchedEffect(pager.currentPage) { start = pager.currentPage }
+    LaunchedEffect(pager.currentPage) { com.nizam.app.ui.design.guard { start = pager.currentPage } }
     var q by rememberSaveable { mutableStateOf("") }
     var searching by rememberSaveable { mutableStateOf(false) }
     val rail = rememberLazyListState()
-    LaunchedEffect(pager.currentPage) { runCatching { rail.animateScrollToItem((pager.currentPage - 1).coerceAtLeast(0)) } }
+    LaunchedEffect(pager.currentPage) { com.nizam.app.ui.design.guard { runCatching { rail.animateScrollToItem((pager.currentPage - 1).coerceAtLeast(0)) } } }
     var tick2 by remember { mutableStateOf(0) }
-    LaunchedEffect(Unit) { tick2++ }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { tick2++ } }
     val here = spaces[pager.currentPage]
     val accent = (here as? Space.Life)?.hub?.tint() ?: MaterialTheme.colorScheme.primary
 

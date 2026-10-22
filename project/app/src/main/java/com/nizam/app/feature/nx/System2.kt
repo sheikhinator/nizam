@@ -218,13 +218,13 @@ fun AppFirewallScreen() {
     var on by remember { mutableStateOf(FirewallVpn.on) }
     var q by remember { mutableStateOf("") }
     var apps by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         apps = withContext(Dispatchers.IO) {
             val pm = ctx.packageManager
             pm.getInstalledApplications(0).filter { it.flags and ApplicationInfo.FLAG_SYSTEM == 0 && it.packageName != ctx.packageName }
                 .map { pm.getApplicationLabel(it).toString() to it.packageName }.sortedBy { it.first.lowercase() }
         }
-    }
+    } }
     val consent = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
         if (r.resultCode == Activity.RESULT_OK) { FirewallVpn.apply(ctx); on = true }
     }
@@ -268,7 +268,7 @@ fun WalkieScreen() {
     val me = remember { (Math.random() * Int.MAX_VALUE).toInt() }
     val rate = 16000
     // listen for the whole time the screen is open
-    LaunchedEffect(channel) {
+    LaunchedEffect(channel) { com.nizam.app.ui.design.guard {
         withContext(Dispatchers.IO) {
             val wifi = ctx.applicationContext.getSystemService(Context.WIFI_SERVICE) as android.net.wifi.WifiManager
             val lock = wifi.createMulticastLock("atlas-walkie").apply { setReferenceCounted(false); acquire() }
@@ -289,9 +289,9 @@ fun WalkieScreen() {
                 }
             } finally { runCatching { track.stop() }; track.release(); sock.close(); lock.release() }
         }
-    }
+    } }
     // send while the button is held
-    LaunchedEffect(talking, channel) {
+    LaunchedEffect(talking, channel) { com.nizam.app.ui.design.guard {
         if (!talking || !granted) return@LaunchedEffect
         withContext(Dispatchers.IO) {
             val min = android.media.AudioRecord.getMinBufferSize(rate, android.media.AudioFormat.CHANNEL_IN_MONO, android.media.AudioFormat.ENCODING_PCM_16BIT)
@@ -311,7 +311,7 @@ fun WalkieScreen() {
                 }
             } finally { runCatching { rec.stop() }; rec.release(); sock.close() }
         }
-    }
+    } }
     val live = System.currentTimeMillis() - heard < 600
     AtlasScreen(title = "Walkie-talkie", subtitle = "Channel $channel · everyone on the same Wi-Fi or hotspot with Atlas open hears you", hub = Hub.Social) {
         item("ch") { Row(Modifier.padding(horizontal = Space.page), horizontalArrangement = Arrangement.spacedBy(Space.s)) {

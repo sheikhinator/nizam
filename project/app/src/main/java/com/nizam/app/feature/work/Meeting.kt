@@ -75,7 +75,7 @@ private data class MeetingActionDraft(
 fun MeetingScreen(container: AppContainer) {
     val context = LocalContext.current
     val store = remember(context) { PeopleCareerStore(context) }
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
 
     var transcript by remember { mutableStateOf("") }
     var title by remember { mutableStateOf("") }
@@ -92,11 +92,11 @@ fun MeetingScreen(container: AppContainer) {
     var taskBusy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(store) {
+    LaunchedEffect(store) { com.nizam.app.ui.design.guard {
         runCatching { withContext(Dispatchers.IO) { store.all(PeopleCareerStore.MEETINGS) } }
             .onSuccess { history = it }
             .onFailure { error = it.message ?: "Meeting records could not be read." }
-    }
+    } }
 
     val mic = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {

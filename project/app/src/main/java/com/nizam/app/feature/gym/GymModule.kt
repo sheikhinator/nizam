@@ -152,7 +152,7 @@ fun GymScreen(container: AppContainer) {
     var genPrompt by remember { mutableStateOf("") }
     var generating by remember { mutableStateOf(false) }
     var genStatus by remember { mutableStateOf<String?>(null) }
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
 
     val todaySets = sets.filter { it.localDate == today() }
     val todayVolume = todaySets.sumOf { it.weight * it.reps }

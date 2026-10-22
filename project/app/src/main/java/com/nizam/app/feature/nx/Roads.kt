@@ -206,14 +206,14 @@ object Roads {
 internal fun RoadsScreen(container: AppContainer, open: (String) -> Unit) {
     val c = LocalContext.current
     var ready by remember { mutableIntStateOf(0) }
-    LaunchedEffect(Unit) { Roads.warm(container, force = true); ready++ }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { Roads.warm(container, force = true); ready++ } }
     val sources = remember(ready) { Roads.sources(c) }
     val pulse = remember(ready) { Roads.pulse(c) }
     val max = (pulse.maxOrNull() ?: 0).coerceAtLeast(1)
     var on by remember { mutableStateOf(Noticer.enabled(c)) }
     val notices = remember(ready, on) { Noticer.scan(c) }
     var report by remember { mutableStateOf("") }
-    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Everything you record in Atlas feeds one network. Insight tools use it, so their answers come from your whole picture, not one tracker.",
             style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)

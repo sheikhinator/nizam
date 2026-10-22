@@ -51,18 +51,18 @@ import java.io.File
 @Composable
 fun VaultScreen(container: AppContainer) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val items by container.vaultRepository.items().collectAsState(initial = emptyList())
 
     var passphrase by remember { mutableStateOf("") }
     var playing by remember { mutableStateOf<Pair<VaultItem, File>?>(null) }
 
     // Plaintext must never outlive the viewing. Sweep any decrypted leftovers on entry.
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         context.cacheDir.listFiles()?.filter { it.name.startsWith("open_") }?.forEach {
             runCatching { it.delete() }
         }
-    }
+    } }
     var unlocked by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
     var status by remember { mutableStateOf<String?>(null) }
@@ -102,7 +102,7 @@ fun VaultScreen(container: AppContainer) {
             item.mime.startsWith("audio") ->
                 AudioPlayer(file, item.name) { runCatching { file.delete() }; playing = null }
             else -> {
-                LaunchedEffect(file) {
+                LaunchedEffect(file) { com.nizam.app.ui.design.guard {
                     runCatching {
                         val uri = FileProvider.getUriForFile(
                             context, "${context.packageName}.fileprovider", file
@@ -115,7 +115,7 @@ fun VaultScreen(container: AppContainer) {
                         )
                     }
                     playing = null
-                }
+                } }
             }
         }
         return

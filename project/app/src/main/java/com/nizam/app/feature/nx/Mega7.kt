@@ -87,7 +87,7 @@ object Mega7 {
 
 @Composable
 private fun CapsuleScreen() {
-    val c = LocalContext.current; val scope = rememberCoroutineScope()
+    val c = LocalContext.current; val scope = com.nizam.app.ui.design.rememberSafeScope()
     var list by remember { mutableStateOf(Capsules.all(c)) }
     var title by remember { mutableStateOf("") }
     var text by remember { mutableStateOf("") }

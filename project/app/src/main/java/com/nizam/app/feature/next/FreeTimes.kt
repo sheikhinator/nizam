@@ -113,9 +113,9 @@ fun FreeTimesScreen(container: AppContainer) {
     var len by remember { mutableStateOf("60") }
     var slots by remember { mutableStateOf<List<FreeTimes.Slot>?>(null) }
     val perm = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { slots = null }
-    LaunchedEffect(days, len, slots == null) {
+    LaunchedEffect(days, len, slots == null) { com.nizam.app.ui.design.guard {
         if (slots == null) slots = FreeTimes.find(ctx, container, days.toInt(), len.toLong())
-    }
+    } }
     AtlasScreen(title = "Share free times", subtitle = "Your calendar and prayer times are kept clear") {
         item("opts") {
             Column(Modifier.padding(horizontal = Space.page)) {

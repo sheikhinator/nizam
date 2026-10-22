@@ -71,7 +71,7 @@ private fun Card(content: @Composable () -> Unit) {
 @Composable
 fun BrainScreen(container: AppContainer) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var tab by remember { mutableStateOf("Ask") }
     var query by remember { mutableStateOf("") }
     var hits by remember { mutableStateOf<List<Hit>>(emptyList()) }
@@ -101,11 +101,11 @@ fun BrainScreen(container: AppContainer) {
         }
     }
 
-    LaunchedEffect(context) {
+    LaunchedEffect(context) { com.nizam.app.ui.design.guard {
         val shelf = withContext(Dispatchers.IO) { SourceDocuments.load(context) }
         sources = shelf.documents
         sourceLoadError = shelf.error
-    }
+    } }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 18.dp)) {
         ModuleTitle("Second brain", "Everything you've saved, searchable — and a record of your judgment")
@@ -323,7 +323,7 @@ fun DayScreen(container: AppContainer) {
     var lines by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
     var diary by remember { mutableStateOf<List<String>>(emptyList()) }
 
-    LaunchedEffect(date) {
+    LaunchedEffect(date) { com.nizam.app.ui.design.guard {
         val k = date.toString(); val zone = ZoneId.systemDefault()
         val out = mutableListOf<Pair<String, String>>()
         container.prayerRepository.day(k).first()?.let { p ->
@@ -352,7 +352,7 @@ fun DayScreen(container: AppContainer) {
         DecisionStore(context).all().filter { it.date == k }.forEach { out += "⚖️ Decided" to it.decision }
         diary = container.diaryRepository.entries().first().filter { it.localDate == k }.map { "Mood ${it.mood}/5 — ${it.body}" }
         lines = out
-    }
+    } }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 18.dp)) {
         ModuleTitle("Timeline", "Step through any day of your life in Atlas")

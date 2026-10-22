@@ -96,7 +96,7 @@ fun CelebrationOverlay() {
                 6f + Random.nextFloat() * 8f, palette[Random.nextInt(palette.size)], Random.nextInt(3))
         }
     }
-    LaunchedEffect(n) { t.snapTo(0f); t.animateTo(1f, tween(2600, easing = LinearEasing)) }
+    LaunchedEffect(n) { com.nizam.app.ui.design.guard { t.snapTo(0f); t.animateTo(1f, tween(2600, easing = LinearEasing)) } }
     if (t.value >= 1f) return
     if (Style.s.art) androidx.compose.foundation.layout.Box(Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
         val k = (t.value * 5f).coerceAtMost(1f).let { 1f - (1f - it) * (1f - it) * (1f - it) }
@@ -129,7 +129,7 @@ fun CelebrationOverlay() {
 @Composable
 fun LiquidRefresh(refreshing: Boolean, onRefresh: () -> Unit, modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
     val pull = remember { Animatable(0f) }
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val haptics = rememberHaptics()
     val threshold = 180f
     var armed by remember { mutableStateOf(false) }

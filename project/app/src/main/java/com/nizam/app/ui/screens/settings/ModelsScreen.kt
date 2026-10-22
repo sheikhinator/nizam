@@ -233,5 +233,5 @@ private fun DownloadCard(d: com.nizam.app.net.Download, onDone: () -> Unit) {
             else -> Text("Cancelled — download again to resume where it stopped.", style = MaterialTheme.typography.bodyMedium)
         }
     }
-    androidx.compose.runtime.LaunchedEffect(d.state) { if (d.state == "done") onDone() }
+    androidx.compose.runtime.LaunchedEffect(d.state) { com.nizam.app.ui.design.guard { if (d.state == "done") onDone() } }
 }

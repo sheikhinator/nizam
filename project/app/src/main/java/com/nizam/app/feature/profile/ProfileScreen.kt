@@ -49,7 +49,7 @@ private val FIELDS = listOf(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ProfileScreen(container: AppContainer) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val settings = container.settingsRepository
     val stored by settings.profileJson.collectAsState(initial = "{}")
     val storedFace by settings.face.collectAsState(initial = "2-1-0-2-0-0-0")
@@ -61,7 +61,7 @@ fun ProfileScreen(container: AppContainer) {
     var status by remember { mutableStateOf<String?>(null) }
     var loaded by remember { mutableStateOf(false) }
 
-    LaunchedEffect(stored, storedFace) {
+    LaunchedEffect(stored, storedFace) { com.nizam.app.ui.design.guard {
         if (loaded) return@LaunchedEffect
         runCatching {
             val o = JSONObject(stored)
@@ -69,7 +69,7 @@ fun ProfileScreen(container: AppContainer) {
         }
         face = Face.decode(storedFace)
         loaded = true
-    }
+    } }
 
     fun save() = scope.launch {
         val o = JSONObject()

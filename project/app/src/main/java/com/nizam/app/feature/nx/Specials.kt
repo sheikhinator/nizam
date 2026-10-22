@@ -235,7 +235,7 @@ fun PartyScreen() {
     var mode by remember { mutableStateOf("Charades") }
     var card by remember { mutableStateOf("Tap Next") }
     var secs by remember { mutableIntStateOf(0) }
-    LaunchedEffect(secs) { if (secs > 0) { delay(1000); secs-- } }
+    LaunchedEffect(secs) { com.nizam.app.ui.design.guard { if (secs > 0) { delay(1000); secs-- } } }
     fun next() { card = when (mode) { "Charades" -> CHARADES.random(); "Would you rather" -> RATHER.random(); else -> LIKELY.random() }; if (mode == "Charades") secs = 60 }
     AtlasScreen(title = "Party games", subtitle = "Pass the phone around", hub = Hub.Social) {
         item("mode") {
@@ -294,13 +294,13 @@ fun SpeedReadScreen() {
     var pos by remember { mutableIntStateOf(0) }
     var playing by remember { mutableStateOf(false) }
     val words = remember(text) { text.split(Regex("\\s+")).filter { it.isNotBlank() } }
-    LaunchedEffect(playing, pos, wpm) {
+    LaunchedEffect(playing, pos, wpm) { com.nizam.app.ui.design.guard {
         if (playing && pos < words.size) {
             val w = words[pos]
             delay((60_000 / wpm).toLong() * (if (w.endsWith('.') || w.endsWith(',') || w.length > 9) 2 else 1))
             pos++
         } else if (pos >= words.size) playing = false
-    }
+    } }
     AtlasScreen(title = "Speed reading", subtitle = "Eyes still, words come to you", hub = Hub.Learn) {
         item("show") {
             Group(Modifier.padding(horizontal = Space.page, vertical = Space.s)) {
@@ -340,7 +340,7 @@ fun MemoryGameScreen() {
     var showing by remember { mutableStateOf(false) }
     var answer by remember { mutableStateOf("") }
     var msg by remember { mutableStateOf("Remember the number, then type it back.") }
-    LaunchedEffect(showing) { if (showing) { delay(700L + level * 450L); showing = false } }
+    LaunchedEffect(showing) { com.nizam.app.ui.design.guard { if (showing) { delay(700L + level * 450L); showing = false } } }
     AtlasScreen(title = "Memory trainer", subtitle = "Best: ${p.getInt("best", 0)} digits", hub = Hub.Learn) {
         item("g") {
             Group(Modifier.padding(horizontal = Space.page, vertical = Space.s)) {
@@ -366,12 +366,12 @@ fun MemoryGameScreen() {
 @Composable
 fun ClipboardScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val store = remember { JsonStore(ctx, "clipboard_brain", sealed = true) }
     var list by remember { mutableStateOf(store.all().reversed()) }
     var q by remember { mutableStateOf("") }
     var ans by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         val cm = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
         val t = runCatching { cm.primaryClip?.getItemAt(0)?.coerceToText(ctx)?.toString() }.getOrNull()
         if (!t.isNullOrBlank() && store.all().lastOrNull()?.optString("t") != t) {
@@ -379,7 +379,7 @@ fun ClipboardScreen(container: AppContainer) {
             store.all().let { if (it.size > 200) store.save(it.takeLast(200)) }
             list = store.all().reversed()
         }
-    }
+    } }
     val shown = list.filter { q.isBlank() || it.optString("t").contains(q, true) }
     AtlasScreen(title = "Clipboard brain", subtitle = "Opening this screen saves what you copied. Encrypted on this phone.", hub = Hub.Tools, actions = {
         Text("Clear", Modifier.padding(Space.s).pressable { store.save(emptyList()); list = emptyList() }, style = MaterialTheme.typography.labelLarge)
@@ -508,7 +508,7 @@ fun SoulScreen() {
 @Composable
 fun ArenaScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val p = remember { ctx.getSharedPreferences("arena", 0) }
     var q by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
@@ -572,7 +572,7 @@ object WebWatch {
 @Composable
 fun WebWatchScreen() {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var list by remember { mutableStateOf(WebWatch.store(ctx).all()) }
     var url by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
@@ -609,7 +609,7 @@ fun WebWatchScreen() {
 @Composable
 fun ReadLaterScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val store = remember { JsonStore(ctx, "read_later") }
     var list by remember { mutableStateOf(store.all().reversed()) }
     var url by remember { mutableStateOf("") }
@@ -667,7 +667,7 @@ fun ReadLaterScreen(container: AppContainer) {
 // ─────────────────────────────── Dictionary ───────────────────────────────
 @Composable
 fun DictionaryScreen(container: AppContainer) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var w by remember { mutableStateOf("") }
     var out by remember { mutableStateOf<String?>(null) }
     var urdu by remember { mutableStateOf<String?>(null) }
@@ -706,7 +706,7 @@ fun DictionaryScreen(container: AppContainer) {
 // ─────────────────────────────── Breach check ───────────────────────────────
 @Composable
 fun BreachScreen() {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var pw by remember { mutableStateOf("") }
     var out by remember { mutableStateOf<String?>(null) }
     AtlasScreen(title = "Password breach check", subtitle = "Only the first 5 characters of a scrambled hash leave the phone", hub = Hub.Tools) {
@@ -738,11 +738,11 @@ fun AirScreen(container: AppContainer) {
     var city by remember { mutableStateOf("Here") }
     val cities = linkedMapOf("Here" to (0.0 to 0.0), "Lahore" to (31.55 to 74.34), "Karachi" to (24.86 to 67.01), "Islamabad" to (33.68 to 73.05),
         "Faisalabad" to (31.42 to 73.08), "Multan" to (30.2 to 71.47), "Peshawar" to (34.01 to 71.58), "Quetta" to (30.18 to 66.99))
-    LaunchedEffect(city) {
+    LaunchedEffect(city) { com.nizam.app.ui.design.guard {
         data = null
         val (la, lo) = if (city == "Here") runCatching { container.settingsRepository.latitude.first() to container.settingsRepository.longitude.first() }.getOrDefault(31.55 to 74.34) else cities[city]!!
         data = runCatching { JSONObject(Http.getJson("https://air-quality-api.open-meteo.com/v1/air-quality?latitude=$la&longitude=$lo&current=us_aqi,pm2_5,pm10&hourly=us_aqi&forecast_days=2&timezone=auto")) }.getOrElse { JSONObject().put("err", it.message) }
-    }
+    } }
     fun band(a: Int) = when { a <= 50 -> "Good" to "Enjoy the outdoors"; a <= 100 -> "Moderate" to "Sensitive people: limit long outdoor effort"; a <= 150 -> "Unhealthy for sensitive groups" to "Kids, elders, asthma: stay in; masks outside"
         a <= 200 -> "Unhealthy" to "Everyone: N95 outside, keep windows shut"; a <= 300 -> "Very unhealthy" to "Stay indoors, run a purifier"; else -> "Hazardous" to "Avoid going out at all" }
     val d = data

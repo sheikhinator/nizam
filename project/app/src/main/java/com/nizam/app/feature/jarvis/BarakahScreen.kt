@@ -49,7 +49,7 @@ fun BarakahScreen(container: AppContainer) {
     val c = LocalContext.current
     var refresh by remember { mutableIntStateOf(0) }
     var days by remember { mutableStateOf<List<BarakahDay>>(emptyList()) }
-    LaunchedEffect(refresh) { days = runCatching { Barakah.days(container, 30) }.getOrElse { emptyList() } }
+    LaunchedEffect(refresh) { com.nizam.app.ui.design.guard { days = runCatching { Barakah.days(container, 30) }.getOrElse { emptyList() } } }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 18.dp)) {
         ModuleTitle("Barakah", "How well today was lived — and what actually lifts your days")

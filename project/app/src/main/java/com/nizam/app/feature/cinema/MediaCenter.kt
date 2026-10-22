@@ -117,8 +117,8 @@ private fun Board(onMeta: (String, String) -> Unit, onPlay: () -> Unit) {
     var rows by remember { mutableStateOf<List<Pair<String, List<Meta>>>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
     var free by remember { mutableStateOf<List<FreeFilm>>(emptyList()) }
-    val scope = rememberCoroutineScope()
-    LaunchedEffect(Unit) {
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         rows = coroutineScope {
             Stremio.addons(c).flatMap { a -> a.catalogs.filter { it.type in listOf("movie", "series", "channel") }.take(4).map { a to it } }
                 .take(10).map { (a, cat) -> async { runCatching { "${cat.name} · ${cat.type}" to Stremio.catalog(a, cat).take(20) }.getOrNull() } }
@@ -126,7 +126,7 @@ private fun Board(onMeta: (String, String) -> Unit, onPlay: () -> Unit) {
         }
         free = runCatching { Archive.search("").take(20) }.getOrElse { emptyList() }
         loading = false
-    }
+    } }
     val cont = remember { Library.continueWatching(c) }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp)) {
         if (cont.isNotEmpty()) {
@@ -165,7 +165,7 @@ private fun Board(onMeta: (String, String) -> Unit, onPlay: () -> Unit) {
 @Composable
 private fun Discover(onMeta: (String, String) -> Unit) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var addons by remember { mutableStateOf<List<Addon>>(emptyList()) }
     var type by remember { mutableStateOf("movie") }
     var catKey by remember { mutableStateOf("") }
@@ -173,7 +173,7 @@ private fun Discover(onMeta: (String, String) -> Unit) {
     var query by remember { mutableStateOf("") }
     var results by remember { mutableStateOf<List<Meta>>(emptyList()) }
     var skip by remember { mutableStateOf(0) }
-    LaunchedEffect(Unit) { addons = Stremio.addons(c).filter { it.catalogs.isNotEmpty() } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { addons = Stremio.addons(c).filter { it.catalogs.isNotEmpty() } } }
     val cats = addons.flatMap { a -> a.catalogs.filter { it.type == type }.map { a to it } }
     val chosen = cats.firstOrNull { "${it.first.name}/${it.second.id}" == catKey } ?: cats.firstOrNull()
     fun load(reset: Boolean) = scope.launch {
@@ -182,7 +182,7 @@ private fun Discover(onMeta: (String, String) -> Unit) {
         val r = runCatching { Stremio.catalog(a, cat, genre.takeIf { it != "All" }, query.takeIf { it.isNotBlank() && cat.searchable }, skip) }.getOrElse { emptyList() }
         results = if (reset) r else (results + r).distinctBy { it.id }
     }
-    LaunchedEffect(type, catKey, genre, addons) { if (addons.isNotEmpty()) load(true) }
+    LaunchedEffect(type, catKey, genre, addons) { com.nizam.app.ui.design.guard { if (addons.isNotEmpty()) load(true) } }
 
     LazyVerticalGrid(GridCells.Fixed(3), Modifier.fillMaxSize().padding(horizontal = 14.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -211,8 +211,8 @@ private fun LibraryTab(onMeta: (String, String) -> Unit, onPlay: () -> Unit) {
     val items = remember { Library.items(c) }
     val downloads by VideoDownloads.items.collectAsState()
     var cal by remember { mutableStateOf<List<Pair<Meta, Episode>>>(emptyList()) }
-    LaunchedEffect(Unit) { cal = runCatching { Library.calendar(c) }.getOrElse { emptyList() } }
-    LaunchedEffect(Unit) { VideoDownloads.load(c); while (true) { VideoDownloads.sync(c); kotlinx.coroutines.delay(2000) } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { cal = runCatching { Library.calendar(c) }.getOrElse { emptyList() } } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { VideoDownloads.load(c); while (true) { VideoDownloads.sync(c); kotlinx.coroutines.delay(2000) } } }
     LazyVerticalGrid(GridCells.Fixed(3), Modifier.fillMaxSize().padding(horizontal = 14.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         if (downloads.isNotEmpty()) item(span = { GridItemSpan(maxLineSpan) }) {
@@ -275,12 +275,12 @@ private fun DownloadRow(d: VideoDownload, onPlay: () -> Unit) {
 @Composable
 private fun AddonsTab() {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var urls by remember { mutableStateOf(Stremio.installedUrls(c)) }
     var addons by remember { mutableStateOf<Map<String, Addon?>>(emptyMap()) }
     var input by remember { mutableStateOf("") }
     var status by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(urls) { addons = urls.associateWith { u -> runCatching { Stremio.manifest(u) }.getOrNull() } }
+    LaunchedEffect(urls) { com.nizam.app.ui.design.guard { addons = urls.associateWith { u -> runCatching { Stremio.manifest(u) }.getOrNull() } } }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(14.dp)) {
         Text("Add an addon", style = MaterialTheme.typography.titleMedium)
         Text("Paste a manifest URL or a stremio:// install link. Atlas speaks the Stremio addon protocol, so catalogs, " +
@@ -332,7 +332,7 @@ private fun seedsOf(s: StreamOption) = Regex("👤\\s?(\\d+)").find(s.detail)?.g
 @Composable
 fun MetaScreen(onPlay: () -> Unit) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val type = CinemaNav.metaType; val id = CinemaNav.metaId
     var meta by remember { mutableStateOf<Meta?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -344,14 +344,14 @@ fun MetaScreen(onPlay: () -> Unit) {
     var inLib by remember { mutableStateOf(Library.has(c, id)) }
     var freeMatch by remember { mutableStateOf<FreeFilm?>(null) }
     val downloads by VideoDownloads.items.collectAsState()
-    LaunchedEffect(Unit) { VideoDownloads.load(c); while (true) { VideoDownloads.sync(c); kotlinx.coroutines.delay(2000) } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { VideoDownloads.load(c); while (true) { VideoDownloads.sync(c); kotlinx.coroutines.delay(2000) } } }
 
     fun openSources(videoId: String, ep: Episode?) = scope.launch {
         sourcesFor = ep; streams = null; quality = "All"; loadingSources = true
         streams = runCatching { Stremio.streams(c, if (ep != null) "series" else type, videoId) }.getOrElse { StreamResult(emptyList(), emptyList(), 0) }
         loadingSources = false
     }
-    LaunchedEffect(id) {
+    LaunchedEffect(id) { com.nizam.app.ui.design.guard {
         meta = runCatching { Stremio.meta(c, type, id) }.getOrNull()
         if (meta == null) error = "No addon could describe this title."
         meta?.videos?.firstOrNull()?.let { season = it.season }
@@ -359,7 +359,7 @@ fun MetaScreen(onPlay: () -> Unit) {
         CinemaNav.pendingEpisode?.let { next -> CinemaNav.pendingEpisode = null
             meta?.videos?.firstOrNull { it.id == next }?.let { e -> season = e.season; openSources(e.id, e) } }
         meta?.takeIf { it.type == "movie" }?.let { m -> freeMatch = Archive.match(m.name, m.year.take(4)) }
-    }
+    } }
     suspend fun subsFor(videoId: String) = runCatching { Stremio.subtitles(c, if (videoId.contains(":")) "series" else type, videoId) }.getOrElse { emptyList() }
     fun playSaved(d: VideoDownload) {
         CinemaNav.play(VideoDownloads.playable(d), d.label, d.id, meta, d.subs, headers = d.headers, cached = d.kind == "hls")

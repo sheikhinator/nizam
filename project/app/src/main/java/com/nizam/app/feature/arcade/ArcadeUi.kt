@@ -77,7 +77,7 @@ fun AtlasArcadeScreen() {
             val prefs = ctx.getSharedPreferences("arcade", 0)
             var crashed by remember { mutableStateOf(prefs.getString("launching", null)) }
             val crashStage = remember { prefs.getString("exit_stage", null) }
-            LaunchedEffect(Unit) { prefs.edit().remove("launching").remove("exit_stage").apply() }
+            LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { prefs.edit().remove("launching").remove("exit_stage").apply() } }
             crashed?.let { name ->
                 Card(Modifier.fillMaxWidth().padding(16.dp, 8.dp)) {
                     Column(Modifier.padding(14.dp)) {
@@ -102,7 +102,7 @@ fun AtlasArcadeScreen() {
 @Composable
 private fun Library(rev: Int, changed: () -> Unit, play: (ArcadeGame) -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var local by remember { mutableIntStateOf(0) }
     val games = remember(rev, local) { ArcadeLibrary.list(ctx).sortedByDescending { it.last } }
     var filter by remember { mutableStateOf("all") }
@@ -198,7 +198,7 @@ private fun RowAction(icon: androidx.compose.ui.graphics.vector.ImageVector, lab
 @Composable
 private fun Store(changed: () -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var platform by rememberSaveable { mutableStateOf("GBC") }
     var q by remember { mutableStateOf("") }
     val items = remember { mutableStateListOf<HomebrewHub.Entry>() }
@@ -223,7 +223,7 @@ private fun Store(changed: () -> Unit) {
             if (asked == platform) loading = false
         }
     }
-    LaunchedEffect(platform) { load(true) }
+    LaunchedEffect(platform) { com.nizam.app.ui.design.guard { load(true) } }
 
     fun install(e: HomebrewHub.Entry) {
         val key = e.slug + e.platform
@@ -292,7 +292,7 @@ private fun Modifier.verticalScrollSimple(): Modifier = this.then(Modifier.verti
 
 @Composable
 private fun EmulatorsPage(ctx: android.content.Context) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var rev by remember { mutableIntStateOf(0) }
     val files = remember(rev) { ArcadeLibrary.systemDir(ctx).listFiles()?.filter { it.isFile }?.sortedBy { it.name } ?: emptyList() }
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->

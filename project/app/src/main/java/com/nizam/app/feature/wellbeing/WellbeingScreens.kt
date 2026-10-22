@@ -154,7 +154,7 @@ fun CalmScreen() {
     var phase by remember { mutableStateOf("Tap start, then close your eyes") }
     val scale = remember { Animatable(0.4f) }
     DisposableEffect(Unit) { onDispose { vibrator(c).cancel() } }
-    LaunchedEffect(running) {
+    LaunchedEffect(running) { com.nizam.app.ui.design.guard {
         if (!running) { vibrator(c).cancel(); return@LaunchedEffect }
         val v = vibrator(c); val amp = v.hasAmplitudeControl()
         while (running) {
@@ -170,7 +170,7 @@ fun CalmScreen() {
             scale.animateTo(0.4f, tween(6000, easing = LinearEasing))
             phase = "Rest"; delay(2000)
         }
-    }
+    } }
     Column(Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Text("Calm", style = MaterialTheme.typography.headlineMedium)
         Text("In for 4 · hold 4 · out for 6. Follow the vibration.", style = MaterialTheme.typography.bodyMedium,

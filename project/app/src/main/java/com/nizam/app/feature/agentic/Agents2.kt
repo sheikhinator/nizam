@@ -115,7 +115,7 @@ object ActionUndo {
 @Composable
 private fun MissionControlScreen(container: AppContainer, open: (String) -> Unit) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var tick by remember { mutableStateOf(0) }
     var level by remember { mutableStateOf(AgentTrust.level(c)) }
     val lastSeen = remember { ap(c).getLong("mc_seen", 0L) }
@@ -176,7 +176,7 @@ private fun MissionControlScreen(container: AppContainer, open: (String) -> Unit
 
 @Composable
 private fun GoalPlanScreen(container: AppContainer, open: (String) -> Unit) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var goal by remember { mutableStateOf("") }
     var days by remember { mutableStateOf("30") }
     var busy by remember { mutableStateOf(false) }

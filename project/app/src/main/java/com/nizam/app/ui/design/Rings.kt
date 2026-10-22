@@ -41,7 +41,7 @@ data class DayRing(val label: String, val progress: Float, val color: Color, val
 fun DayRings(rings: List<DayRing>, modifier: Modifier = Modifier, diameter: Dp = 128.dp) {
     val c = MaterialTheme.colorScheme
     val sweep = remember { Animatable(0f) }
-    LaunchedEffect(Unit) { sweep.animateTo(1f, Motion.bouncy()) }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { sweep.animateTo(1f, Motion.bouncy()) } }
     Row(modifier.fillMaxWidth().clip(Radius.card).background(c.surface).padding(Space.l),
         verticalAlignment = Alignment.CenterVertically) {
         Canvas(Modifier.size(diameter)) {

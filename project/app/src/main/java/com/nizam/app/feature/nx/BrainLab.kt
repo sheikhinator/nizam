@@ -110,12 +110,12 @@ private fun dirSize(f: File): Long = f.walkTopDown().filter { it.isFile }.sumOf 
 @Composable
 fun SelfRepairScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var checks by remember { mutableStateOf<List<Check>>(emptyList()) }
     var running by remember { mutableStateOf(false) }
     var round by remember { mutableIntStateOf(0) }
     fun open(i: Intent) = runCatching { c.startActivity(i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }.onFailure { Feedback.show("Couldn't open that setting") }
-    LaunchedEffect(round) {
+    LaunchedEffect(round) { com.nizam.app.ui.design.guard {
         running = true
         val out = mutableListOf<Check>()
         val ai = runCatching { Ai.generate(container.settingsRepository, "Reply with the single word OK.", maxOutputTokens = 5) }
@@ -152,7 +152,7 @@ fun SelfRepairScreen(container: AppContainer) {
         out += Check("Location for prayer times", lat != null && lat != 0.0, if (lat != null && lat != 0.0) "Set" else "Not set — prayer times may be wrong",
             if (lat == null || lat == 0.0) ({ open(Intent(c, com.nizam.app.MainActivity::class.java).putExtra("route", "prayer")) }) else null)
         checks = out; running = false
-    }
+    } }
     val bad = checks.count { it.ok == false }
     AtlasScreen(title = "Self-repair", subtitle = if (running) "Checking…" else if (bad == 0) "All healthy" else "$bad things to fix", hub = Hub.Tools) {
         item("h") { Group(Modifier.padding(horizontal = Space.page)) {
@@ -181,7 +181,7 @@ fun SelfRepairScreen(container: AppContainer) {
 // ─────────────────────────────── Split thinking ───────────────────────────────
 @Composable
 fun SplitThinkScreen(container: AppContainer) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var q by remember { mutableStateOf("") }
     var quick by remember { mutableStateOf<String?>(null) }
     var careful by remember { mutableStateOf<String?>(null) }
@@ -213,7 +213,7 @@ fun SplitThinkScreen(container: AppContainer) {
 // ─────────────────────────────── Confidence answers ───────────────────────────────
 @Composable
 fun ConfidentScreen(container: AppContainer) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var q by remember { mutableStateOf("") }
     var bar by remember { mutableFloatStateOf(70f) }
     var answer by remember { mutableStateOf<String?>(null) }
@@ -259,17 +259,17 @@ fun ConfidentScreen(container: AppContainer) {
 // ─────────────────────────────── Instant ask (speculative) ───────────────────────────────
 @Composable
 fun QuickAskScreen(container: AppContainer) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var q by remember { mutableStateOf("") }
     val ready = remember { mutableStateMapOf<String, String>() }
     var shown by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
     var busy by remember { mutableStateOf(false) }
     // start answering a second after you stop typing; if you send the same words, the answer is already there
-    LaunchedEffect(q) {
+    LaunchedEffect(q) { com.nizam.app.ui.design.guard {
         val t = q.trim(); if (t.length < 12 || ready.containsKey(t)) return@LaunchedEffect
         delay(900)
         runCatching { Ai.generate(container.settingsRepository, t, maxOutputTokens = 900) }.onSuccess { ready[t] = it }
-    }
+    } }
     AtlasScreen(title = "Instant ask", subtitle = "Starts answering while you type", hub = Hub.Memory) {
         item("in") { Column(Modifier.padding(horizontal = Space.page)) {
             OutlinedTextField(q, { q = it }, Modifier.fillMaxWidth(), placeholder = { Text("Type a question and pause…") }, minLines = 2)
@@ -313,7 +313,7 @@ private fun layout(nodes: List<GNode>, edges: List<GEdge>) {
 @Composable
 fun GraphScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val file = remember { File(c.filesDir, "kgraph.json") }
     var nodes by remember { mutableStateOf<List<GNode>>(emptyList()) }
     var edges by remember { mutableStateOf<List<GEdge>>(emptyList()) }
@@ -327,7 +327,7 @@ fun GraphScreen(container: AppContainer) {
         val es = (0 until e.length()).map { e.getJSONObject(it) }.map { GEdge(it.optString("a"), it.optString("b"), it.optString("rel")) }.filter { it.a in ids && it.b in ids }
         layout(ns, es); nodes = ns; edges = es
     }
-    LaunchedEffect(Unit) { runCatching { load(JSONObject(file.readText())) } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { runCatching { load(JSONObject(file.readText())) } } }
     val colors = mapOf("person" to Color(0xFF6366F1), "place" to Color(0xFF10B981), "idea" to Color(0xFFF59E0B), "project" to Color(0xFFEC4899), "thing" to Color(0xFF0EA5E9))
     AtlasScreen(title = "Knowledge graph", subtitle = if (nodes.isEmpty()) "Built from your notes, diary, chats and memory" else "${nodes.size} things · ${edges.size} links", hub = Hub.Memory) {
         item("b") { Row(Modifier.padding(horizontal = Space.page), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -379,7 +379,7 @@ fun GraphScreen(container: AppContainer) {
 @Composable
 fun GenScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val store = remember { com.nizam.app.feature.next.JsonStore(c, "genscreens") }
     var list by remember { mutableStateOf(store.all()) }
     var openId by remember { mutableStateOf<String?>(null) }
@@ -468,7 +468,7 @@ object AtlasCard {
 @Composable
 fun AtlasCardScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var kind by remember { mutableStateOf("Task") }
     var title by remember { mutableStateOf("") }
     var body by remember { mutableStateOf("") }

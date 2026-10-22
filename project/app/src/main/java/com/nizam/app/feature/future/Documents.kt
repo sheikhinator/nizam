@@ -190,7 +190,7 @@ fun DocumentsScreen(container: AppContainer) {
                 Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     d.images.forEach { n ->
                         var bmp by remember(n) { mutableStateOf<Bitmap?>(null) }
-                        LaunchedEffect(n) { bmp = withContext(Dispatchers.IO) { Documents.image(c, n) } }
+                        LaunchedEffect(n) { com.nizam.app.ui.design.guard { bmp = withContext(Dispatchers.IO) { Documents.image(c, n) } } }
                         bmp?.let { Image(it.asImageBitmap(), null, contentScale = ContentScale.Fit, modifier = Modifier.height(220.dp).clip(RoundedCornerShape(10.dp))) }
                     }
                 }
@@ -219,7 +219,7 @@ fun DocumentsScreen(container: AppContainer) {
             Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable { viewing = d; renewal = "" }.padding(vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically) {
                 var thumb by remember(d.id) { mutableStateOf<Bitmap?>(null) }
-                LaunchedEffect(d.id) { thumb = withContext(Dispatchers.IO) { d.images.firstOrNull()?.let { Documents.image(c, it, 200) } } }
+                LaunchedEffect(d.id) { com.nizam.app.ui.design.guard { thumb = withContext(Dispatchers.IO) { d.images.firstOrNull()?.let { Documents.image(c, it, 200) } } } }
                 thumb?.let { Image(it.asImageBitmap(), null, contentScale = ContentScale.Crop, modifier = Modifier.size(56.dp).clip(RoundedCornerShape(8.dp))) }
                     ?: Text("🪪", style = MaterialTheme.typography.headlineMedium)
                 Column(Modifier.weight(1f).padding(start = 12.dp)) {

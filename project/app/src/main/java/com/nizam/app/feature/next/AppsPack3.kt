@@ -172,7 +172,7 @@ fun TimerScreen() {
     var minutes by remember { mutableStateOf(25) }
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
     val running = com.nizam.app.ui.design.FocusTimer.endsAt > 0L
-    androidx.compose.runtime.LaunchedEffect(running) { while (com.nizam.app.ui.design.FocusTimer.endsAt > 0L) { now = System.currentTimeMillis(); kotlinx.coroutines.delay(500) } }
+    androidx.compose.runtime.LaunchedEffect(running) { com.nizam.app.ui.design.guard { while (com.nizam.app.ui.design.FocusTimer.endsAt > 0L) { now = System.currentTimeMillis(); kotlinx.coroutines.delay(500) } } }
     val remaining = (com.nizam.app.ui.design.FocusTimer.endsAt - now).coerceAtLeast(0)
     AtlasScreen(title = "Timer", subtitle = "Focus blocks. The countdown follows you in the tab bar.", hub = Hub.Health) {
         item("clock") {

@@ -135,7 +135,7 @@ private fun rememberRecorder(file: File): Pair<() -> Boolean, () -> Unit> {
 @Composable
 fun SongIdScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val file = remember { File(ctx.cacheDir, "songid.m4a") }
     val (start, stop) = rememberRecorder(file)
     var secs by remember { mutableStateOf(0) }
@@ -170,7 +170,7 @@ fun SongIdScreen(container: AppContainer) {
 @Composable
 fun VideoStudioScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var uri by remember { mutableStateOf<Uri?>(null) }
     var name by remember { mutableStateOf("") }
     var durMs by remember { mutableStateOf(0L) }
@@ -262,7 +262,7 @@ private fun enhance(src: Bitmap): Bitmap {
 @Composable
 fun PhotoMagicScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var src by remember { mutableStateOf<Bitmap?>(null) }
     var res by remember { mutableStateOf<Bitmap?>(null) }
     var busy by remember { mutableStateOf(false) }
@@ -310,7 +310,7 @@ fun PhotoMagicScreen(container: AppContainer) {
 @Composable
 fun CutoutScreen() {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var fg by remember { mutableStateOf<Bitmap?>(null) }
     var busy by remember { mutableStateOf(false) }
     fun run(b: Bitmap) { busy = true; scope.launch { runCatching { Cutout.foreground(b) }.onSuccess { fg = it }.onFailure { Feedback.show(it.message ?: "Failed") }; busy = false } }
@@ -338,7 +338,7 @@ fun CutoutScreen() {
 @Composable
 fun OfflineTranslatorScreen() {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val names = OfflineTranslate.LANGS.keys.toList()
     var from by remember { mutableStateOf("English") }
     var to by remember { mutableStateOf("Urdu") }
@@ -346,7 +346,7 @@ fun OfflineTranslatorScreen() {
     var out by remember { mutableStateOf("") }
     var have by remember { mutableStateOf<Set<String>>(emptySet()) }
     var busy by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(Unit) { have = OfflineTranslate.downloaded() }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { have = OfflineTranslate.downloaded() } }
     fun code(n: String) = OfflineTranslate.LANGS[n]!!
     AtlasScreen(title = "Offline translator", subtitle = "${have.size} languages on this phone", hub = Hub.Travel) {
         item("f") { LazyRow(Modifier.padding(horizontal = Space.page), horizontalArrangement = Arrangement.spacedBy(Space.s)) { items(names.size) { i -> Capsule("From " + names[i], from == names[i]) { from = names[i] } } } }
@@ -385,7 +385,7 @@ fun OfflineTranslatorScreen() {
 @Composable
 fun MyVoiceScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val sample = remember { File(ctx.filesDir, "voice_sample.m4a") }
     val (start, stop) = rememberRecorder(sample)
     var key by remember { mutableStateOf(VoiceClone.key(ctx)) }
@@ -444,7 +444,7 @@ fun MyVoiceScreen(container: AppContainer) {
 @Composable
 fun PictureItScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var mode by remember { mutableStateOf("Comic") }
     var text by remember { mutableStateOf("") }
     var panels by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
@@ -527,10 +527,10 @@ fun SkyScreen(container: AppContainer) {
     var lat by remember { mutableStateOf(31.55) }; var lon by remember { mutableStateOf(74.34) }
     var now by remember { mutableStateOf(System.currentTimeMillis()) }
     var heading by remember { mutableStateOf<Double?>(null) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         runCatching { lat = container.settingsRepository.latitude.first(); lon = container.settingsRepository.longitude.first() }
         while (true) { delay(30_000); now = System.currentTimeMillis() }
-    }
+    } }
     DisposableEffect(Unit) {
         val sm = ctx.getSystemService(android.hardware.SensorManager::class.java)
         val l = object : android.hardware.SensorEventListener {
@@ -606,7 +606,7 @@ object Wiki {
 @Composable
 fun WikiScreen() {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var saved by remember { mutableStateOf(Wiki.store(ctx).all()) }
     var q by remember { mutableStateOf("") }
     var lang by remember { mutableStateOf("en") }

@@ -59,7 +59,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsScreen(container: AppContainer, onOpen: (String) -> Unit = {}) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val faceCode by container.settingsRepository.face.collectAsState(initial = "2-1-0-2-0-0-0")
     val displayName by container.settingsRepository.displayName.collectAsState(initial = "")
     var resetStage by remember { mutableStateOf(0) }

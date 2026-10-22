@@ -196,9 +196,9 @@ private fun ImportTab(container: AppContainer) {
     var target by remember { mutableStateOf("finance") }
     var modules by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
     var status by remember { mutableStateOf<String?>(null) }
-    androidx.compose.runtime.LaunchedEffect(Unit) {
+    androidx.compose.runtime.LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         modules = listOf("finance" to "Finance") + container.dynamicRepository.specs().first().map { it.key to it.name }
-    }
+    } }
     val pick = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let { rows = runCatching { parseCsv(c.contentResolver.openInputStream(it)!!.bufferedReader().use { r -> r.readText() }) }.getOrElse { emptyList() } }
     }

@@ -78,9 +78,9 @@ private val WORK_PAGES = listOf("People", "Applications", "Career", "Offers", "C
 fun PeopleCareerRecordsScreen(container: AppContainer) {
     val context = LocalContext.current
     val store = remember(context) { PeopleCareerStore(context) }
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val records = remember(store, scope) { WorkRecordsState(store, scope) }
-    LaunchedEffect(records) { records.refresh() }
+    LaunchedEffect(records) { com.nizam.app.ui.design.guard { records.refresh() } }
 
     val people by container.dynamicRepository.entries("people").collectAsState(initial = emptyList())
     val career by container.dynamicRepository.entries("career").collectAsState(initial = emptyList())

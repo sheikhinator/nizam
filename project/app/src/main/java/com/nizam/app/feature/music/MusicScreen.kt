@@ -118,7 +118,7 @@ private fun time(ms: Long): String { val s = (ms / 1000).coerceAtLeast(0); retur
 fun TrackArt(t: Track?, modifier: Modifier, corner: Int = 8) {
     val c = LocalContext.current
     var bmp by remember(t?.id, t?.art) { mutableStateOf<android.graphics.Bitmap?>(null) }
-    LaunchedEffect(t?.id, t?.art) { if (t != null && !t.art.startsWith("http")) bmp = withContext(Dispatchers.IO) { MusicArt.bitmap(c, t) } }
+    LaunchedEffect(t?.id, t?.art) { com.nizam.app.ui.design.guard { if (t != null && !t.art.startsWith("http")) bmp = withContext(Dispatchers.IO) { MusicArt.bitmap(c, t) } } }
     Box(modifier.clip(RoundedCornerShape(corner.dp)).background(MaterialTheme.colorScheme.surfaceVariant), contentAlignment = Alignment.Center) {
         when {
             t != null && t.art.startsWith("http") -> AsyncImage(t.art, t.title, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
@@ -155,7 +155,7 @@ fun MusicScreen() {
     val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted = it }
     var reload by remember { mutableIntStateOf(0) }
     var tracks by remember { mutableStateOf<List<Track>?>(null) }
-    LaunchedEffect(granted, reload) { tracks = runCatching { MusicLibrary.all(c) }.getOrElse { emptyList() } }
+    LaunchedEffect(granted, reload) { com.nizam.app.ui.design.guard { tracks = runCatching { MusicLibrary.all(c) }.getOrElse { emptyList() } } }
     var tab by remember { mutableStateOf("Home") }
     var nowPlaying by remember { mutableStateOf(false) }
     var editing by remember { mutableStateOf<Track?>(null) }
@@ -206,7 +206,7 @@ fun MusicScreen() {
 @Composable
 private fun <T : Any> rememberOnline(key: String, load: suspend () -> T): T? {
     var v by remember(key) { mutableStateOf<T?>(null) }
-    LaunchedEffect(key) { v = runCatching { MusicCache.get(key) { load() } }.getOrNull() }
+    LaunchedEffect(key) { com.nizam.app.ui.design.guard { v = runCatching { MusicCache.get(key) { load() } }.getOrNull() } }
     return v
 }
 
@@ -330,7 +330,7 @@ private fun OpenedPage(o: Opened, onBack: () -> Unit, onMenu: (Track) -> Unit, o
     val c = LocalContext.current
     var list by remember(o) { mutableStateOf(o.tracks) }
     var failed by remember(o) { mutableStateOf(false) }
-    LaunchedEffect(o) { if (list == null) o.load?.let { l -> list = runCatching { MusicCache.get("page:${o.title}:${o.subtitle}") { l() } }.getOrElse { failed = true; emptyList() } } }
+    LaunchedEffect(o) { com.nizam.app.ui.design.guard { if (list == null) o.load?.let { l -> list = runCatching { MusicCache.get("page:${o.title}:${o.subtitle}") { l() } }.getOrElse { failed = true; emptyList() } } } }
     val shown = list
     val top = o.colour?.let { Color(it) } ?: MaterialTheme.colorScheme.primary
     LazyColumn(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(top.copy(alpha = 0.35f), MaterialTheme.colorScheme.background, MaterialTheme.colorScheme.background)))) {
@@ -369,7 +369,7 @@ private fun SearchTab(all: List<Track>, openPlayer: () -> Unit, open: (Opened) -
     var online by remember { mutableStateOf<List<Track>?>(null) }
     var artists by remember { mutableStateOf<List<MusicCard>>(emptyList()) }
     var stations by remember { mutableStateOf<List<Track>>(emptyList()) }
-    LaunchedEffect(q) {
+    LaunchedEffect(q) { com.nizam.app.ui.design.guard {
         online = null; artists = emptyList(); stations = emptyList()
         if (q.trim().length < 2) return@LaunchedEffect
         kotlinx.coroutines.delay(350)
@@ -378,7 +378,7 @@ private fun SearchTab(all: List<Track>, openPlayer: () -> Unit, open: (Opened) -
             launch { artists = runCatching { Audius.artists(q.trim()).take(6) }.getOrElse { emptyList() } }
             launch { stations = runCatching { Radio.search(q.trim()).take(5) }.getOrElse { emptyList() } }
         }
-    }
+    } }
     val mine = remember(q, all) { if (q.isBlank()) emptyList() else all.filter { it.title.contains(q, true) || it.artist.contains(q, true) || it.album.contains(q, true) }.take(8) }
     val myArtists = remember(q, all) { if (q.isBlank()) emptyList() else all.map { it.artist }.distinct().filter { it.contains(q, true) }.take(4) }
     LazyColumn(Modifier.fillMaxSize().padding(horizontal = 18.dp)) {
@@ -512,7 +512,7 @@ private fun RadioTab(openPlayer: () -> Unit) {
     var tag by remember { mutableStateOf("Pakistan") }
     var list by remember { mutableStateOf<List<Track>?>(null) }
     var favs by remember { mutableStateOf(Radio.favourites(c)) }
-    LaunchedEffect(q, tag) {
+    LaunchedEffect(q, tag) { com.nizam.app.ui.design.guard {
         list = null
         if (q.isNotBlank()) kotlinx.coroutines.delay(400)
         list = runCatching { when {
@@ -521,7 +521,7 @@ private fun RadioTab(openPlayer: () -> Unit) {
             tag == "World" -> MusicCache.get("radio-world") { Radio.top() }
             else -> MusicCache.get("radio-$tag") { Radio.tag(tag) }
         } }.getOrElse { emptyList() }
-    }
+    } }
     LazyColumn(Modifier.fillMaxSize().padding(horizontal = 18.dp)) {
         item {
             Text("Radio", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 8.dp))
@@ -691,7 +691,7 @@ private fun DiscoverTab(changed: () -> Unit) {
             Text("‹ Results", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier.clickable { inside = null }.padding(vertical = 8.dp))
             var files by remember(item.id) { mutableStateOf<List<Track>?>(null) }
-            LaunchedEffect(item.id) { files = runCatching { MusicSources.archiveFiles(item) }.getOrElse { emptyList() } }
+            LaunchedEffect(item.id) { com.nizam.app.ui.design.guard { files = runCatching { MusicSources.archiveFiles(item) }.getOrElse { emptyList() } } }
             val fs = files
             if (fs == null) Thinking(label = "Opening ${item.title}")
             else {
@@ -739,14 +739,14 @@ private fun OnlineRow(t: Track, onPlay: () -> Unit, openLabel: String = "Play") 
 private fun rememberTint(t: Track?): Color? {
     val c = LocalContext.current
     var tint by remember(t?.id, t?.art) { mutableStateOf<Color?>(null) }
-    LaunchedEffect(t?.id, t?.art) {
+    LaunchedEffect(t?.id, t?.art) { com.nizam.app.ui.design.guard {
         tint = withContext(Dispatchers.IO) {
             val bmp = if (t != null && t.art.startsWith("http")) runCatching {
                 (coil.ImageLoader(c).execute(coil.request.ImageRequest.Builder(c).data(t.art).size(64).allowHardware(false).build()).drawable
                     as? android.graphics.drawable.BitmapDrawable)?.bitmap }.getOrNull() else MusicArt.bitmap(c, t, 64)
             MusicArt.tint(bmp)?.let { Color(it) }
         }
-    }
+    } }
     return tint
 }
 
@@ -940,9 +940,9 @@ private fun LyricsPane(t: Track) {
     var text by remember(t.id) { mutableStateOf(MusicLibrary.lyrics(c, t.id)) }
     var busy by remember(t.id) { mutableStateOf(false) }
     var editing by remember(t.id) { mutableStateOf(false) }
-    LaunchedEffect(t.id) {
+    LaunchedEffect(t.id) { com.nizam.app.ui.design.guard {
         if (text.isBlank()) { busy = true; Lyrics.fetch(t)?.let { text = it; MusicLibrary.setLyrics(c, t.id, it) }; busy = false }
-    }
+    } }
     if (editing) {
         Column(Modifier.fillMaxSize()) {
             OutlinedTextField(text, { text = it }, modifier = Modifier.weight(1f).fillMaxWidth(), placeholder = { Text("Paste or write lyrics — [mm:ss] timestamps make them follow the song") })
@@ -965,7 +965,7 @@ private fun LyricsPane(t: Track) {
             val pos = MusicPlayback.positionMs
             val at = lines.indexOfLast { it.ms <= pos + 250 }.coerceAtLeast(0)
             val state = rememberLazyListState()
-            LaunchedEffect(at) { state.animateScrollToItem((at - 3).coerceAtLeast(0)) }
+            LaunchedEffect(at) { com.nizam.app.ui.design.guard { state.animateScrollToItem((at - 3).coerceAtLeast(0)) } }
             LazyColumn(state = state, modifier = Modifier.fillMaxSize()) {
                 itemsIndexed(lines) { i, l ->
                     Text(l.text.ifBlank { "♪" }, fontSize = 24.sp, lineHeight = 32.sp,

@@ -95,7 +95,7 @@ object Mega8 {
 
 @Composable
 private fun McpMapScreen(container: AppContainer, open: (String) -> Unit) {
-    val c = LocalContext.current; val scope = rememberCoroutineScope()
+    val c = LocalContext.current; val scope = com.nizam.app.ui.design.rememberSafeScope()
     var tools by remember { mutableStateOf(emptyList<String>()) }
     var specs by remember { mutableStateOf(emptyList<ModuleSpec>()) }
     var tool by remember { mutableStateOf("") }
@@ -106,10 +106,10 @@ private fun McpMapScreen(container: AppContainer, open: (String) -> Unit) {
     var titleKey by remember { mutableStateOf("") }
     var status by remember { mutableStateOf("") }
     var saved by remember { mutableStateOf(McpMapper.saved(c)) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         tools = runCatching { Mcp.allTools(c).map { it.name }.filter { !Mcp.writes(it) } }.getOrDefault(emptyList())
         specs = container.dynamicRepository.specs().first()
-    }
+    } }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         if (saved.isNotEmpty()) {
             Text("Saved imports", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)

@@ -53,7 +53,7 @@ fun ModeNavigationScreen(container: AppContainer, open: (String) -> Unit) {
     val store = remember(context) { ModeNavigationStore.get(context) }
     val state by store.state.collectAsState()
     val notificationsOn by container.settingsRepository.notificationsOn.collectAsState(initial = false)
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val specs by container.dynamicRepository.specs().collectAsState(initial = emptyList())
     val destinations = remember(specs) {
         (DESTINATIONS + specs.map { Dest(it.emoji, it.name, Routes.dynamic(it.key), it.name) })
@@ -65,18 +65,18 @@ fun ModeNavigationScreen(container: AppContainer, open: (String) -> Unit) {
     var addDestination by rememberSaveable { mutableStateOf(false) }
     var notice by rememberSaveable { mutableStateOf("") }
 
-    LaunchedEffect(newModeName) {
+    LaunchedEffect(newModeName) { com.nizam.app.ui.design.guard {
         if (newModeName.isNotBlank()) {
             delay(450)
             runCatching { withContext(Dispatchers.IO) { store.saveDraft("new-mode-name", newModeName) } }
         }
-    }
-    LaunchedEffect(newGroupName) {
+    } }
+    LaunchedEffect(newGroupName) { com.nizam.app.ui.design.guard {
         if (newGroupName.isNotBlank()) {
             delay(450)
             runCatching { withContext(Dispatchers.IO) { store.saveDraft("new-group-name", newGroupName) } }
         }
-    }
+    } }
 
     fun safeUpdate(block: () -> Unit) {
         runCatching(block).onSuccess { notice = "Saved on this device." }

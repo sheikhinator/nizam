@@ -69,7 +69,7 @@ private fun GlassCard(modifier: Modifier = Modifier, content: @Composable () -> 
 @Composable
 fun WeatherProScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val p = remember { ctx.getSharedPreferences("weather_pro", 0) }
     var here by remember { mutableStateOf<JSONObject?>(null) }
     var cities by remember { mutableStateOf<List<Pair<String, JSONObject?>>>(emptyList()) }
@@ -83,11 +83,11 @@ fun WeatherProScreen(container: AppContainer) {
         val extras = extra.split(';').mapNotNull { e -> e.split('|').takeIf { it.size == 3 }?.let { it[0] to (it[1].toDouble() to it[2].toDouble()) } }
         cities = coroutineScope { (CITIES + extras).map { (n, ll) -> async { n to fetch(ll.first, ll.second) } }.awaitAll() }
     }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         here = fetch(container.settingsRepository.latitude.first(), container.settingsRepository.longitude.first())
         if (here != null) p.edit().putString("last", here.toString()).apply() else here = p.getString("last", null)?.let { runCatching { JSONObject(it) }.getOrNull() }
         loadCities()
-    }
+    } }
     val cur = here?.optJSONObject("current")
     val code = cur?.optInt("weather_code") ?: 0
     val night = cur?.optInt("is_day", 1) == 0

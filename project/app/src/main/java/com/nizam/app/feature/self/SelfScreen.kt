@@ -49,12 +49,12 @@ import kotlinx.coroutines.launch
 @Composable
 fun SelfScreen(container: AppContainer) {
     val repository = container.selfRepository
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
 
     var tab by remember { mutableStateOf(0) }
     var sheet by remember { mutableStateOf<CharacterSheet?>(null) }
 
-    LaunchedEffect(Unit) { sheet = repository.character() }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { sheet = repository.character() } }
 
     Column(Modifier.fillMaxSize().padding(horizontal = 18.dp)) {
         ModuleTitle("Self", "Who you're becoming, by the evidence")
@@ -78,7 +78,7 @@ private fun CharacterTab(repository: SelfRepository, sheet: CharacterSheet?) {
     var reading by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         if (sheet == null) {
@@ -171,7 +171,7 @@ private fun CharacterTab(repository: SelfRepository, sheet: CharacterSheet?) {
 @Composable
 private fun ReviewTab(repository: SelfRepository) {
     val reviews by repository.reviews().collectAsState(initial = emptyList())
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
 
     var well by remember { mutableStateOf("") }
     var badly by remember { mutableStateOf("") }

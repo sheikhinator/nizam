@@ -202,12 +202,12 @@ private fun GlassesCueContent(
 
     var nowMillis by remember { mutableLongStateOf(System.currentTimeMillis()) }
     var selectedCue by remember { mutableIntStateOf(0) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         while (true) {
             delay(30_000)
             nowMillis = System.currentTimeMillis()
         }
-    }
+    } }
 
     val nextTask = remember(tasks, nowMillis) { chooseNextTask(tasks, nowMillis) }
     val nextPrayer = remember(nowMillis, latitude, longitude, method, hanafiAsr) {

@@ -34,7 +34,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun HealthConnectExportCard(container: AppContainer) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val settings = container.settingsRepository
     val workouts by settings.healthWriteWorkouts.collectAsState(initial = false)
     val weight by settings.healthWriteWeight.collectAsState(initial = false)

@@ -90,7 +90,7 @@ fun EdgeGlowOverlay() {
     val n = EdgeGlow.pulse
     if (n == 0) return
     val a = remember(n) { Animatable(0f) }
-    LaunchedEffect(n) { a.snapTo(0f); a.animateTo(1f, tween(900, easing = LinearEasing)) }
+    LaunchedEffect(n) { com.nizam.app.ui.design.guard { a.snapTo(0f); a.animateTo(1f, tween(900, easing = LinearEasing)) } }
     if (a.value >= 1f) return
     val col = MaterialTheme.colorScheme.primary
     val alpha = sin(a.value * PI).toFloat() * 0.55f
@@ -114,7 +114,7 @@ fun HoldToConfirm(label: String, modifier: Modifier = Modifier, danger: Boolean 
     val c = MaterialTheme.colorScheme
     val tint = if (danger) c.error else c.primary
     val progress = remember { Animatable(0f) }
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val haptics = rememberHaptics()
     Box(modifier.height(52.dp).clip(Radius.pill).background(wash(tint, 0.14f))
         .onPressHold(
@@ -132,7 +132,7 @@ fun HoldToConfirm(label: String, modifier: Modifier = Modifier, danger: Boolean 
 fun SlideToConfirm(label: String, modifier: Modifier = Modifier, onConfirm: () -> Unit) {
     val c = MaterialTheme.colorScheme
     val haptics = rememberHaptics()
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val x = remember { Animatable(0f) }
     BoxWithConstraints(modifier.fillMaxWidth().height(58.dp).clip(Radius.pill).background(c.surfaceVariant)) {
         val thumb = 50.dp
@@ -208,7 +208,7 @@ fun <T> SwipeDeck(items: List<T>, key: (T) -> String, modifier: Modifier = Modif
     val second = items.getOrNull(1)
     val dx = remember(key(top)) { Animatable(0f) }
     val dy = remember(key(top)) { Animatable(0f) }
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val haptics = rememberHaptics()
     val c = MaterialTheme.colorScheme
     BoxWithConstraints(modifier.fillMaxWidth()) {

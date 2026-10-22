@@ -77,7 +77,7 @@ fun RadarTab(container: AppContainer) {
     Label("Bills and subscriptions")
     Group { Toggle("Warn before they renew", "Two days before a recurring charge, so there's time to cancel.", "bills", true) }
     var bills by remember { mutableStateOf<List<Recurring>?>(null) }
-    LaunchedEffect(Unit) { bills = runCatching { BillRadar.find(container) }.getOrElse { emptyList() } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { bills = runCatching { BillRadar.find(container) }.getOrElse { emptyList() } } }
     when {
         bills == null -> Thinking(label = "Looking for recurring charges")
         bills!!.isEmpty() -> Text("Nothing recurring found yet. Charges logged in Finance (or read from bank texts) with the same payee " +
@@ -149,7 +149,7 @@ fun RoutinesTab(container: AppContainer) {
 
     Label("Earn your scroll")
     var earned by remember { mutableIntStateOf(-1) }
-    LaunchedEffect(Unit) { earned = runCatching { Earn.balance(container) }.getOrElse { 0 } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { earned = runCatching { Earn.balance(container) }.getOrElse { 0 } } }
     Group {
         Toggle("Paused apps cost earned minutes", "Opening a paused app spends 15 minutes you earned today: +5 per task, +5 per prayer on time, +10 for adhkar.", "earn")
         if (earned >= 0) Text("Balance today: $earned minutes", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 6.dp))

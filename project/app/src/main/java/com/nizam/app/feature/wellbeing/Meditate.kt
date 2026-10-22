@@ -175,7 +175,7 @@ private fun Session(sleep: Boolean) {
         sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.let { sm.registerListener(l, it, SensorManager.SENSOR_DELAY_GAME) }
         onDispose { sm.unregisterListener(l); Soundscape.stop() }
     }
-    LaunchedEffect(running) {
+    LaunchedEffect(running) { com.nizam.app.ui.design.guard {
         if (!running) return@LaunchedEffect
         left = minutes * 60; calmSec = 0; recoveries = 0; birds = 0; summary = null
         Soundscape.volume = 0.8f; Soundscape.start(kind)
@@ -197,7 +197,7 @@ private fun Session(sleep: Boolean) {
             summary = if (sleep) "Sleep well." else "$pct% calm · $recoveries recoveries · $birds birds"
             running = false
         }
-    }
+    } }
 
     val glow by animateFloatAsState(if (running) calm else 0.5f, tween(800), label = "glow")
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 18.dp), horizontalAlignment = Alignment.CenterHorizontally) {

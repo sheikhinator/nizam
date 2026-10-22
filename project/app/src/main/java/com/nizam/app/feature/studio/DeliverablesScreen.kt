@@ -95,7 +95,7 @@ fun DeliverablesScreen(container: AppContainer) {
     val shelf by Deliverables.shelf.collectAsState()
     val jobs by Deliverables.jobs.collectAsState()
     var open by remember { mutableStateOf<Deliverables.Item?>(null) }
-    LaunchedEffect(Unit) { withContext(Dispatchers.IO) { Deliverables.load(c) } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { withContext(Dispatchers.IO) { Deliverables.load(c) } } }
 
     open?.let { item -> Viewer(container, item, onBack = { open = null }); return }
 

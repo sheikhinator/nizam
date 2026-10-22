@@ -78,7 +78,7 @@ fun PetDreamsScreen(container: AppContainer) {
     var list by remember { mutableStateOf(PetDreams.all(c)) }
     var busy by remember { mutableStateOf(false) }
     val todayDone = list.firstOrNull()?.optString("d") == LocalDate.now().toString()
-    LaunchedEffect(Unit) { if (!todayDone && Companion.load(c).hatched) { busy = true; runCatching { PetDreams.dreamFor(container) }; list = PetDreams.all(c); busy = false } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { if (!todayDone && Companion.load(c).hatched) { busy = true; runCatching { PetDreams.dreamFor(container) }; list = PetDreams.all(c); busy = false } } }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         if (!Companion.load(c).hatched) Text("Your pet hasn't hatched yet. Tap the egg on Today three times.", style = MaterialTheme.typography.bodyMedium)
         if (busy) Text("${Companion.load(c).name} is waking up and remembering…", style = MaterialTheme.typography.bodyMedium)

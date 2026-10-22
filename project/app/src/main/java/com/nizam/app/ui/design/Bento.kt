@@ -161,7 +161,7 @@ private fun SmartStack(d: BentoData, modifier: Modifier, onOpen: (String) -> Uni
         add(Triple("Your week", "See it as a story", "nx/stories" to "sparkles"))
     }
     var i by remember { mutableIntStateOf(0) }
-    LaunchedEffect(cards.size) { while (true) { delay(5000); if (!Motion.still && cards.isNotEmpty()) i = (i + 1) % cards.size } }
+    LaunchedEffect(cards.size) { com.nizam.app.ui.design.guard { while (true) { delay(5000); if (!Motion.still && cards.isNotEmpty()) i = (i + 1) % cards.size } } }
     val card = cards.getOrNull(i % cards.size.coerceAtLeast(1)) ?: return
     AnimatedContent(card, modifier, transitionSpec = { (slideInVertically { it / 2 } + fadeIn()) togetherWith (slideOutVertically { -it / 2 } + fadeOut()) }, label = "stack") { c ->
         val (title, value, dest) = c

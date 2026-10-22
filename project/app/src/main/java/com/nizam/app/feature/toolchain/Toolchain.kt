@@ -81,7 +81,7 @@ object Toolchain {
 @Composable
 internal fun ToolchainScreen() {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var prog by remember { mutableStateOf<Float?>(null) }
     var msg by remember { mutableStateOf("") }
     var ready by remember { mutableStateOf(Toolchain.ready(c)) }

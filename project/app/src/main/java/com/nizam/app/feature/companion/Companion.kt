@@ -172,7 +172,7 @@ fun CompanionCard(summary: ProgressSummary?, ambience: Ambience?, nextPrayer: Pa
     var pet by remember { mutableStateOf(Companion.load(c)) }
     if (!Companion.visible(c)) return
     val haptic = LocalHapticFeedback.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val jump = remember { Animatable(0f) }
     var tapped by remember { mutableStateOf(false) }
     var hearts by remember { mutableIntStateOf(0) }
@@ -208,7 +208,7 @@ fun CompanionCard(summary: ProgressSummary?, ambience: Ambience?, nextPrayer: Pa
             }
         }
     }
-    LaunchedEffect(tapped) { if (tapped) { delay(4000); tapped = false } }
+    LaunchedEffect(tapped) { com.nizam.app.ui.design.guard { if (tapped) { delay(4000); tapped = false } } }
 }
 
 /** Draws the creature — or its egg — with breathing, blinking, a mood face, an accessory, and hearts when tapped. */
@@ -218,7 +218,7 @@ fun Creature(pet: Pet, mood: Companion.Mood, hearts: Int, modifier: Modifier) {
     val breathe by t.animateFloat(0f, 1f, infiniteRepeatable(tween(2200), RepeatMode.Reverse), label = "b")
     val clock by t.animateFloat(0f, 1f, infiniteRepeatable(tween(4200, easing = LinearEasing)), label = "c")
     val heartAnim = remember { Animatable(1f) }
-    LaunchedEffect(hearts) { if (hearts > 0) { heartAnim.snapTo(0f); heartAnim.animateTo(1f, tween(900)) } }
+    LaunchedEffect(hearts) { com.nizam.app.ui.design.guard { if (hearts > 0) { heartAnim.snapTo(0f); heartAnim.animateTo(1f, tween(900)) } } }
     val base = Companion.colour(pet)
     // the pet glances toward the dock while Atlas is working, then back to you
     val halo by com.nizam.app.feature.agentic.AgentHalo.state.collectAsState()

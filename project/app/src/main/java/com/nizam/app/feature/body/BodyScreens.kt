@@ -187,16 +187,16 @@ fun VoiceCoachScreen(container: AppContainer) {
     var current by remember { mutableStateOf(0) }   // 0 = not started
     var resting by remember { mutableStateOf(0) }
     var log by remember { mutableStateOf(listOf<String>()) }
-    LaunchedEffect(exercise) {
+    LaunchedEffect(exercise) { com.nizam.app.ui.design.guard {
         container.gymRepository.sets().first().firstOrNull { it.exercise.equals(exercise, true) }?.let { weight = it.weight.toString() }
-    }
-    LaunchedEffect(resting) {
+    } }
+    LaunchedEffect(resting) { com.nizam.app.ui.design.guard {
         if (resting <= 0) return@LaunchedEffect
         delay(1000)
         if (resting == 11) speaker.speak("Ten seconds")
         if (resting == 1) speaker.speak("Set $current. $weight kilos, $reps reps. Go.")
         resting--
-    }
+    } }
     fun announce() = speaker.speak("Set $current of $sets. $exercise, $weight kilos, $reps reps. Go when ready.")
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 18.dp)) {
@@ -261,7 +261,7 @@ fun FlipFocusScreen() {
         if (running) sm.registerListener(listener, sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL)
         onDispose { sm.unregisterListener(listener) }
     }
-    LaunchedEffect(running) {
+    LaunchedEffect(running) { com.nizam.app.ui.design.guard {
         while (running) {
             delay(1000)
             if (faceDown) { elapsed++; pickedUpFor = 0 } else if (elapsed > 0) pickedUpFor++
@@ -271,7 +271,7 @@ fun FlipFocusScreen() {
                 result = "🌳 A tree was planted in your town. You now have ${Grove.count(c)}."
             }
         }
-    }
+    } }
     Column(Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Text(if (!running) "🌱" else if (faceDown) "🌿" else "⚠️", fontSize = 90.sp)
         if (!running) {
@@ -310,7 +310,7 @@ fun BedsideScreen(container: AppContainer, onExit: () -> Unit) {
             w?.attributes = w?.attributes?.apply { screenBrightness = old ?: -1f }
         }
     }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         val s = container.settingsRepository
         val date = if (LocalTime.now().hour >= 20) LocalDate.now().plusDays(1) else LocalDate.now()
         runCatching {
@@ -320,7 +320,7 @@ fun BedsideScreen(container: AppContainer, onExit: () -> Unit) {
         }
         firstTask = container.taskRepository.all().first().firstOrNull { it.completedAt == null }?.title.orEmpty()
         while (true) { now = LocalTime.now(); delay(15_000) }
-    }
+    } }
     Column(Modifier.fillMaxSize().background(Color.Black).clickable(role = Role.Button) { onExit() }.padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Text("%02d:%02d".format(now.hour, now.minute), color = Color(0xFF8C3B32), fontSize = 110.sp)  // red spares night vision

@@ -55,7 +55,7 @@ private fun ReportView(md: String) {
 @Composable
 fun ResearchScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var q by remember { mutableStateOf("") }
     var step by remember { mutableStateOf<String?>(null) }
     var open by remember { mutableStateOf<JSONObject?>(null) }
@@ -103,7 +103,7 @@ fun ResearchScreen(container: AppContainer) {
 @Composable
 fun FactCheckScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var claim by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var result by remember { mutableStateOf<FactCheck.Verdict?>(null) }
@@ -164,7 +164,7 @@ fun FactCheckScreen(container: AppContainer) {
 
 @Composable
 fun CalcScreen(container: AppContainer) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var sheet by remember { mutableStateOf("price = 2.5 lakh\ndiscount = price * 12%\nprice - discount\nemi(15 lakh, 18, 36)") }
     var words by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }

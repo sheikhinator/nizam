@@ -55,14 +55,14 @@ fun CompanionSettings() {
     var confirm by remember { mutableStateOf(false) }
     val container = (c.applicationContext as? NizamApplication)?.container
     var totalXp by remember { mutableIntStateOf(pet.lastTotalXp) }
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     fun update(p: Pet) { pet = p; Companion.save(c, p) }
-    LaunchedEffect(container) {
+    LaunchedEffect(container) { com.nizam.app.ui.design.guard {
         if (container != null) {
             totalXp = runCatching { Xp.summarise(container).totalXp }.getOrDefault(pet.lastTotalXp)
             update(Companion.load(c).copy(lastTotalXp = totalXp))
         }
-    }
+    } }
     fun setActivityGrowth(enabled: Boolean) {
         scope.launch {
             val latestTotal = container?.let { runCatching { Xp.summarise(it).totalXp }.getOrNull() } ?: totalXp

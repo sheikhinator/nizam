@@ -52,7 +52,7 @@ import org.json.JSONObject
 @Composable
 fun SkillsProScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val v = SkillsPro.version
     val skills = remember(v) { SkillsPro.all(c) }
     var open by remember { mutableStateOf<JSONObject?>(null) }
@@ -63,12 +63,12 @@ fun SkillsProScreen(container: AppContainer) {
     var recorded by remember { mutableStateOf<List<JSONObject>?>(null) }
 
     // a recording just ended (from the floating pill) — turn it into a skill
-    androidx.compose.runtime.LaunchedEffect(DemoRecorder.recording, DemoRecorder.count) {
+    androidx.compose.runtime.LaunchedEffect(DemoRecorder.recording, DemoRecorder.count) { com.nizam.app.ui.design.guard {
         if (!DemoRecorder.recording && recorded == null && DemoRecorder.count > 0) {
             val steps = DemoRecorder.stop(); DemoRecorder.count = 0
             if (steps.isNotEmpty()) recorded = steps
         }
-    }
+    } }
     draft?.let { d -> SkillEditor(container, d, onDone = { draft = null }); return }
     open?.let { s -> SkillDetail(container, s, back = { open = null }, edit = { draft = JSONObject(s.toString()); open = null }); return }
 
@@ -141,7 +141,7 @@ fun SkillsProScreen(container: AppContainer) {
 @Composable
 private fun SkillDetail(container: AppContainer, s0: JSONObject, back: () -> Unit, edit: () -> Unit) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var s by remember { mutableStateOf(s0) }
     val inputs = remember { mutableStateMapOf<String, String>().apply { SkillsPro.params(s0).forEach { put(it.optString("key"), it.optString("example")) } } }
     var running by remember { mutableStateOf(false) }

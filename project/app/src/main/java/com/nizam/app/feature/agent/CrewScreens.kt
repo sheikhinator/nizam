@@ -161,7 +161,7 @@ private fun ThreadsTab(container: AppContainer, open: (String) -> Unit) {
 @Composable
 private fun ThreadScreen(container: AppContainer, id: String, back: () -> Unit) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val v = Crew.version
     val t = remember(v) { Crew.thread(c, id) } ?: run { back(); return }
     val team = remember(v) { Crew.agents(c).associateBy { it.id } }
@@ -169,7 +169,7 @@ private fun ThreadScreen(container: AppContainer, id: String, back: () -> Unit) 
     val list = rememberLazyListState()
     var text by remember { mutableStateOf("") }
     val working = Crew.working[id]
-    LaunchedEffect(msgs.size) { if (msgs.isNotEmpty()) list.animateScrollToItem(msgs.size) }
+    LaunchedEffect(msgs.size) { com.nizam.app.ui.design.guard { if (msgs.isNotEmpty()) list.animateScrollToItem(msgs.size) } }
     Column(Modifier.fillMaxSize().imePadding()) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("‹", fontSize = 30.sp, modifier = Modifier.clickable { back() }.padding(horizontal = 8.dp))
@@ -217,7 +217,7 @@ private fun ThreadScreen(container: AppContainer, id: String, back: () -> Unit) 
 @Composable
 private fun Bubble(container: AppContainer, m: JSONObject, team: Map<String, Crew.Agent>) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val cs = MaterialTheme.colorScheme
     val from = m.optString("from"); val kind = m.optString("kind")
     val a = team[from]
@@ -273,7 +273,7 @@ private fun Bubble(container: AppContainer, m: JSONObject, team: Map<String, Cre
 
 @Composable
 fun ApprovalCard(container: AppContainer, item: JSONObject?, risk: String, why: String, args: String) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val cs = MaterialTheme.colorScheme
     val state = item?.optString("state") ?: "done"
     val rc = when (risk) { "high" -> cs.error; "medium" -> Color(0xFFF59E0B); else -> Color(0xFF16A34A) }
@@ -325,7 +325,7 @@ private fun ApprovalsTab(container: AppContainer) {
 @Composable
 private fun TeamTab(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val v = Crew.version
     val agents = remember(v) { Crew.agents(c) }
     var edit by remember { mutableStateOf<Crew.Agent?>(null) }

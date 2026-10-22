@@ -47,11 +47,11 @@ import kotlin.math.abs
 @Composable
 fun UnderstandScreen(container: AppContainer) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var tab by remember { mutableStateOf("Patterns") }
     var days by remember { mutableStateOf<List<DayVector>>(emptyList()) }
     var reload by remember { mutableStateOf(0) }
-    LaunchedEffect(reload) { days = runCatching { Days.build(container, context, 365) }.getOrElse { emptyList() } }
+    LaunchedEffect(reload) { com.nizam.app.ui.design.guard { days = runCatching { Days.build(container, context, 365) }.getOrElse { emptyList() } } }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 18.dp)) {
         ModuleTitle("Understand yourself", "Patterns from your own data — not advice from a stranger")
@@ -76,7 +76,7 @@ private fun Card(content: @Composable () -> Unit) {
 @Composable
 private fun Patterns(container: AppContainer, days: List<DayVector>, onSynced: () -> Unit) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var status by remember { mutableStateOf<String?>(null) }
     val findings = remember(days) { Correlations.findings(days.takeLast(120)) }
     HealthConnectExportCard(container)
@@ -196,13 +196,13 @@ private fun YearInPixels(days: List<DayVector>) {
 @Composable
 private fun FocusTab(onLogged: () -> Unit) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var minutes by remember { mutableStateOf(25) }
     var endAt by remember { mutableStateOf(0L) }
     var left by remember { mutableStateOf(0L) }
     var label by remember { mutableStateOf("") }
     var note by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(endAt) {
+    LaunchedEffect(endAt) { com.nizam.app.ui.design.guard {
         while (endAt > 0) {
             left = (endAt - System.currentTimeMillis()).coerceAtLeast(0)
             if (left == 0L) {
@@ -213,7 +213,7 @@ private fun FocusTab(onLogged: () -> Unit) {
             }
             delay(500)
         }
-    }
+    } }
     Card {
         if (endAt == 0L) {
             Text("Focus session", style = MaterialTheme.typography.titleMedium)

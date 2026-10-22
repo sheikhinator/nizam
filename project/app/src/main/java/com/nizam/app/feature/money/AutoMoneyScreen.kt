@@ -42,7 +42,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun AutoMoneyScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var granted by remember { mutableStateOf(ContextCompat.checkSelfPermission(c, Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED) }
     val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted = it; if (it) BankSms.setEnabled(c, true) }
     var on by remember { mutableStateOf(BankSms.enabled(c)) }

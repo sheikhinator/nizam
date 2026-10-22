@@ -162,18 +162,18 @@ object Lenses {
 @Composable
 fun LensScreen(lens: Lens, container: AppContainer, open: (String) -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var items by remember { mutableStateOf<List<Roads.Item>>(emptyList()) }
     var q by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var result by remember { mutableStateOf<String?>(null) }
     var version by remember { mutableIntStateOf(0) }
     val past = remember(version) { Lenses.history(ctx, lens.id) }
-    LaunchedEffect(lens.id) {
+    LaunchedEffect(lens.id) { com.nizam.app.ui.design.guard {
         runCatching { Roads.warm(container) }
         items = withContext(Dispatchers.IO) { Lenses.itemsFor(ctx, lens) }
         if (result == null) result = past.firstOrNull()?.optString("text")?.ifBlank { null }
-    }
+    } }
     val stats = remember(items) { runCatching { lens.stats(items) }.getOrDefault(emptyList()) }
     val sources = remember(items) { items.groupingBy { it.source }.eachCount().entries.sortedByDescending { it.value } }
 

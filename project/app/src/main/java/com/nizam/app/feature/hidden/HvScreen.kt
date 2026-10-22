@@ -219,7 +219,7 @@ private fun Keypad(onKey: (String) -> Unit) {
 @Composable
 private fun PinPad(onOpen: (Hv.Session) -> Unit, onExit: () -> Unit) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var pin by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var msg by remember { mutableStateOf("") }
@@ -246,7 +246,7 @@ private fun PinPad(onOpen: (Hv.Session) -> Unit, onExit: () -> Unit) {
 @Composable
 private fun Setup(onDone: (Hv.Session) -> Unit) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var first by remember { mutableStateOf<String?>(null) }
     var pin by remember { mutableStateOf("") }
     var msg by remember { mutableStateOf("Choose a PIN — 4 to 12 digits") }
@@ -278,7 +278,7 @@ private fun Setup(onDone: (Hv.Session) -> Unit) {
 @Composable
 private fun Library(s: Hv.Session, onLock: () -> Unit) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var items by remember { mutableStateOf(s.items()) }
     var tags by remember { mutableStateOf(s.tags()) }
     var filter by remember { mutableStateOf("All") }
@@ -462,7 +462,7 @@ private fun Library(s: Hv.Session, onLock: () -> Unit) {
 @Composable
 private fun Tile(s: Hv.Session, i: Hv.Item, tags: List<Pair<String, String>>, sel: Boolean, modifier: Modifier) {
     var bmp by remember(i.id) { mutableStateOf<Bitmap?>(null) }
-    LaunchedEffect(i.id) { bmp = withContext(Dispatchers.IO) { s.thumb(i.id) } }
+    LaunchedEffect(i.id) { com.nizam.app.ui.design.guard { bmp = withContext(Dispatchers.IO) { s.thumb(i.id) } } }
     Column(modifier) {
     Box(Modifier.aspectRatio(0.72f).clip(RoundedCornerShape(10.dp)).background(CARD)
         .then(if (sel) Modifier.border(3.dp, HOT, RoundedCornerShape(10.dp)) else Modifier)) {
@@ -596,7 +596,7 @@ private fun VideoPage(s: Hv.Session, i: Hv.Item, active: Boolean, onTap: () -> U
         } to reader
     }
     val watched = remember(i.id) { longArrayOf(0) }
-    LaunchedEffect(i.id) { while (true) { kotlinx.coroutines.delay(1000); if (player.first.isPlaying) watched[0] += 1000 } }
+    LaunchedEffect(i.id) { com.nizam.app.ui.design.guard { while (true) { kotlinx.coroutines.delay(1000); if (player.first.isPlaying) watched[0] += 1000 } } }
     DisposableEffect(i.id) {
         onDispose {
             val p = player.first
@@ -613,12 +613,12 @@ private fun VideoPage(s: Hv.Session, i: Hv.Item, active: Boolean, onTap: () -> U
 @Composable
 private fun PhotoPage(s: Hv.Session, i: Hv.Item, onTap: () -> Unit) {
     var bmp by remember(i.id) { mutableStateOf<Bitmap?>(null) }
-    LaunchedEffect(i.id) {
+    LaunchedEffect(i.id) { com.nizam.app.ui.design.guard {
         bmp = withContext(Dispatchers.IO) { runCatching { Hv.Reader(s.media(i.id), s.dek).use { r -> val b = r.readAll()
             val o = android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds = true }; android.graphics.BitmapFactory.decodeByteArray(b, 0, b.size, o)
             var ss = 1; while (o.outWidth / ss > 2400) ss *= 2
             android.graphics.BitmapFactory.decodeByteArray(b, 0, b.size, android.graphics.BitmapFactory.Options().apply { inSampleSize = ss }) } }.getOrNull() }
-    }
+    } }
     var scale by remember(i.id) { mutableFloatStateOf(1f) }
     var ox by remember(i.id) { mutableFloatStateOf(0f) }
     var oy by remember(i.id) { mutableFloatStateOf(0f) }
@@ -719,7 +719,7 @@ private fun TagManager(s: Hv.Session, onClose: () -> Unit) {
 @Composable
 private fun VaultSettings(s: Hv.Session, onClose: () -> Unit, onWiped: () -> Unit) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var newPin by remember { mutableStateOf("") }
     var decoy by remember { mutableStateOf("") }
     var code by remember { mutableStateOf(Hv.code(c)) }
@@ -762,7 +762,7 @@ private fun GalleryPicker(onCancel: () -> Unit, onPick: (List<Uri>) -> Unit) {
     var picked by remember { mutableStateOf(listOf<Uri>()) }
     var videosOnly by remember { mutableStateOf(true) }
     BackHandler { onCancel() }
-    LaunchedEffect(granted) {
+    LaunchedEffect(granted) { com.nizam.app.ui.design.guard {
         if (!granted) { ask.launch(perms); return@LaunchedEffect }
         all = withContext(Dispatchers.IO) {
             fun q(base: Uri, video: Boolean) = buildList {
@@ -770,7 +770,7 @@ private fun GalleryPicker(onCancel: () -> Unit, onPick: (List<Uri>) -> Unit) {
                     while (cur.moveToNext() && size < 3000) add(G(ContentUris.withAppendedId(base, cur.getLong(0)), video, cur.getLong(1))) } }
             (q(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, true) + q(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, false)).sortedByDescending { it.date }
         }
-    }
+    } }
     Column(Modifier.fillMaxSize().background(BG).statusBarsPadding()) {
         Row(Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("‹", color = Color.White, fontSize = 28.sp, modifier = Modifier.clickable { onCancel() }.padding(horizontal = 8.dp))
@@ -780,9 +780,9 @@ private fun GalleryPicker(onCancel: () -> Unit, onPick: (List<Uri>) -> Unit) {
         LazyVerticalGrid(GridCells.Fixed(4), Modifier.weight(1f).padding(horizontal = 4.dp), horizontalArrangement = Arrangement.spacedBy(3.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
             items(all.filter { !videosOnly || it.video }, key = { it.uri.toString() }) { g ->
                 var bmp by remember(g.uri) { mutableStateOf<Bitmap?>(null) }
-                LaunchedEffect(g.uri) { bmp = withContext(Dispatchers.IO) { runCatching {
+                LaunchedEffect(g.uri) { com.nizam.app.ui.design.guard { bmp = withContext(Dispatchers.IO) { runCatching {
                     if (Build.VERSION.SDK_INT >= 29) c.contentResolver.loadThumbnail(g.uri, Size(256, 256), null)
-                    else MediaStore.Images.Thumbnails.getThumbnail(c.contentResolver, ContentUris.parseId(g.uri), MediaStore.Images.Thumbnails.MINI_KIND, null) }.getOrNull() } }
+                    else MediaStore.Images.Thumbnails.getThumbnail(c.contentResolver, ContentUris.parseId(g.uri), MediaStore.Images.Thumbnails.MINI_KIND, null) }.getOrNull() } } }
                 val on = g.uri in picked
                 Box(Modifier.aspectRatio(1f).clip(RoundedCornerShape(6.dp)).background(CARD).clickable { picked = if (on) picked - g.uri else picked + g.uri }
                     .then(if (on) Modifier.border(3.dp, HOT, RoundedCornerShape(6.dp)) else Modifier)) {
@@ -969,7 +969,7 @@ private fun AlbumsGrid(s: Hv.Session, items: List<Hv.Item>, albums: List<Pair<St
             val inside = items.filter { a in it.albums }
             val coverId = cover.takeIf { id -> inside.any { it.id == id } } ?: inside.maxByOrNull { it.added }?.id
             var bmp by remember(coverId) { mutableStateOf<Bitmap?>(null) }
-            LaunchedEffect(coverId) { bmp = coverId?.let { withContext(Dispatchers.IO) { s.thumb(it) } } }
+            LaunchedEffect(coverId) { com.nizam.app.ui.design.guard { bmp = coverId?.let { withContext(Dispatchers.IO) { s.thumb(it) } } } }
             Column(Modifier.clip(RoundedCornerShape(14.dp)).clickable { onOpen(a) }) {
                 Box(Modifier.fillMaxWidth().aspectRatio(0.9f).clip(RoundedCornerShape(14.dp)).background(CARD)) {
                     bmp?.let { Image(it.asImageBitmap(), null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }

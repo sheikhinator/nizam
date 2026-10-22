@@ -87,10 +87,10 @@ fun ReflectScreen(container: AppContainer) {
     var tab by remember { mutableStateOf("Wrapped") }
     var days by remember { mutableStateOf<List<DayVector>>(emptyList()) }
     var summary by remember { mutableStateOf<ProgressSummary?>(null) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         days = runCatching { Days.build(container, c, 400) }.getOrElse { emptyList() }
         summary = runCatching { Xp.summarise(container) }.getOrNull()
-    }
+    } }
     Column(Modifier.fillMaxSize().padding(horizontal = 18.dp)) {
         ModuleTitle("Reflect", "Your story so far — and where it's heading")
         ChipRow(listOf("Wrapped", "Newspaper", "Life in weeks", "On this day", "Black box", "What if", "Dreams", "Map"), tab, { tab = it })
@@ -139,7 +139,7 @@ private fun Wrapped(days: List<DayVector>, s: ProgressSummary?) {
         ).filter { it.first in sources }.map { it.second }.ifEmpty { listOf(Slide("—", "pick at least one source above", Color(0xFF5B6BA8))) }
     }
     val pager = rememberPagerState { slides.size }
-    LaunchedEffect(slides.size) { if (pager.currentPage >= slides.size) pager.scrollToPage(0) }
+    LaunchedEffect(slides.size) { com.nizam.app.ui.design.guard { if (pager.currentPage >= slides.size) pager.scrollToPage(0) } }
     Column(Modifier.fillMaxSize()) {
         ChipRow(listOf("Month", "Year"), span, { span = it })
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -220,9 +220,9 @@ private fun Newspaper(container: AppContainer, days: List<DayVector>) {
 @Composable
 private fun LifeInWeeks(container: AppContainer) {
     var age by remember { mutableStateOf<Int?>(null) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         age = runCatching { JSONObject(container.settingsRepository.profileJson.first()).optString("Age").filter(Char::isDigit).toInt() }.getOrNull()
-    }
+    } }
     val lived = (age ?: 0) * 52 + LocalDate.now().dayOfYear / 7
     val colour = MaterialTheme.colorScheme.primary; val empty = MaterialTheme.colorScheme.surfaceVariant
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
@@ -246,7 +246,7 @@ private fun LifeInWeeks(container: AppContainer) {
 private fun OnThisDay(container: AppContainer) {
     val c = LocalContext.current
     var lines by remember { mutableStateOf<List<String>>(emptyList()) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         val today = LocalDate.now()
         val marks = listOf(today.minusWeeks(1) to "A week ago", today.minusMonths(1) to "A month ago", today.minusMonths(6) to "Six months ago") +
             (1..5).map { today.minusYears(it.toLong()) to "$it year${if (it > 1) "s" else ""} ago" }
@@ -258,7 +258,7 @@ private fun OnThisDay(container: AppContainer) {
                 decisions.filter { it.date == k }.map { "$label · you decided: ${it.decision}" } +
                 (if (DailyPhoto.file(c, k).exists()) listOf("$label · you took a photo of the day") else emptyList())
         }
-    }
+    } }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         if (lines.isEmpty()) Text("Nothing from this date yet. As your history grows, a week, a month and years ago will surface here.",
             style = MaterialTheme.typography.bodyMedium)
@@ -362,7 +362,7 @@ private fun KnowledgeMap(container: AppContainer) {
     var nodes by remember { mutableStateOf<List<Node>>(emptyList()) }
     var edges by remember { mutableStateOf<List<Pair<Int, Int>>>(emptyList()) }
     var picked by remember { mutableStateOf<Node?>(null) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         val docs = Brain.corpus(container, c).take(70)
         val toks = docs.map { Brain.tokens(it.title + " " + it.text).toSet() }
         val e = mutableListOf<Pair<Int, Int>>()
@@ -380,7 +380,7 @@ private fun KnowledgeMap(container: AppContainer) {
             n.forEach { it.x = it.x.coerceIn(0.03f, 0.97f); it.y = it.y.coerceIn(0.03f, 0.97f) }
         }
         nodes = n; edges = e
-    }
+    } }
     val colours = mapOf("Note" to Color(0xFF58A6C9), "Diary" to Color(0xFFE08AA8), "Decision" to Color(0xFFE0B14A), "Verdict" to Color(0xFFB8BCC8),
         "Book" to Color(0xFFB57F4A), "Idea" to Color(0xFF9B8CD6), "Article" to Color(0xFF6FB98A))
     val line = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.25f)

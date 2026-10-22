@@ -158,7 +158,7 @@ fun ModulesScreen(container: AppContainer, onOpen: (String) -> Unit) {
             modeState.moduleGroups[it.key] ?: "Tracked", it.key, it.builtIn)
     }
 
-    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val hidden by container.settingsRepository.hiddenTiles.collectAsState(initial = emptySet())
     val savedOrder by container.settingsRepository.tileOrder.collectAsState(initial = emptyList())
     var editing by remember { mutableStateOf(false) }
@@ -389,7 +389,7 @@ fun ModulesScreen(container: AppContainer, onOpen: (String) -> Unit) {
             .filter { a -> visible.any { it.group == a } }
         if (areas.isNotEmpty()) {
             val pager = androidx.compose.foundation.pager.rememberPagerState { areas.size }
-            val swipe = androidx.compose.runtime.rememberCoroutineScope()
+            val swipe = com.nizam.app.ui.design.rememberSafeScope()
             // a category strip that follows your swipe, and swipes when you tap it
             androidx.compose.foundation.lazy.LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 items(areas) { area ->
@@ -413,13 +413,13 @@ fun ModulesScreen(container: AppContainer, onOpen: (String) -> Unit) {
             itemsIndexed(tiles) { index, tile ->
                 // iOS home-screen feel: icons arrive in a quick cascade, press down with a spring, and wiggle while editing
                 val appear = remember { androidx.compose.animation.core.Animatable(0f) }
-                LaunchedEffect(tile.route, modeState.lowCognitiveLoad) {
+                LaunchedEffect(tile.route, modeState.lowCognitiveLoad) { com.nizam.app.ui.design.guard {
                     if (modeState.lowCognitiveLoad) appear.snapTo(1f)
                     else {
                         kotlinx.coroutines.delay(index * 28L)
                         appear.animateTo(1f, androidx.compose.animation.core.spring(0.62f, 380f))
                     }
-                }
+                } }
                 val angle = if (editing && !modeState.lowCognitiveLoad) androidx.compose.animation.core.rememberInfiniteTransition(label = "wiggle").animateFloat(-2.2f, 2.2f,
                     androidx.compose.animation.core.infiniteRepeatable(androidx.compose.animation.core.tween(130 + (index % 3) * 20),
                         androidx.compose.animation.core.RepeatMode.Reverse), label = "a").value else 0f

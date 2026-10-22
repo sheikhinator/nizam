@@ -46,7 +46,7 @@ fun CameraView(modifier: Modifier, back: Boolean = true, grab: FrameGrab? = null
     val owner = LocalLifecycleOwner.current
     var granted by remember { mutableStateOf(ContextCompat.checkSelfPermission(c, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) }
     val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted = it }
-    LaunchedEffect(Unit) { if (!granted) ask.launch(Manifest.permission.CAMERA) }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { if (!granted) ask.launch(Manifest.permission.CAMERA) } }
     if (!granted) {
         Column(modifier.padding(24.dp)) {
             Text("Atlas needs the camera for this.", style = MaterialTheme.typography.bodyLarge)

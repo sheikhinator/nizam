@@ -91,13 +91,13 @@ fun ReadinessScreen(container: AppContainer) {
     var skinTemperatureSupported by remember(context) { mutableStateOf<Boolean?>(null) }
     var skinTemperatureSyncing by remember { mutableStateOf(false) }
     var skinTemperatureStatus by remember { mutableStateOf<String?>(null) }
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
 
-    LaunchedEffect(context) {
+    LaunchedEffect(context) { com.nizam.app.ui.design.guard {
         skinTemperatureSupported = HealthTemperatureLink.supported(context)
-    }
+    } }
 
-    LaunchedEffect(context, useSkinTemperature, skinTemperatureSupported) {
+    LaunchedEffect(context, useSkinTemperature, skinTemperatureSupported) { com.nizam.app.ui.design.guard {
         when {
             !useSkinTemperature -> skinTemperatureDeltas = emptyMap()
             skinTemperatureSupported == false -> {
@@ -112,15 +112,15 @@ fun ReadinessScreen(container: AppContainer) {
                 skinTemperatureStatus = "Health Connect skin-temperature access is off. Turn this option off and on to request access again."
             }
         }
-    }
+    } }
 
-    LaunchedEffect(todayKey, health, entries) {
+    LaunchedEffect(todayKey, health, entries) { com.nizam.app.ui.design.guard {
         if (!sleepTouched) {
             val latest = entries.firstOrNull { it.date == today }
             val prefill = latest?.sleepHours ?: health[todayKey]?.first
             if (prefill != null) sleepDraft = readHours(prefill)
         }
-    }
+    } }
 
     suspend fun syncHealth() {
         syncing = true

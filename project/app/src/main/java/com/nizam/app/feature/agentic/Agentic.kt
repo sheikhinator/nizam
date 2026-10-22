@@ -123,9 +123,9 @@ fun HaloHost(modifier: Modifier = Modifier) {
     var show by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
     val enabled = remember { prefs(c).getBoolean("halo", true) }
-    LaunchedEffect(st.active) {
+    LaunchedEffect(st.active) { com.nizam.app.ui.design.guard {
         if (st.active) { delay(900); show = enabled && AgentHalo.state.value.active } else { show = false; expanded = false }
-    }
+    } }
     val pulse = rememberInfiniteTransition(label = "halo").animateFloat(0.35f, 1f, infiniteRepeatable(tween(700), RepeatMode.Reverse), label = "dot")
     AnimatedVisibility(show, modifier.statusBarsPadding().padding(top = 6.dp),
         enter = fadeIn() + slideInVertically { -it }, exit = fadeOut() + slideOutVertically { -it }) {
@@ -148,7 +148,7 @@ fun HaloHost(modifier: Modifier = Modifier) {
 /** Anything that spends, sends or deletes is confirmed by holding the button, so it never fires by a stray tap. */
 @Composable
 fun HoldToConfirm(label: String = "Hold to confirm", modifier: Modifier = Modifier, onConfirm: () -> Unit) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val progress = remember { Animatable(0f) }
     val haptic = LocalHapticFeedback.current
     val shape = RoundedCornerShape(24.dp)
@@ -297,7 +297,7 @@ internal fun GenUi(comps: JSONArray, open: (String) -> Unit) {
 
 @Composable
 private fun GenUiScreen(container: AppContainer, open: (String) -> Unit) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var ask by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var comps by remember { mutableStateOf<JSONArray?>(null) }
@@ -379,7 +379,7 @@ object EnergyPlanner {
 @Composable
 private fun EnergyPlanScreen(container: AppContainer, open: (String) -> Unit) {
     var res by remember { mutableStateOf<EnergyPlanner.Result?>(null) }
-    LaunchedEffect(Unit) { res = runCatching { EnergyPlanner.compute(container) }.getOrNull() }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { res = runCatching { EnergyPlanner.compute(container) }.getOrNull() } }
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         val r = res
         if (r == null) Text("Reading your day…", color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -445,7 +445,7 @@ private fun ToolServerScreen() {
 @Composable
 private fun WidgetSentenceScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var said by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var msg by remember { mutableStateOf("") }

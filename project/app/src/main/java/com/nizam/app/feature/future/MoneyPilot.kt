@@ -173,7 +173,7 @@ fun MoneyPilotScreen(container: AppContainer) {
     var o by remember { mutableStateOf<MoneyPilot.Outlook?>(null) }
     var advice by remember { mutableStateOf("") }
     var live by remember { mutableStateOf(MoneyPilot.live(c)) }
-    LaunchedEffect(Unit) { o = runCatching { MoneyPilot.outlook(container) }.getOrNull() }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { o = runCatching { MoneyPilot.outlook(container) }.getOrNull() } }
     fun rs(v: Double) = "Rs " + "%,.0f".format(v)
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 18.dp)) {
         ModuleTitle("Money autopilot", "Where this month is heading — while there's time to steer")

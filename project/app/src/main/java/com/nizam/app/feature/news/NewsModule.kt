@@ -234,7 +234,7 @@ fun NewsScreen(container: AppContainer) {
 
     var open by remember { mutableStateOf<Article?>(null) }
 
-    LaunchedEffect(Unit) { vm.refresh() }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { vm.refresh() } }
 
     val current = open
     if (current != null) {

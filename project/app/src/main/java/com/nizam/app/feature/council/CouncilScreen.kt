@@ -59,7 +59,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun CouncilScreen(container: AppContainer) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val store = remember { CouncilStore(context) }
     val engine = remember { CouncilEngine { container } }
 
@@ -74,10 +74,10 @@ fun CouncilScreen(container: AppContainer) {
     val doneActions = remember { mutableStateListOf<String>() }
     val listState = rememberLazyListState()
 
-    LaunchedEffect(messages.size, typing, convening) {
+    LaunchedEffect(messages.size, typing, convening) { com.nizam.app.ui.design.guard {
         val count = messages.size + (if (typing != null || convening) 1 else 0) + 1
         if (count > 1) listState.animateScrollToItem(count - 1)
-    }
+    } }
 
     val listener = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {

@@ -70,7 +70,7 @@ private fun parseHex(raw: String): Color? = runCatching {
  */
 @Composable
 fun ThemeStudio(settings: SettingsRepository, currentKey: String, customJson: String) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val start: AtlasPalette = remember(currentKey, customJson) {
         if (currentKey == "custom") customPaletteFrom(customJson) ?: paletteFor("void")
         else paletteFor(currentKey.ifBlank { "void" })
@@ -87,9 +87,9 @@ fun ThemeStudio(settings: SettingsRepository, currentKey: String, customJson: St
     var v by remember { mutableStateOf(0f) }
     var hexDraft by remember { mutableStateOf("") }
     // Re-seed the sliders whenever the target changes, so they always describe the colour you're editing
-    LaunchedEffect(target, start) {
+    LaunchedEffect(target, start) { com.nizam.app.ui.design.guard {
         val a = hsv(chosen); h = a[0]; s = a[1]; v = a[2]; hexDraft = chosen.hex()
-    }
+    } }
     fun fromSliders() { val c = fromHsv(h, s, v); set(c); hexDraft = c.hex() }
 
     val preview = buildPalette(surface, primary, accent)

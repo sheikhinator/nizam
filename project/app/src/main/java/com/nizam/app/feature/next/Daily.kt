@@ -73,7 +73,7 @@ fun PrivacyAlertsScreen() {
     val ctx = LocalContext.current
     var list by remember { mutableStateOf<List<PrivacyAudit.Finding>?>(null) }
     var showSystem by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { list = withContext(Dispatchers.IO) { PrivacyAudit.scan(ctx) } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { list = withContext(Dispatchers.IO) { PrivacyAudit.scan(ctx) } } }
     val shown = list?.filter { showSystem || !it.system }
     AtlasScreen(title = "Privacy alerts", subtitle = "Apps that can use your mic, camera or location", loading = list == null) {
         item("sys") {
@@ -167,7 +167,7 @@ fun LoadSheddingScreen() {
 fun FamilyBriefScreen(container: AppContainer) {
     val ctx = LocalContext.current
     var text by remember { mutableStateOf("") }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         text = withContext(Dispatchers.IO) {
             val s = container.settingsRepository
             val t = com.nizam.app.feature.prayer.PrayerTimes.calculate(LocalDate.now(), s.latitude.first(), s.longitude.first(),
@@ -184,7 +184,7 @@ fun FamilyBriefScreen(container: AppContainer) {
                 append("— from Atlas")
             }
         }
-    }
+    } }
     AtlasScreen(title = "Family Day Ahead", subtitle = "Today for everyone, in one message") {
         item("t") {
             Group(Modifier.padding(horizontal = Space.page)) {

@@ -72,7 +72,7 @@ private object DiagramEngine {
 @Composable
 internal fun DiagramScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var text by remember { mutableStateOf("") }
     var diagram by remember { mutableStateOf<Diagram?>(null) }
     var busy by remember { mutableStateOf(false) }

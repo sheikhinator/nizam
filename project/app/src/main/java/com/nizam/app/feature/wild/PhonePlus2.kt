@@ -228,7 +228,7 @@ object Obd {
 @Composable
 fun ObdScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var tick by remember { mutableIntStateOf(0) }
     var status by remember { mutableStateOf(if (Obd.connected) "Connected" else "Not connected") }
     var values by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
@@ -238,7 +238,7 @@ fun ObdScreen(container: AppContainer) {
     val devices = remember(tick) { runCatching {
         if (Build.VERSION.SDK_INT >= 31 && ContextCompat.checkSelfPermission(c, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) emptyList()
         else c.getSystemService(BluetoothManager::class.java).adapter.bondedDevices.map { (it.name ?: it.address) to it.address } }.getOrDefault(emptyList()) }
-    LaunchedEffect(Obd.connected, status) { while (Obd.connected && isActive) { values = withContext(Dispatchers.IO) { runCatching { Obd.live() }.getOrDefault(values) }; delay(2000) } }
+    LaunchedEffect(Obd.connected, status) { com.nizam.app.ui.design.guard { while (Obd.connected && isActive) { values = withContext(Dispatchers.IO) { runCatching { Obd.live() }.getOrDefault(values) }; delay(2000) } } }
     DisposableEffect(Unit) { onDispose { } }
     AtlasScreen(title = "Car health", subtitle = status, hub = Hub.Travel) {
         item("d") { Column(Modifier.padding(horizontal = Space.page)) {
@@ -338,7 +338,7 @@ class LaptopService : Service() {
 @Composable
 fun LaptopScreen() {
     val c = LocalContext.current
-    LaunchedEffect(Unit) { Clip.capture(c) }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { Clip.capture(c) } }
     val ip = remember { runCatching { @Suppress("DEPRECATION") c.applicationContext.getSystemService(WifiManager::class.java).connectionInfo.ipAddress.let {
         "%d.%d.%d.%d".format(it and 0xff, it shr 8 and 0xff, it shr 16 and 0xff, it shr 24 and 0xff) } }.getOrDefault("") }
     AtlasScreen(title = "Laptop dashboard", subtitle = "Atlas in your computer's browser, served from this phone", hub = Hub.Tools) {

@@ -58,14 +58,14 @@ private object Shell {
 @Composable
 fun TerminalScreen() {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var cmd by remember { mutableStateOf("") }
     var lines by remember { mutableStateOf(listOf("Atlas terminal — runs what the phone already has, plus a real Java compiler and dexer bundled in below.")) }
     var busy by remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
     val workDir = remember { java.io.File("/sdcard") }
 
-    LaunchedEffect(lines.size) { if (lines.isNotEmpty()) listState.animateScrollToItem(lines.size - 1) }
+    LaunchedEffect(lines.size) { com.nizam.app.ui.design.guard { if (lines.isNotEmpty()) listState.animateScrollToItem(lines.size - 1) } }
 
     Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text("Terminal", style = MaterialTheme.typography.titleMedium)

@@ -46,7 +46,7 @@ private val STAGES = listOf(
 @Composable
 fun Thinking(label: String? = null, modifier: Modifier = Modifier) {
     var elapsed by remember { mutableStateOf(0) }
-    LaunchedEffect(Unit) { while (true) { delay(500); elapsed += 500 } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { while (true) { delay(500); elapsed += 500 } } }
     val stage = label ?: STAGES.last { elapsed >= it.second }.first
     Row(modifier.padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
         com.nizam.app.ui.design.AtlasOrb(com.nizam.app.ui.design.OrbState.Thinking, diameter = 22.dp)

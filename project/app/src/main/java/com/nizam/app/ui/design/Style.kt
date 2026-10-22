@@ -415,10 +415,10 @@ fun IslandPill(modifier: Modifier = Modifier, onOpen: (String) -> Unit) {
     if (!Style.s.island) return
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
     val ctx = androidx.compose.ui.platform.LocalContext.current
-    LaunchedEffect(Unit) { var n = 0; while (true) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { var n = 0; while (true) {
         kotlinx.coroutines.delay(1000); now = System.currentTimeMillis()
         if (n++ % 6 == 0) Island.hqNeeds = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { com.nizam.app.feature.hq.Hq.quickNeeds(ctx) }
-    } }
+    } } }
     val track = com.nizam.app.feature.music.MusicPlayback.current
     val timerLeft = (FocusTimer.endsAt - now).coerceAtLeast(0)
     val prayer = Island.nextPrayer?.takeIf { it.second in 0..15 }

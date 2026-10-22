@@ -190,7 +190,7 @@ fun PlayOrb(playing: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier
 @Composable
 fun DownloadOrb(ep: Episode, store: PodcastStore, modifier: Modifier = Modifier, size: Dp = 40.dp, onChanged: () -> Unit = {}) {
     val c = MaterialTheme.colorScheme
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val v = PodcastDl.version
     val pct = PodcastDl.pct[ep.id]
     val done = remember(ep.id, v, pct) { store.downloaded(ep) != null }
@@ -383,7 +383,7 @@ private fun EpisodeCard(ep: Episode, store: PodcastStore, refresh: Int, onChange
 @Composable
 fun PodcastsScreen(onShow: (String, String) -> Unit, onOpenPlayer: () -> Unit) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val store = remember { PodcastStore(c) }
     remember { PodcastCache.init(c); 0 }
     var tab by remember { mutableStateOf("Listen") }
@@ -427,12 +427,12 @@ private fun ListenTab(store: PodcastStore, refresh: Int, onChange: () -> Unit, o
     // new episodes from subscriptions: cached parses first (instant), then a parallel refresh
     var fresh by remember { mutableStateOf<List<Episode>>(emptyList()) }
     var loading by remember { mutableStateOf(false) }
-    LaunchedEffect(shows.map { it.feed }) {
+    LaunchedEffect(shows.map { it.feed }) { com.nizam.app.ui.design.guard {
         fun newest(l: List<Pair<Show, List<Episode>>>) = l.flatMap { it.second.take(6) }.sortedByDescending { dateOf(it.published) }.take(30)
         val cached = withContext(Dispatchers.Default) { shows.mapNotNull { Rss.cached(it.feed) } }
         if (cached.isNotEmpty()) fresh = newest(cached).distinctBy { it.id }
         if (shows.isNotEmpty()) { loading = true; fresh = newest(Rss.loadMany(shows.map { it.feed })).distinctBy { it.id }; loading = false }
-    }
+    } }
     LazyColumn(contentPadding = BOTTOM) {
         if (inProgress.isNotEmpty()) {
             item { SectionHead("Continue listening", "${inProgress.size} on the go") }
@@ -490,7 +490,7 @@ private fun ContinueCard(ep: Episode, pos: Long, dur: Long, onPlay: () -> Unit) 
 @Composable
 private fun DiscoverTab(open: (Show) -> Unit) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val focus = LocalFocusManager.current
     var query by remember { mutableStateOf("") }
     var results by remember { mutableStateOf<List<Show>?>(null) }
@@ -502,13 +502,13 @@ private fun DiscoverTab(open: (Show) -> Unit) {
     var genreTop by remember { mutableStateOf<List<Show>?>(null) }
     var community by remember { mutableStateOf<List<Show>?>(null) }
     var showSources by remember { mutableStateOf(false) }
-    LaunchedEffect(country) {
+    LaunchedEffect(country) { com.nizam.app.ui.design.guard {
         top = null; top = PodcastDirectory.chart(c, country, null, 30)
         // warm the first few feeds so opening them is instant
         top?.take(4)?.map { it.feed }?.let { f -> launch { Rss.loadMany(f, 12 * 3_600_000L) } }
-    }
-    LaunchedEffect(country, genre) { genreTop = null; genreTop = PodcastDirectory.chart(c, country, genre.second, 25) }
-    LaunchedEffect(Unit) { community = PodcastDirectory.communityTop(c, 25) }
+    } }
+    LaunchedEffect(country, genre) { com.nizam.app.ui.design.guard { genreTop = null; genreTop = PodcastDirectory.chart(c, country, genre.second, 25) } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { community = PodcastDirectory.communityTop(c, 25) } }
     fun run(q: String) {
         if (q.isBlank()) { results = null; return }
         job?.cancel(); searching = true; results = emptyList(); focus.clearFocus()
@@ -712,7 +712,7 @@ private fun MiniPlayer(onOpenPlayer: () -> Unit, modifier: Modifier) {
 @Composable
 fun PodcastPlayerScreen() {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val store = remember { PodcastStore(c) }
     val ep = Playback.current
     if (ep == null) {
@@ -915,7 +915,7 @@ fun PodcastShowScreen(onOpenPlayer: () -> Unit) {
     var newestFirst by remember { mutableStateOf(true) }
     var subscribed by remember { mutableStateOf(store.subscribed(feed)) }
     var refresh by remember { mutableStateOf(0) }
-    LaunchedEffect(feed) {
+    LaunchedEffect(feed) { com.nizam.app.ui.design.guard {
         withContext(Dispatchers.Default) { Rss.cached(feed) }?.let { (s, eps) -> show = s.copy(image = s.image ?: seed?.image); episodes = eps }
         if (Rss.cacheAge(feed) > 20 * 60_000L || episodes == null) {
             updating = true
@@ -923,7 +923,7 @@ fun PodcastShowScreen(onOpenPlayer: () -> Unit) {
                 .onFailure { if (episodes == null) error = "Couldn't read this feed: ${Feedback.friendly(it)}" }
             updating = false
         }
-    }
+    } }
     val s = show
     val cs = MaterialTheme.colorScheme
     Box(Modifier.fillMaxSize()) {

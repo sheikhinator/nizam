@@ -173,7 +173,7 @@ fun LiveVoiceScreen(container: AppContainer, compact: Boolean = false) {
         else -> listOf(Color(0xFF5F6368), Color(0xFF3C4043))
     }
     val listState = rememberLazyListState()
-    LaunchedEffect(turns.size) { if (turns.isNotEmpty()) listState.animateScrollToItem(turns.size - 1) }
+    LaunchedEffect(turns.size) { com.nizam.app.ui.design.guard { if (turns.isNotEmpty()) listState.animateScrollToItem(turns.size - 1) } }
 
     Column(Modifier.fillMaxSize().padding(horizontal = 18.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         if (!compact) Text("Live", style = MaterialTheme.typography.displaySmall, modifier = Modifier.padding(top = 18.dp))

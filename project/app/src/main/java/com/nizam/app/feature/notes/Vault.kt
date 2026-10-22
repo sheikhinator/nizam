@@ -105,7 +105,7 @@ object VaultNav { @Volatile var open: String? = null }          // lets search, 
 fun NotesScreen(container: AppContainer) {
     val vm: NotesViewModel = viewModel(factory = vmFactory { NotesViewModel(container.noteRepository) })
     val notes by vm.notes.collectAsState()
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val c = LocalContext.current
     var openId by remember { mutableStateOf<Long?>(null) }
     var view by remember { mutableStateOf("Files") }
@@ -119,7 +119,7 @@ fun NotesScreen(container: AppContainer) {
         val tpl = notes.firstOrNull { it.title.equals("Templates/Daily", true) }?.body
         openId = vm.ensure(title, fill(tpl ?: "# ${LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy"))}\n\n## Tasks\n- [ ] \n\n## Notes\n\n", d))
     }
-    LaunchedEffect(notes.isNotEmpty()) { VaultNav.open?.let { VaultNav.open = null; openTitle(it) } }
+    LaunchedEffect(notes.isNotEmpty()) { com.nizam.app.ui.design.guard { VaultNav.open?.let { VaultNav.open = null; openTitle(it) } } }
 
     val export = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
         uri ?: return@rememberLauncherForActivityResult
@@ -328,7 +328,7 @@ private fun Editor(note: Note, notes: List<Note>, vm: NotesViewModel, onBack: ()
     var templates by remember { mutableStateOf(false) }
     BackHandler { vm.save(note.copy(body = text.text)); if (title.trim() != note.title) vm.rename(note, title); onBack() }
     // autosave shortly after you stop typing
-    LaunchedEffect(text.text) { if (text.text != note.body) { delay(600); vm.save(note.copy(body = text.text)) } }
+    LaunchedEffect(text.text) { com.nizam.app.ui.design.guard { if (text.text != note.body) { delay(600); vm.save(note.copy(body = text.text)) } } }
 
     fun toggleTask(line: Int) {
         val lines = text.text.lines().toMutableList()

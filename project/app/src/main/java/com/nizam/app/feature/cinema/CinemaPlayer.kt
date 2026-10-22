@@ -85,12 +85,12 @@ fun PlayerScreen(onBack: () -> Unit = {}) {
 
     Immersive()
     if (magnet != null) {
-        LaunchedEffect(magnet) {
+        LaunchedEffect(magnet) { com.nizam.app.ui.design.guard {
             runCatching { Torrents.open(c, magnet, CinemaNav.playFileIdx, keep = false) }
                 .onSuccess { l -> l.streams++; torrent = l; url = TorrentServer.url(l) }
                 .onFailure { failed = Feedback.friendly(it) }
-        }
-        LaunchedEffect(torrent) { while (true) { torrent?.let { status = it.status() }; delay(1000) } }
+        } }
+        LaunchedEffect(torrent) { com.nizam.app.ui.design.guard { while (true) { torrent?.let { status = it.status() }; delay(1000) } } }
         DisposableEffect(Unit) { onDispose { torrent?.let { Torrents.release(it) } } }
     }
 
@@ -193,7 +193,7 @@ private fun VideoPlayer(url: String, torrent: Torrents.Live?, torrentStatus: () 
     val activity = remember(c) { var x: android.content.Context? = c
         while (x is android.content.ContextWrapper && x !is android.app.Activity) x = x.baseContext
         x as? android.app.Activity }
-    LaunchedEffect(Pip.active) { view?.useController = !Pip.active; if (Pip.active) view?.hideController() }
+    LaunchedEffect(Pip.active) { com.nizam.app.ui.design.guard { view?.useController = !Pip.active; if (Pip.active) view?.hideController() } }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     DisposableEffect(player) {
         val listener = object : Player.Listener {
@@ -228,7 +228,7 @@ private fun VideoPlayer(url: String, torrent: Torrents.Live?, torrentStatus: () 
     }
 
     var outOfTime by remember { mutableStateOf(false) }
-    LaunchedEffect(player) {
+    LaunchedEffect(player) { com.nizam.app.ui.design.guard {
         var tick = 0
         while (true) {
             delay(10_000); saveProgressNow()
@@ -237,7 +237,7 @@ private fun VideoPlayer(url: String, torrent: Torrents.Live?, torrentStatus: () 
                 if (Leisure.balance(c) <= 0) { player.pause(); outOfTime = true }
             }
         }
-    }
+    } }
     if (outOfTime) androidx.compose.material3.AlertDialog(onDismissRequest = { outOfTime = false },
         confirmButton = { TextButton(onClick = { outOfTime = false }) { Text("OK") } },
         title = { Text("Leisure time used up") },

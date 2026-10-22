@@ -75,7 +75,7 @@ private fun notificationsFor(name: String): String {
 @Composable
 fun AppChatScreen(container: AppContainer, open: (String) -> Unit) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var peer by remember { mutableStateOf<Peer?>(null) }
     var typed by remember { mutableStateOf("") }
     var input by remember { mutableStateOf("") }
@@ -124,7 +124,7 @@ fun AppChatScreen(container: AppContainer, open: (String) -> Unit) {
 
         val store = remember(p.id) { JsonStore(c, "appchat_${p.id}") }
         val msgs = remember(p.id, tick) { store.all().sortedBy { it.optLong("t") }.takeLast(60) }
-        LaunchedEffect(msgs.size, busy) { if (msgs.isNotEmpty()) listState.animateScrollToItem(msgs.size) }
+        LaunchedEffect(msgs.size, busy) { com.nizam.app.ui.design.guard { if (msgs.isNotEmpty()) listState.animateScrollToItem(msgs.size) } }
 
         // header: the app's own badge, with the small Claude badge in the corner marking the AI layer
         Row(Modifier.padding(top = 8.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {

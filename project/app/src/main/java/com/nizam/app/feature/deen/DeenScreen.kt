@@ -145,7 +145,7 @@ private fun DuasTab() {
     var error by remember { mutableStateOf<String?>(null) }
     var query by remember { mutableStateOf("") }
     var open by remember { mutableStateOf<DuaChapter?>(null) }
-    LaunchedEffect(Unit) { if (chapters.isEmpty()) runCatching { Duas.load(c) }.onSuccess { chapters = it }.onFailure { error = it.message } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { if (chapters.isEmpty()) runCatching { Duas.load(c) }.onSuccess { chapters = it }.onFailure { error = it.message } } }
 
     open?.let { ch ->
         Text("‹ All duas", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge,
@@ -207,7 +207,7 @@ private fun AdhkarTab() {
     val c = LocalContext.current
     val haptic = LocalHapticFeedback.current
     var chapters by remember { mutableStateOf(Duas.cached(c)) }
-    LaunchedEffect(Unit) { if (chapters.isEmpty()) runCatching { Duas.load(c) }.onSuccess { chapters = it } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { if (chapters.isEmpty()) runCatching { Duas.load(c) }.onSuccess { chapters = it } } }
     val morningEvening = chapters.firstOrNull { it.title.contains("morning and evening", true) }
     val sleep = chapters.firstOrNull { it.title.contains("before sleeping", true) }
     val afterPrayer = chapters.firstOrNull { it.title.contains("after completing the prayer", true) }

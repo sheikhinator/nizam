@@ -146,13 +146,13 @@ fun AudioPlayer(file: File, title: String, onBack: () -> Unit) {
         onDispose { runCatching { player?.release() } }
     }
 
-    LaunchedEffect(playing) {
+    LaunchedEffect(playing) { com.nizam.app.ui.design.guard {
         while (playing && player != null) {
             position = runCatching { player.currentPosition }.getOrDefault(0)
             if (!player.isPlaying) playing = false
             delay(400)
         }
-    }
+    } }
 
     fun clock(ms: Int): String {
         val total = ms / 1000

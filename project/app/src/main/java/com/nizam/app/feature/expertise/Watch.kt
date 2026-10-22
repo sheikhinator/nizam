@@ -112,10 +112,10 @@ object Heal {
 
 @Composable
 fun HealScreen(container: AppContainer, open: (String) -> Unit) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var checks by remember { mutableStateOf<List<Heal.Check>?>(null) }
     var busy by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { checks = runCatching { Heal.run(container, false) }.getOrNull() }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { checks = runCatching { Heal.run(container, false) }.getOrNull() } }
     Column(verticalArrangement = Arrangement.spacedBy(Space.s)) {
         Button(onClick = { busy = true; scope.launch { checks = runCatching { Heal.run(container, true) }.getOrNull(); busy = false } }, enabled = !busy) {
             Text(if (busy) "Testing every model…" else "Test everything now")
@@ -142,7 +142,7 @@ fun HealScreen(container: AppContainer, open: (String) -> Unit) {
 fun AnalyticsScreen(container: AppContainer, open: (String) -> Unit) {
     val ctx = LocalContext.current
     var pulse by remember { mutableStateOf<List<Int>>(emptyList()) }
-    LaunchedEffect(Unit) { runCatching { Roads.warm(container) }; pulse = withContext(Dispatchers.IO) { Roads.pulse(ctx, 30) } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { runCatching { Roads.warm(container) }; pulse = withContext(Dispatchers.IO) { Roads.pulse(ctx, 30) } } }
     val hist = remember { EngineLog.history(ctx) }
     val byDay = hist.groupBy { it.first }.toSortedMap().entries.toList().takeLast(14)
     val byProvider = hist.groupBy { it.second.provider }.map { (p, l) -> Triple(p, l.sumOf { it.second.calls }, l.sumOf { it.second.ok }) }.sortedByDescending { it.second }
@@ -190,7 +190,7 @@ object ZeroCost {
 @Composable
 fun EconomyScreen(container: AppContainer, open: (String) -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var zero by remember { mutableStateOf(ZeroCost.on(ctx)) }
     val today = remember { EngineLog.today(ctx) }
     val month = remember { EngineLog.history(ctx).filter { it.first.startsWith(LocalDate.now().toString().take(7)) } }
@@ -238,7 +238,7 @@ fun EconomyScreen(container: AppContainer, open: (String) -> Unit) {
 @Composable
 fun AuditScreen(container: AppContainer, open: (String) -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var kind by remember { mutableStateOf<String?>(null) }
     var version by remember { mutableIntStateOf(0) }
     val log = remember(version) { Pulse.log(ctx).all().sortedByDescending { it.optLong("at") } }
@@ -285,7 +285,7 @@ fun AuditScreen(container: AppContainer, open: (String) -> Unit) {
 @Composable
 fun ApprovalsScreen(container: AppContainer, open: (String) -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var version by remember { mutableIntStateOf(0) }
     val pending = remember(version, com.nizam.app.feature.agent.Crew.version) { ApprovalInbox.pending(ctx).sortedByDescending { it.optLong("at") } }
     Column(verticalArrangement = Arrangement.spacedBy(Space.s)) {
@@ -299,7 +299,7 @@ fun ApprovalsScreen(container: AppContainer, open: (String) -> Unit) {
         pending.forEach { o ->
             ApprovalCard(container, o, o.optString("risk"), o.optString("why"), o.optJSONObject("args")?.toString(2)?.take(500).orEmpty())
         }
-        LaunchedEffect(com.nizam.app.feature.agent.Crew.version) { version++ }
+        LaunchedEffect(com.nizam.app.feature.agent.Crew.version) { com.nizam.app.ui.design.guard { version++ } }
         AlsoHere(open, "Audit" to "nx/audit", "Agent teams" to "nx/crew", "App firewall" to "nx/appfirewall")
     }
 }
@@ -338,7 +338,7 @@ object Scout {
 @Composable
 fun ScoutScreen(container: AppContainer, open: (String) -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var version by remember { mutableIntStateOf(0) }
     val topics = remember(version) { Scout.topics(ctx).all() }
     val found = remember(version) { Scout.findings(ctx).all().sortedByDescending { it.optLong("at") }.take(20) }
@@ -399,7 +399,7 @@ fun SenseScreen(container: AppContainer, open: (String) -> Unit) {
     val ctx = LocalContext.current
     var signals by remember { mutableStateOf<List<Sense.Signal>?>(null) }
     var all by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { runCatching { Roads.warm(container) }; signals = withContext(Dispatchers.IO) { Sense.read(ctx) } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { runCatching { Roads.warm(container) }; signals = withContext(Dispatchers.IO) { Sense.read(ctx) } } }
     Column(verticalArrangement = Arrangement.spacedBy(Space.s)) {
         val s = signals
         if (s == null) com.nizam.app.ui.components.Thinking(label = "Noticing")
@@ -418,7 +418,7 @@ fun SenseScreen(container: AppContainer, open: (String) -> Unit) {
 @Composable
 fun ChannelsScreen(container: AppContainer, open: (String) -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var incoming by remember { mutableStateOf("") }
     var intent by remember { mutableStateOf("") }
     var channel by remember { mutableStateOf("WhatsApp") }
@@ -464,7 +464,7 @@ fun ChannelsScreen(container: AppContainer, open: (String) -> Unit) {
 @Composable
 fun GatewayScreen(container: AppContainer, open: (String) -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val servers = remember { com.nizam.app.feature.mcp.Mcp.servers(ctx) }
     val tools = remember { mutableStateOf<Map<String, Int>>(emptyMap()) }
     var busy by remember { mutableStateOf(false) }

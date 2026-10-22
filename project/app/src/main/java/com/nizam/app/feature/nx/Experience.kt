@@ -103,7 +103,7 @@ fun StoriesScreen(container: AppContainer, open: (String) -> Unit) {
     var pages by remember { mutableStateOf<List<Page>?>(null) }
     var i by remember { mutableIntStateOf(0) }
     var progress by remember { mutableFloatStateOf(0f) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         val weekAgo = System.currentTimeMillis() - 7 * 86_400_000L
         val tasks = runCatching { container.taskRepository.all().first() }.getOrDefault(emptyList())
         val done = tasks.count { (it.completedAt ?: 0L) > weekAgo }
@@ -121,10 +121,10 @@ fun StoriesScreen(container: AppContainer, open: (String) -> Unit) {
             Page(pet.name, "Level ${com.nizam.app.feature.companion.Companion.level(com.nizam.app.feature.companion.Companion.xp(pet, null))}", "grew with you this week.", "paw_prints", listOf(Color(0xFF5A2A0E), Color(0xFFE3834F))),
             Page("Next week", "Bismillah", "One intention at a time.", "rocket", listOf(Color(0xFF101830), Color(0xFF3B4FB0))),
         )
-    }
+    } }
     val ps = pages
     if (ps == null) { AtlasScreen(title = "Your week", loading = true) {}; return }
-    LaunchedEffect(i) { progress = 0f; while (progress < 1f) { delay(50); progress += 0.01f }; if (i < ps.lastIndex) i++ }
+    LaunchedEffect(i) { com.nizam.app.ui.design.guard { progress = 0f; while (progress < 1f) { delay(50); progress += 0.01f }; if (i < ps.lastIndex) i++ } }
     val p = ps[i]
     Box(Modifier.fillMaxSize().background(Brush.verticalGradient(p.colors)).pointerInput(ps.size) {
         detectTapGestures { o -> if (o.x < size.width / 3) { if (i > 0) i-- } else if (i < ps.lastIndex) i++ else open("today") } }) {
@@ -149,7 +149,7 @@ private data class Badge(val name: String, val how: String, val art: String, val
 fun BadgesScreen(container: AppContainer) {
     val ctx = LocalContext.current
     var badges by remember { mutableStateOf<List<Badge>?>(null) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         val tasks = runCatching { container.taskRepository.all().first() }.getOrDefault(emptyList())
         val done = tasks.count { it.completedAt != null }
         val pet = com.nizam.app.feature.companion.Companion.load(ctx); val lvl = com.nizam.app.feature.companion.Companion.level(com.nizam.app.feature.companion.Companion.xp(pet, null))
@@ -166,7 +166,7 @@ fun BadgesScreen(container: AppContainer) {
             Badge("Organised", "Note 10 places in Where is it?", "key", n("object_places") >= 10), Badge("Dreamer", "Pin 6 pictures to your vision board", "glowing_star", n("vision_board") >= 6),
             Badge("Explorer", "Send your pet on 3 adventures", "world_map", n("pet_adventures") >= 3), Badge("Stylist", "Try a different design kit", "artist_palette", com.nizam.app.ui.design.Style.s.kit != "Atlas Glass"),
         )
-    }
+    } }
     val b = badges
     AtlasScreen(title = "Badges", subtitle = b?.let { "${it.count { x -> x.earned }} of ${it.size} earned" }, hub = Hub.Memory, loading = b == null) {
         b.orEmpty().chunked(3).forEachIndexed { r, row -> item("r$r") { Row(Modifier.padding(horizontal = Space.page, vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -260,7 +260,7 @@ private val WISDOM = listOf(
 @Composable
 fun WisdomScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val p = remember { ctx.getSharedPreferences("wisdom", 0) }
     val today = LocalDate.now().toString()
     var idx by remember { mutableIntStateOf(LocalDate.now().dayOfYear % WISDOM.size) }
@@ -299,13 +299,13 @@ private val PLACES = listOf("Hunza Valley" to "mountain", "Karachi beach" to "be
 @Composable
 fun AdventuresScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val store = remember { JsonStore(ctx, "pet_adventures") }
     var list by remember { mutableStateOf(store.all().reversed()) }
     val pet = remember { com.nizam.app.feature.companion.Companion.load(ctx) }
     val away = list.firstOrNull { it.optLong("back") > System.currentTimeMillis() }
     var now by remember { mutableStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(Unit) { while (true) { delay(30_000); now = System.currentTimeMillis() } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { while (true) { delay(30_000); now = System.currentTimeMillis() } } }
     AtlasScreen(title = "${pet.name}'s adventures", subtitle = if (away != null) "Away in ${away.optString("place")} — back in ${((away.optLong("back") - now) / 60000).coerceAtLeast(0)} min" else "Where should ${pet.name} go?", hub = Hub.Social) {
         if (away == null) {
             item("places") { Column(Modifier.padding(horizontal = Space.page)) {
@@ -343,7 +343,7 @@ fun AdventuresScreen(container: AppContainer) {
 @Composable
 fun BriefingScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val speaker = remember { com.nizam.app.feature.voice.Speaker(ctx) }
     DisposableEffect(Unit) { onDispose { speaker.release() } }
     var text by remember { mutableStateOf<String?>(null) }
@@ -380,11 +380,11 @@ fun Qibla3DScreen(container: AppContainer) {
     val ctx = LocalContext.current
     var qibla by remember { mutableStateOf(0.0) }
     var heading by remember { mutableStateOf(0.0) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         val la = runCatching { container.settingsRepository.latitude.first() }.getOrDefault(31.55); val lo = runCatching { container.settingsRepository.longitude.first() }.getOrDefault(74.34)
         val k1 = Math.toRadians(21.4225); val k2 = Math.toRadians(39.8262); val p1 = Math.toRadians(la); val l1 = Math.toRadians(lo)
         qibla = (Math.toDegrees(kotlin.math.atan2(sin(k2 - l1), cos(p1) * kotlin.math.tan(k1) - sin(p1) * cos(k2 - l1))) + 360) % 360
-    }
+    } }
     DisposableEffect(Unit) {
         val sm = ctx.getSystemService(android.hardware.SensorManager::class.java)
         val l = object : android.hardware.SensorEventListener {
@@ -412,7 +412,7 @@ private val ZONES = listOf("Lahore" to "Asia/Karachi", "Makkah" to "Asia/Riyadh"
 fun GlobeScreen() {
     val faces = remember { Mesh3D.globe(Mesh3D::roughLand) }
     var now by remember { mutableStateOf(java.time.ZonedDateTime.now()) }
-    LaunchedEffect(Unit) { while (true) { delay(20_000); now = java.time.ZonedDateTime.now() } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { while (true) { delay(20_000); now = java.time.ZonedDateTime.now() } } }
     AtlasScreen(title = "World clock", subtitle = "Drag the globe to spin it", hub = Hub.Travel) {
         item("g") { Object3D(faces, Modifier.fillMaxWidth().aspectRatio(1f).padding(Space.page), pitch = -0.3f, scale = 0.95f) }
         ZONES.forEach { (city, zone) -> item(city) {

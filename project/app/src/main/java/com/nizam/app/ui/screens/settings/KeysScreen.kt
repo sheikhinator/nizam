@@ -76,7 +76,7 @@ fun KeysScreen(container: AppContainer) {
             var on by remember(refresh) { mutableStateOf(ApiKeys.enabled(c, slot.id)) }
             var editing by remember { mutableStateOf(false) }
             var draft by remember { mutableStateOf("") }
-            LaunchedEffect(refresh) { value = ApiKeys.value(c, s, slot) }
+            LaunchedEffect(refresh) { com.nizam.app.ui.design.guard { value = ApiKeys.value(c, s, slot) } }
             Group(Modifier.padding(vertical = 5.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f).clickable(role = Role.Button) { editing = !editing; draft = value }) {
@@ -171,9 +171,9 @@ private fun EngineStatus(container: AppContainer, refresh: Int) {
     var open by remember { mutableStateOf(false) }
     var lines by remember { mutableStateOf<List<String>>(emptyList()) }
     var tick by remember { mutableIntStateOf(0) }
-    LaunchedEffect(refresh, tick, open) {
+    LaunchedEffect(refresh, tick, open) { com.nizam.app.ui.design.guard {
         if (open) lines = com.nizam.app.net.Health.report(com.nizam.app.net.Router.endpoints(container.settingsRepository, c))
-    }
+    } }
     Group(Modifier.padding(vertical = 5.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable(role = Role.Button) { open = !open }) {
             Column(Modifier.weight(1f)) {

@@ -75,7 +75,7 @@ private fun Logo(url: String?, name: String, modifier: Modifier = Modifier) {
 @Composable
 fun IptvScreen(onPlay: () -> Unit) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val store = remember { IptvStore(c) }
     var tab by remember { mutableStateOf("Channels") }
     var refresh by remember { mutableStateOf(0) }
@@ -272,10 +272,10 @@ fun IptvPlayerScreen() {
 /** Loads the chosen channel whenever it changes. */
 @Composable
 private fun LaunchedEffectChannel(channel: Channel?, player: ExoPlayer, onLoad: () -> Unit) {
-    androidx.compose.runtime.LaunchedEffect(channel?.url) {
+    androidx.compose.runtime.LaunchedEffect(channel?.url) { com.nizam.app.ui.design.guard {
         val ch = channel ?: return@LaunchedEffect
         onLoad()
         player.setMediaItem(MediaItem.fromUri(ch.url))
         player.prepare(); player.playWhenReady = true
-    }
+    } }
 }

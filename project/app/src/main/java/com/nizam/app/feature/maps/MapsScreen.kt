@@ -156,7 +156,7 @@ private fun TurnIcon(step: Step?, tint: Color, size: Int = 40) {
 @Composable
 fun MapsScreen() {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val accent = MaterialTheme.colorScheme.primary
     val routeBlue = Color(0xFF1A73E8)
@@ -195,7 +195,7 @@ fun MapsScreen() {
     var rerouting by remember { mutableStateOf(false) }
     var hasPerm by remember { mutableStateOf(androidx.core.content.ContextCompat.checkSelfPermission(c, Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED) }
     val askPerm = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { r -> hasPerm = r.values.any { it } }
-    LaunchedEffect(Unit) { if (!hasPerm) askPerm.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)) }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { if (!hasPerm) askPerm.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)) } }
     val route = routes.getOrNull(routeIdx)
 
     // one MapView, configured once
@@ -320,15 +320,15 @@ fun MapsScreen() {
         "$name\nhttps://www.openstreetmap.org/?mlat=${g.latitude}&mlon=${g.longitude}#map=17/${g.latitude}/${g.longitude}"), "Share"))
 
     // style, paper tint, traffic and Qibla
-    LaunchedEffect(style, dark) {
+    LaunchedEffect(style, dark) { com.nizam.app.ui.design.guard {
         val shown = if (dark && (style == "Paper" || style == "Minimal")) "Dark" else style
         map.setTileSource(MapStyles.source(shown))
         map.overlayManager.tilesOverlay.setColorFilter(styleFilter(shown)?.let { ColorMatrixColorFilter(it) })
         map.overlayManager.tilesOverlay.loadingBackgroundColor = if (dark) android.graphics.Color.rgb(20, 22, 26) else android.graphics.Color.rgb(242, 238, 228)
         map.overlayManager.tilesOverlay.loadingLineColor = android.graphics.Color.TRANSPARENT
         map.invalidate()
-    }
-    LaunchedEffect(traffic) {
+    } }
+    LaunchedEffect(traffic) { com.nizam.app.ui.design.guard {
         trafficOverlay.value?.let { map.overlays.remove(it); it.onDetach(map) }; trafficOverlay.value = null
         if (traffic) {
             val key = com.nizam.app.net.Router.firstKey(c.getSharedPreferences("maps", 0).getString("tomtom", "").orEmpty())
@@ -337,21 +337,21 @@ fun MapsScreen() {
             val ov = TilesOverlay(MapTileProviderBasic(c, src), c).apply { loadingBackgroundColor = android.graphics.Color.TRANSPARENT; loadingLineColor = android.graphics.Color.TRANSPARENT }
             map.overlays.add(0, ov); trafficOverlay.value = ov; map.invalidate()
         }
-    }
-    LaunchedEffect(qibla, hasPerm) {
+    } }
+    LaunchedEffect(qibla, hasPerm) { com.nizam.app.ui.design.guard {
         map.overlays.remove(qiblaLine)
         while (qibla) {
             me.myLocation?.let { qiblaLine.setPoints(listOf(it, KAABA)); if (qiblaLine !in map.overlays) map.overlays.add(qiblaLine); map.invalidate() }
             delay(5000)
         }
         map.invalidate()
-    }
-    LaunchedEffect(hasPerm) {
+    } }
+    LaunchedEffect(hasPerm) { com.nizam.app.ui.design.guard {
         if (!hasPerm) return@LaunchedEffect
         if (me !in map.overlays) map.overlays.add(me)
         me.enableMyLocation()
         me.runOnFirstFix { map.post { if (selected == null && dest == null && MapsNav.query == null) me.myLocation?.let { map.controller.animateTo(it, 16.0, 800L); MapPrefs.setLast(c, it) } } }
-    }
+    } }
     DisposableEffect(Unit) {
         map.overlays.add(MapEventsOverlay(object : MapEventsReceiver {
             override fun singleTapConfirmedHelper(p: GeoPoint?) = false.also { focused = false }
@@ -366,15 +366,15 @@ fun MapsScreen() {
         lifecycle.addObserver(obs); onDispose { lifecycle.removeObserver(obs) }
     }
     // live suggestions while typing
-    LaunchedEffect(query, focused) {
+    LaunchedEffect(query, focused) { com.nizam.app.ui.design.guard {
         suggestions = emptyList()
         if (focused && query.trim().length >= 2) { delay(250); suggestions = Geo.suggest(query.trim(), center()) }
-    }
+    } }
     // turn-by-turn: follow heading-up, advance steps, speak twice per turn, reroute when off course
     val tts = remember { mutableStateOf<TextToSpeech?>(null) }
     DisposableEffect(Unit) { val t = TextToSpeech(c) { }; tts.value = t; onDispose { t.shutdown() } }
     fun say(s: String) { if (voice) tts.value?.speak(s, TextToSpeech.QUEUE_FLUSH, null, "nav") }
-    LaunchedEffect(navigating) {
+    LaunchedEffect(navigating) { com.nizam.app.ui.design.guard {
         if (!navigating) return@LaunchedEffect
         map.keepScreenOn = true
         me.enableFollowLocation(); map.controller.setZoom(18.0)
@@ -409,7 +409,7 @@ fun MapsScreen() {
             delay(1500)
         }
         map.keepScreenOn = false; map.mapOrientation = 0f
-    }
+    } }
 
     Box(Modifier.fillMaxSize()) {
         AndroidView({ map }, Modifier.fillMaxSize())

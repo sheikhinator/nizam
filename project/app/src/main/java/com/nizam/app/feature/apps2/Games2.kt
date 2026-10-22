@@ -133,7 +133,7 @@ fun SnakeGame() {
     var food by remember { mutableStateOf(Pair(13, 9)) }
     var alive by remember { mutableStateOf(false) }
     var best by remember { mutableIntStateOf(p.getInt("best", 0)) }
-    LaunchedEffect(alive) {
+    LaunchedEffect(alive) { com.nizam.app.ui.design.guard {
         while (alive) {
             delay((170 - snake.size * 2).coerceAtLeast(70).toLong())
             if (nextDir.first != -dir.first || nextDir.second != -dir.second) dir = nextDir
@@ -142,7 +142,7 @@ fun SnakeGame() {
             snake = if (nh == food) { var f: Pair<Int, Int>; do { f = Pair((0 until n).random(), (0 until n).random()) } while (f in snake || f == nh); food = f; listOf(nh) + snake }
                     else listOf(nh) + snake.dropLast(1)
         }
-    }
+    } }
     AtlasScreen(title = "Snake", subtitle = "Score ${snake.size - 3} · best $best", hub = Hub.Media) {
         item("b") {
             var acc by remember { mutableStateOf(Offset.Zero) }

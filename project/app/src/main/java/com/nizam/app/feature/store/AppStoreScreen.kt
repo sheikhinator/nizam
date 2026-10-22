@@ -140,7 +140,7 @@ private fun MyApps(goTo: (String) -> Unit) {
     }
     val apps = remember(tick) { AppStore.catalogue(c) }
     var updates by remember { mutableStateOf<List<StoreApp>>(emptyList()) }
-    LaunchedEffect(tick) { updates = runCatching { AppStore.updates(c) }.getOrElse { emptyList() } }
+    LaunchedEffect(tick) { com.nizam.app.ui.design.guard { updates = runCatching { AppStore.updates(c) }.getOrElse { emptyList() } } }
     var editing by remember { mutableStateOf<StoreApp?>(null) }
 
     if (apps.isEmpty()) {

@@ -143,7 +143,7 @@ object FocusLens {
 fun FocusLensOverlay() {
     if (!FocusLens.on) return
     var left by remember { mutableLongStateOf(FocusLens.until - System.currentTimeMillis()) }
-    LaunchedEffect(FocusLens.until) { while (true) { left = FocusLens.until - System.currentTimeMillis(); if (left <= 0) { FocusLens.stop(); break }; delay(1000) } }
+    LaunchedEffect(FocusLens.until) { com.nizam.app.ui.design.guard { while (true) { left = FocusLens.until - System.currentTimeMillis(); if (left <= 0) { FocusLens.stop(); break }; delay(1000) } } }
     val pulse = rememberInfiniteTransition(label = "lens").animateFloat(0.55f, 0.72f, infiniteRepeatable(tween(3000), RepeatMode.Reverse), label = "p").value
     Box(Modifier.fillMaxSize()) {
         // a soft vignette that dims the edges of everything; touches pass straight through
@@ -302,13 +302,13 @@ fun TimeMachineScreen(container: AppContainer) {
     var tasks by remember { mutableStateOf<List<com.nizam.app.data.db.Task>>(emptyList()) }
     var notes by remember { mutableStateOf<List<com.nizam.app.feature.notes.Note>>(emptyList()) }
     var diary by remember { mutableStateOf<List<com.nizam.app.feature.diary.DiaryEntry>>(emptyList()) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         txns = runCatching { container.financeRepository.since(LocalDate.now().minusDays(400).toString()).first() }.getOrElse { emptyList() }
         tasks = runCatching { container.taskRepository.all().first() }.getOrElse { emptyList() }
         notes = runCatching { container.noteRepository.all().first() }.getOrElse { emptyList() }
         diary = runCatching { container.diaryRepository.entries().first() }.getOrElse { emptyList() }
         loaded = true
-    }
+    } }
     fun sameDay(ms: Long?) = ms != null && Instant.ofEpochMilli(ms).atZone(ZoneId.systemDefault()).toLocalDate() == day
     val dayTx = txns.filter { it.localDate == day.toString() }
     val done = tasks.filter { sameDay(it.completedAt) }

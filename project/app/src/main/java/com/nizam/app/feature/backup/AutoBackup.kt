@@ -57,7 +57,7 @@ object AutoBackup {
 
 @Composable
 fun AutoBackupScreen() {
-    val c = LocalContext.current; val scope = rememberCoroutineScope()
+    val c = LocalContext.current; val scope = com.nizam.app.ui.design.rememberSafeScope()
     var on by remember { mutableStateOf(AutoBackup.on(c)) }
     var phrase by remember { mutableStateOf(AutoBackup.phrase(c)) }
     var status by remember { mutableStateOf("") }

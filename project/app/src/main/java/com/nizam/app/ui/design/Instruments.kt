@@ -142,11 +142,11 @@ fun CountUp(value: Double, modifier: Modifier = Modifier, decimals: Int = 0, pre
             style: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.headlineMedium, color: Color = MaterialTheme.colorScheme.onSurface, sound: Boolean = false) {
     val c = LocalContext.current
     val anim = remember { Animatable(0f) }
-    LaunchedEffect(value) {
+    LaunchedEffect(value) { com.nizam.app.ui.design.guard {
         if (!Instruments.animated(c)) { anim.snapTo(value.toFloat()); return@LaunchedEffect }
         if (sound) SoundFx.tick(c)
         anim.animateTo(value.toFloat(), tween(700, easing = FastOutSlowInEasing))
-    }
+    } }
     val shown = anim.value.toDouble()
     val hide = (prefix.contains("Rs") || prefix.contains("$")) && com.nizam.app.feature.platform2.AmountPrivacy.hidden()
     val text = if (hide) "••••" else if (decimals == 0) "%,d".format(shown.roundToInt()) else "%,.${decimals}f".format(shown)
@@ -184,13 +184,13 @@ fun KpiTile(label: String, value: Double, modifier: Modifier = Modifier, decimal
 fun DialGauge(fraction: Float, label: String, valueText: String, modifier: Modifier = Modifier, diameter: Dp = 150.dp, warnBelow: Float = 0.25f, higherIsBetter: Boolean = true) {
     val c = MaterialTheme.colorScheme; val ctx = LocalContext.current
     val a = remember { Animatable(0f) }
-    LaunchedEffect(fraction) {
+    LaunchedEffect(fraction) { com.nizam.app.ui.design.guard {
         val target = fraction.coerceIn(0f, 1f)
         if (!Instruments.animated(ctx)) a.snapTo(target) else {
             a.animateTo(min(1f, target + 0.05f), tween(520, easing = FastOutSlowInEasing)); a.animateTo(target, tween(260))
             if ((if (higherIsBetter) target < warnBelow else target > 1f - warnBelow)) SoundFx.warn(ctx)
         }
-    }
+    } }
     val f = a.value
     val col = if (higherIsBetter) { if (f < warnBelow) Signal.bad else if (f < 0.5f) Signal.warn else Signal.good } else { if (f > 1f - warnBelow) Signal.bad else if (f > 0.5f) Signal.warn else Signal.good }
     Column(modifier.width(diameter), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -221,7 +221,7 @@ fun DonutChart(slices: List<Slice>, centerLabel: String, centerValue: String, mo
     val ctx = LocalContext.current; val c = MaterialTheme.colorScheme
     val sweep = remember { Animatable(0f) }
     var picked by remember { mutableStateOf<Int?>(null) }
-    LaunchedEffect(slices) { if (Instruments.animated(ctx)) { sweep.snapTo(0f); sweep.animateTo(1f, tween(800, easing = FastOutSlowInEasing)) } else sweep.snapTo(1f) }
+    LaunchedEffect(slices) { com.nizam.app.ui.design.guard { if (Instruments.animated(ctx)) { sweep.snapTo(0f); sweep.animateTo(1f, tween(800, easing = FastOutSlowInEasing)) } else sweep.snapTo(1f) } }
     val total = max(1e-9, slices.sumOf { it.value })
     Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
         Box(Modifier.size(diameter), contentAlignment = Alignment.Center) {
@@ -260,7 +260,7 @@ fun TrendLine(values: List<Double>, modifier: Modifier = Modifier, ghost: List<D
     val ctx = LocalContext.current; val c = MaterialTheme.colorScheme
     val draw = remember { Animatable(0f) }
     var sel by remember { mutableFloatStateOf(-1f) }
-    LaunchedEffect(values) { if (Instruments.animated(ctx)) { draw.snapTo(0f); draw.animateTo(1f, tween(900, easing = FastOutSlowInEasing)) } else draw.snapTo(1f) }
+    LaunchedEffect(values) { com.nizam.app.ui.design.guard { if (Instruments.animated(ctx)) { draw.snapTo(0f); draw.animateTo(1f, tween(900, easing = FastOutSlowInEasing)) } else draw.snapTo(1f) } }
     val all = values + ghost; val lo = all.min(); val hi = all.max(); val span = (hi - lo).takeIf { it > 0 } ?: 1.0
     Column(modifier) {
         val idx = if (sel >= 0f) (sel * (values.size - 1)).roundToInt().coerceIn(0, values.size - 1) else values.size - 1
@@ -331,7 +331,7 @@ fun DayTimeline(blocks: List<Block>, nowMin: Int, modifier: Modifier = Modifier)
 fun GoalRibbon(fraction: Float, expected: Float? = null, modifier: Modifier = Modifier, accent: Color = MaterialTheme.colorScheme.primary) {
     val c = MaterialTheme.colorScheme; val ctx = LocalContext.current
     val a = remember { Animatable(0f) }
-    LaunchedEffect(fraction) { if (Instruments.animated(ctx)) a.animateTo(fraction.coerceIn(0f, 1f), tween(600)) else a.snapTo(fraction.coerceIn(0f, 1f)) }
+    LaunchedEffect(fraction) { com.nizam.app.ui.design.guard { if (Instruments.animated(ctx)) a.animateTo(fraction.coerceIn(0f, 1f), tween(600)) else a.snapTo(fraction.coerceIn(0f, 1f)) } }
     Canvas(modifier.fillMaxWidth().height(10.dp)) {
         drawRoundRect(c.surfaceVariant, Offset.Zero, size, androidx.compose.ui.geometry.CornerRadius(5.dp.toPx()))
         drawRoundRect(accent, Offset.Zero, Size(size.width * a.value, size.height), androidx.compose.ui.geometry.CornerRadius(5.dp.toPx()))

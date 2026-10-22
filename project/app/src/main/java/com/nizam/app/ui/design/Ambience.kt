@@ -103,13 +103,13 @@ object AmbienceEngine {
 fun rememberAmbience(lat: Double, lng: Double): Ambience {
     val c = LocalContext.current
     var a by remember { mutableStateOf(Ambience(AmbienceEngine.sky(), "clear", null, AmbienceEngine.event(), AmbienceEngine.season(c))) }
-    LaunchedEffect(lat, lng) {
+    LaunchedEffect(lat, lng) { com.nizam.app.ui.design.guard {
         while (true) {
             val (w, t) = AmbienceEngine.weather(c, lat, lng)
             a = Ambience(AmbienceEngine.sky(), w, t, AmbienceEngine.event(), AmbienceEngine.season(c))
             delay(10 * 60_000L)
         }
-    }
+    } }
     return a
 }
 

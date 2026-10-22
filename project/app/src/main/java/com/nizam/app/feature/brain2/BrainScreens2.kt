@@ -68,7 +68,7 @@ fun FirewallScreen() {
 @Composable
 fun SkillsScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var skills by remember { mutableStateOf(Skills.store(ctx).all()) }
     val recent = remember { Skills.recent(ctx) }
     var picked by remember { mutableStateOf(setOf<String>()) }
@@ -164,7 +164,7 @@ fun PersonalModelScreen() {
 fun RadarScreen(container: AppContainer, onOpen: (String) -> Unit) {
     val ctx = LocalContext.current
     var list by remember { mutableStateOf<List<Radar.Signal>?>(null) }
-    LaunchedEffect(Unit) { list = Radar.signals(ctx, container) }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { list = Radar.signals(ctx, container) } }
     AtlasScreen(title = "Radar", subtitle = "Small trends caught early", loading = list == null) {
         if (list?.isEmpty() == true) item("e") { EmptyState(EmptySpec(Icons.Outlined.Radar, "All clear", "Nothing drifting in the wrong direction. Atlas checks weekly.")) }
         list.orEmpty().forEach { s ->

@@ -42,7 +42,7 @@ import kotlinx.coroutines.launch
  */
 @Composable
 fun BrowserScreen(container: AppContainer) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var url by remember { mutableStateOf("https://duckduckgo.com") }
     var address by remember { mutableStateOf(url) }
     var progress by remember { mutableStateOf(0) }

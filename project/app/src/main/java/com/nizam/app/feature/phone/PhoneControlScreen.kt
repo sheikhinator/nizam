@@ -47,11 +47,11 @@ import kotlinx.coroutines.launch
 @Composable
 fun PhoneControlScreen(container: AppContainer) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val screenOn by container.settingsRepository.screenControl.collectAsState(initial = false)
 
     var tick by remember { mutableStateOf(0) }
-    LaunchedEffect(Unit) { while (true) { delay(1500); tick++ } }   // refresh status after returning
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { while (true) { delay(1500); tick++ } } }   // refresh status after returning
 
     val runtime = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()

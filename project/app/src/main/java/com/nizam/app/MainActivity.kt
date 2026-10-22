@@ -108,7 +108,7 @@ class MainActivity : ComponentActivity() {
                 var sharedHandled by remember { mutableStateOf(false) }
                 var lost by remember { mutableStateOf(com.nizam.app.feature.next.LostMode.active(this@MainActivity)) }
                 var safeDone by remember { mutableStateOf(false) }
-                androidx.compose.runtime.LaunchedEffect(Unit) { kotlinx.coroutines.delay(25_000); com.nizam.app.feature.safe.CrashGuard.markStable(this@MainActivity) }
+                androidx.compose.runtime.LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { kotlinx.coroutines.delay(25_000); com.nizam.app.feature.safe.CrashGuard.markStable(this@MainActivity) } }
                 // On tablets, foldables and landscape the app stays a readable column in the middle
                 androidx.compose.foundation.layout.Box(androidx.compose.ui.Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.TopCenter) {
                 androidx.compose.foundation.layout.Box(androidx.compose.ui.Modifier.widthIn(max = 760.dp).fillMaxSize()) {

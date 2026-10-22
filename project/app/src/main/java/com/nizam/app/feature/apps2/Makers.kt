@@ -330,7 +330,7 @@ fun VideoEditorScreen() {
 @Composable
 fun AudioStudioScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val dir = remember { File(ctx.filesDir, "recordings").apply { mkdirs() } }
     var files by remember { mutableStateOf(dir.listFiles().orEmpty().sortedByDescending { it.lastModified() }) }
     var rec by remember { mutableStateOf<android.media.MediaRecorder?>(null) }
@@ -340,7 +340,7 @@ fun AudioStudioScreen(container: AppContainer) {
     var text by remember { mutableStateOf<Pair<String, String>?>(null) }
     val player = remember { androidx.media3.exoplayer.ExoPlayer.Builder(ctx).build() }
     DisposableEffect(Unit) { onDispose { player.release(); runCatching { rec?.release() } } }
-    LaunchedEffect(rec) { secs = 0; while (rec != null) { delay(1000); secs++ } }
+    LaunchedEffect(rec) { com.nizam.app.ui.design.guard { secs = 0; while (rec != null) { delay(1000); secs++ } } }
     val perm = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
     AtlasScreen(title = "Audio studio", subtitle = "${files.size} recordings", hub = Hub.Create) {
         item("rec") { Button(onClick = {
@@ -388,7 +388,7 @@ fun FilesScreen() {
             p.edit().putString("tree", u.toString()).apply(); tree = u; stack = emptyList() }
     }
     val t = tree
-    LaunchedEffect(t, stack, reload) {
+    LaunchedEffect(t, stack, reload) { com.nizam.app.ui.design.guard {
         if (t == null) return@LaunchedEffect
         val parent = stack.lastOrNull()?.first ?: DocumentsContract.getTreeDocumentId(t)
         items = withContext(Dispatchers.IO) { runCatching {
@@ -399,7 +399,7 @@ fun FilesScreen() {
                 while (c.moveToNext()) out += Doc(c.getString(0), c.getString(1) ?: "?", c.getString(2) ?: "", c.getLong(3), c.getLong(4)) }
             out
         }.getOrDefault(emptyList()) }
-    }
+    } }
     val sorted = when (sort) { "Size" -> items.sortedByDescending { it.size }; "Newest" -> items.sortedByDescending { it.modified }; else -> items.sortedWith(compareBy<Doc>({ !it.dir }, { it.name.lowercase() })) }
     fun mb(b: Long) = if (b > 1e9) "%.1f GB".format(b / 1e9) else if (b > 1e6) "%.1f MB".format(b / 1e6) else "${b / 1024} KB"
     AtlasScreen(title = stack.lastOrNull()?.second ?: "Files", subtitle = if (t == null) "Choose a folder to browse" else "${items.size} items", hub = Hub.Tools, actions = {
@@ -430,14 +430,14 @@ fun FilesScreen() {
 fun ShortsScreen() {
     val ctx = LocalContext.current
     var vids by remember { mutableStateOf<List<Uri>?>(null) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         vids = withContext(Dispatchers.IO) { runCatching {
             val out = mutableListOf<Uri>()
             ctx.contentResolver.query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, arrayOf(MediaStore.Video.Media._ID), "${MediaStore.Video.Media.DURATION} <= ?", arrayOf("90000"),
                 "${MediaStore.Video.Media.DATE_ADDED} DESC")?.use { c -> while (c.moveToNext() && out.size < 200) out += android.content.ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, c.getLong(0)) }
             out
         }.getOrDefault(emptyList()) }
-    }
+    } }
     val list = vids
     if (list == null || list.isEmpty()) {
         AtlasScreen(title = "My shorts", subtitle = "Short videos on your phone", hub = Hub.Media, loading = list == null) {
@@ -448,7 +448,7 @@ fun ShortsScreen() {
     val player = remember { androidx.media3.exoplayer.ExoPlayer.Builder(ctx).build().apply { repeatMode = androidx.media3.common.Player.REPEAT_MODE_ONE } }
     DisposableEffect(Unit) { onDispose { player.release() } }
     val pager = rememberPagerState { list.size }
-    LaunchedEffect(pager.currentPage) { player.setMediaItem(androidx.media3.common.MediaItem.fromUri(list[pager.currentPage])); player.prepare(); player.play() }
+    LaunchedEffect(pager.currentPage) { com.nizam.app.ui.design.guard { player.setMediaItem(androidx.media3.common.MediaItem.fromUri(list[pager.currentPage])); player.prepare(); player.play() } }
     VerticalPager(pager, Modifier.fillMaxSize().background(Color.Black)) { page ->
         Box(Modifier.fillMaxSize()) {
             if (page == pager.currentPage) AndroidView({ c -> androidx.media3.ui.PlayerView(c).apply { useController = false; this.player = player } }, Modifier.fillMaxSize()

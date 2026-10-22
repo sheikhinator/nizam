@@ -109,7 +109,7 @@ fun StoryRail(notices: List<Noticer.Notice>, open: (String) -> Unit) {
 @Composable
 fun QuickCaptureFab(container: AppContainer, modifier: Modifier = Modifier) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var open by remember { mutableStateOf(false) }
     Box(modifier.size(52.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary).pressable { open = true },
         contentAlignment = Alignment.Center) {

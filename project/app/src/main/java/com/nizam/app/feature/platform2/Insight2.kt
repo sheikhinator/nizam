@@ -107,7 +107,7 @@ fun GoalsScreen(container: AppContainer) {
     var list by remember { mutableStateOf(Goals.all(c)) }
     var prog by remember { mutableStateOf<Map<String, Double>>(emptyMap()) }
     var title by remember { mutableStateOf("") }; var metric by remember { mutableStateOf("Manual number") }; var target by remember { mutableStateOf("") }; var deadline by remember { mutableStateOf(LocalDate.now().plusDays(30).toString()) }
-    LaunchedEffect(list.size) { val d = Dash.load(container); data = d; prog = list.associate { it.optString("id") to Goals.progress(container, d, it) } }
+    LaunchedEffect(list.size) { com.nizam.app.ui.design.guard { val d = Dash.load(container); data = d; prog = list.associate { it.optString("id") to Goals.progress(container, d, it) } } }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text("A goal reads its progress from your real data (tasks, prayers, study, savings…) so you don't update it by hand. Atlas checks weekly whether you're on track.", style = MaterialTheme.typography.bodyMedium)
         list.forEach { g ->
@@ -144,7 +144,7 @@ fun TimeLedgerScreen(container: AppContainer) {
     var data by remember { mutableStateOf<DashData?>(null) }
     var parts by remember { mutableStateOf<List<Slice>>(emptyList()) }
     var note by remember { mutableStateOf("") }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         val d = Dash.load(container); data = d
         val week = d.sum?.last30.orEmpty().takeLast(7)
         val prayersH = week.sumOf { it.prayers } * 20 / 60.0
@@ -157,7 +157,7 @@ fun TimeLedgerScreen(container: AppContainer) {
         parts = sl
         val known = sl.sumOf { it.value }; val free = (7 * 24 - known).coerceAtLeast(0.0)
         note = if (sl.isEmpty()) "Log some sleep, study or events and this fills in." else "Of 168 hours this week, ${"%.0f".format(known)} are accounted for. The rest (${"%.0f".format(free)} h) is open, commuting, meals or things Atlas can't see."
-    }
+    } }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text("Where your last seven days went, built from your calendar, study log, prayers, sleep log and screen time (if allowed).", style = MaterialTheme.typography.bodyMedium)
         if (parts.isNotEmpty()) Panel("Hours this week") { DonutChart(parts, "HOURS", "%.0f".format(parts.sumOf { it.value })) }
@@ -188,11 +188,11 @@ fun CauseEffectScreen(container: AppContainer) {
     var a by remember { mutableStateOf("Sleep hours") }; var b by remember { mutableStateOf("Tasks done") }
     var pairs by remember { mutableStateOf<List<Pair<Double, Double>>>(emptyList()) }
     var lag by remember { mutableStateOf(0) }
-    LaunchedEffect(a, b, lag) {
+    LaunchedEffect(a, b, lag) { com.nizam.app.ui.design.guard {
         val d = Dash.load(container)
         val sa = Metrics.series(container, d, a); val sb = Metrics.series(container, d, b)
         pairs = sa.entries.mapNotNull { (day, v) -> val next = LocalDate.parse(day).plusDays(lag.toLong()).toString(); sb[next]?.let { v to it } }
-    }
+    } }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text("Pick two things Atlas tracks and see whether they move together. Choose 'next day' to ask whether today's value shows up in tomorrow's.", style = MaterialTheme.typography.bodyMedium)
         Text("A", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
@@ -222,7 +222,7 @@ fun CauseEffectScreen(container: AppContainer) {
 @Composable
 fun ForecastScreen(container: AppContainer) {
     var d by remember { mutableStateOf<DashData?>(null) }
-    LaunchedEffect(Unit) { d = Dash.load(container) }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { d = Dash.load(container) } }
     val data = d ?: run { Text("Reading your data…"); return }
     val now = LocalDate.now(); val monthStart = now.withDayOfMonth(1).toString()
     val byDay = data.txns.filter { it.kind == "EXPENSE" }.groupBy { it.localDate }.mapValues { (_, v) -> v.sumOf { it.amount } }

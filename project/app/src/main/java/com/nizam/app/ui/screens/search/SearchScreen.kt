@@ -156,7 +156,7 @@ fun SearchScreen(container: AppContainer, onOpen: (String) -> Unit = {}) {
     var dynamicEntries by remember { mutableStateOf(emptyList<com.nizam.app.feature.dynamic.ModuleEntry>()) }
     val modeStore = remember(c) { ModeNavigationStore.get(c) }
     val modeState by modeStore.state.collectAsState()
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
 
     val prefs = remember { c.getSharedPreferences("search", 0) }
     var query by rememberSaveable { mutableStateOf(prefs.getString("last", "").orEmpty()) }
@@ -189,25 +189,25 @@ fun SearchScreen(container: AppContainer, onOpen: (String) -> Unit = {}) {
     }
     var tracks by remember { mutableStateOf<List<com.nizam.app.feature.music.Track>>(emptyList()) }
     var phoneApps by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         tracks = runCatching { com.nizam.app.feature.music.MusicLibrary.all(c) }.getOrElse { emptyList() }
         phoneApps = withContext(Dispatchers.IO) { runCatching {
             val pm = c.packageManager
             pm.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), 0)
                 .map { it.loadLabel(pm).toString() to it.activityInfo.packageName }.distinctBy { it.second }
         }.getOrElse { emptyList() } }
-    }
+    } }
     val films = remember { com.nizam.app.feature.cinema.Library.items(c) }
     val focus = remember { FocusRequester() }
-    LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { runCatching { focus.requestFocus() } } }
 
     val q = query.trim()
-    LaunchedEffect(q) {
+    LaunchedEffect(q) { com.nizam.app.ui.design.guard {
         // let typing settle, then ask the database for matches
         if (q.isBlank()) { dynamicEntries = emptyList(); return@LaunchedEffect }
         kotlinx.coroutines.delay(140)
         dynamicEntries = runCatching { container.dynamicRepository.search(q) }.getOrDefault(emptyList())
-    }
+    } }
     fun go(route: String) {
         keep(q)
         scope.launch { runCatching { modeStore.recordRecent(route) } }
@@ -434,7 +434,7 @@ fun AtlasCommandPalette(
     if (!visible) return
     var filter by remember { mutableStateOf("") }
     val paletteFocus = remember { FocusRequester() }
-    LaunchedEffect(Unit) { runCatching { paletteFocus.requestFocus() } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { runCatching { paletteFocus.requestFocus() } } }
     val destinations = (DESTINATIONS + extraDestinations).distinctBy { it.route }
         .filter { filter.isBlank() || it.name.contains(filter, true) || it.words.contains(filter, true) }
         .take(24)

@@ -44,7 +44,7 @@ private fun colourFor(kind: String) = when (kind) {
 @Composable
 fun PlannerScreen(container: AppContainer) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var blocks by remember { mutableStateOf(Planner.load(context)) }
     var note by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }

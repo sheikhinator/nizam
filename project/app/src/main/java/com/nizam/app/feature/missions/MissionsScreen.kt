@@ -159,7 +159,7 @@ fun MissionsScreen(container: AppContainer) {
     var why by remember { mutableStateOf("") }
     var deadline by remember { mutableStateOf("") }
 
-    LaunchedEffect(missions.size) { vm.refreshProgress() }
+    LaunchedEffect(missions.size) { com.nizam.app.ui.design.guard { vm.refreshProgress() } }
 
     val goal = openGoal
     if (goal != null) {

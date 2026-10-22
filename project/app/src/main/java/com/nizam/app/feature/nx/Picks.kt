@@ -28,12 +28,12 @@ import com.nizam.app.AppContainer
 fun AtlasPicks(container: AppContainer, onOpen: (String) -> Unit, modifier: Modifier = Modifier) {
     val c = LocalContext.current
     var tick by remember { mutableIntStateOf(0) }
-    LaunchedEffect(Unit) { Roads.warm(container); runCatching { com.nizam.app.feature.forecast.Outlook.refresh(container) }; tick++ }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { Roads.warm(container); runCatching { com.nizam.app.feature.forecast.Outlook.refresh(container) }; tick++ } }
     val notice = remember(tick) { Noticer.scan(c).firstOrNull() }
     val usual = remember(tick) { Mind.now(c, 2) }
     var draft by remember { androidx.compose.runtime.mutableStateOf<String?>(null) }
     // Atlas prepares a few steps before you ask, at most three times a day, using your AI provider
-    LaunchedEffect(notice?.id) {
+    LaunchedEffect(notice?.id) { com.nizam.app.ui.design.guard {
         val n = notice ?: return@LaunchedEffect
         val p = c.getSharedPreferences("picks_draft", 0)
         val day = java.time.LocalDate.now().toString()
@@ -47,7 +47,7 @@ fun AtlasPicks(container: AppContainer, onOpen: (String) -> Unit, modifier: Modi
             draft = r
             p.edit().putString("${day}_${n.id}", r).putInt("count_$day", p.getInt("count_$day", 0) + 1).apply()
         }
-    }
+    } }
     if (notice == null && usual.isEmpty()) return
     Column(modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), RoundedCornerShape(16.dp)).padding(12.dp)) {
         if (notice != null) {

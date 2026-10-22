@@ -55,7 +55,7 @@ fun MirrorScreen(container: AppContainer) {
     var tab by remember { mutableStateOf("Compound") }
     var ai by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { days = runCatching { Days.build(container, c, 365) }.getOrElse { emptyList() } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { days = runCatching { Days.build(container, c, 365) }.getOrElse { emptyList() } } }
 
     fun askAi(label: String, prompt: suspend () -> String) = scope.launch {
         busy = true; ai = null

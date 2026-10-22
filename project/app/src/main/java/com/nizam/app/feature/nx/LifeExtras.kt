@@ -129,7 +129,7 @@ fun LocalHelpScreen(container: AppContainer) {
     var kind by remember { mutableStateOf(HELP.first()) }
     var list by remember { mutableStateOf<List<HelpPlace>?>(null) }
     var err by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(kind) {
+    LaunchedEffect(kind) { com.nizam.app.ui.design.guard {
         list = null; err = null
         runCatching {
             val lat = container.settingsRepository.latitude.first(); val lon = container.settingsRepository.longitude.first()
@@ -147,7 +147,7 @@ fun LocalHelpScreen(container: AppContainer) {
                     t.optString("phone").ifBlank { t.optString("contact:phone") }.ifBlank { null }, t.optString("opening_hours").ifBlank { null })
             }.sortedBy { it.dist }
         }.onSuccess { list = it }.onFailure { err = Feedback.friendly(it) }
-    }
+    } }
     AtlasScreen(title = "Local help", subtitle = "Within about 4 km of your saved location", hub = Hub.Travel) {
         item("k") { Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = Space.page), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             HELP.forEach { h -> Capsule("${h.second} ${h.first}", h == kind) { kind = h } } } }
@@ -216,11 +216,11 @@ fun MoodMusicScreen(open: (String) -> Unit) {
     var mood by remember { mutableStateOf<String?>(null) }
     var list by remember { mutableStateOf<List<com.nizam.app.feature.music.Track>?>(null) }
     var quran by remember { mutableStateOf(false) }
-    LaunchedEffect(mood, quran) {
+    LaunchedEffect(mood, quran) { com.nizam.app.ui.design.guard {
         val m = mood ?: return@LaunchedEffect
         list = null
         list = runCatching { com.nizam.app.feature.music.Radio.tag(if (quran) "quran" else MOOD_TAGS[m] ?: "chillout") }.getOrElse { emptyList() }
-    }
+    } }
     AtlasScreen(title = "Mood music", subtitle = mood?.let { "Feeling $it" } ?: "How are you feeling?", hub = Hub.Media) {
         item("m") { Column(Modifier.padding(horizontal = Space.page)) {
             Art.MOODS.chunked(5).forEach { row -> Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -259,7 +259,7 @@ private fun thumb(c: Context, u: Uri, max: Int): Bitmap? = runCatching {
 @Composable
 fun TimeLapseScreen() {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var frames by remember { mutableStateOf<List<Pair<Long, Bitmap>>>(emptyList()) }
     var loading by remember { mutableFloatStateOf(-1f) }
     var idx by remember { mutableIntStateOf(0) }
@@ -274,9 +274,9 @@ fun TimeLapseScreen() {
             frames = out; idx = 0; loading = -1f; playing = true
         }
     }
-    LaunchedEffect(playing, speed, frames) {
+    LaunchedEffect(playing, speed, frames) { com.nizam.app.ui.design.guard {
         while (playing && frames.isNotEmpty() && isActive) { delay((1000 / speed).toLong()); idx = (idx + 1) % frames.size }
-    }
+    } }
     AtlasScreen(title = "Life time-lapse", subtitle = if (frames.isEmpty()) "Pick photos of one person, place or plant over time" else "${frames.size} photos", hub = Hub.Memory) {
         item("p") { Row(Modifier.padding(horizontal = Space.page), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(onClick = { pick.launch("image/*") }) { Text(if (frames.isEmpty()) "Pick photos" else "Pick again") }
@@ -418,7 +418,7 @@ object PauseCutter {
 @Composable
 fun PauseCutterScreen() {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var gap by remember { mutableFloatStateOf(600f) }
     var sens by remember { mutableFloatStateOf(0.02f) }
     var prog by remember { mutableFloatStateOf(-1f) }
@@ -467,7 +467,7 @@ private fun parseSrt(s: String): List<Cue> {
 @Composable
 fun DubScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var video by remember { mutableStateOf<Uri?>(null) }
     var cues by remember { mutableStateOf<List<Cue>>(emptyList()) }
     var lang by remember { mutableStateOf("Urdu") }
@@ -520,8 +520,8 @@ private fun DubPlayer(video: Uri, cues: List<Cue>, lang: String, original: Float
             "Punjabi" -> java.util.Locale("pa", "PK"); "Hindi" -> java.util.Locale("hi", "IN"); else -> java.util.Locale.US }; tts = t } }
         onDispose { player.release(); t?.shutdown() }
     }
-    LaunchedEffect(original) { player.volume = original }
-    LaunchedEffect(player, tts) {
+    LaunchedEffect(original) { com.nizam.app.ui.design.guard { player.volume = original } }
+    LaunchedEffect(player, tts) { com.nizam.app.ui.design.guard {
         val t = tts ?: return@LaunchedEffect
         var last = -1
         while (isActive) {
@@ -537,7 +537,7 @@ private fun DubPlayer(video: Uri, cues: List<Cue>, lang: String, original: Float
                 t.speak(cue.text, TextToSpeech.QUEUE_FLUSH, null, "dub$i")
             } else if (i < last) last = i
         }
-    }
+    } }
     AndroidView({ ctx -> androidx.media3.ui.PlayerView(ctx).apply { this.player = player } },
         Modifier.padding(Space.page).fillMaxWidth().aspectRatio(16 / 9f).clip(RoundedCornerShape(18.dp)))
 }
@@ -565,7 +565,7 @@ private fun dist(a: FloatArray, b: FloatArray): Float { var s = 0f; for (i in a.
 @Composable
 fun FaceGroupsScreen() {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var groups by remember { mutableStateOf<List<List<FaceHit>>>(emptyList()) }
     var prog by remember { mutableFloatStateOf(-1f) }
     var tight by remember { mutableFloatStateOf(1.6f) }
@@ -637,7 +637,7 @@ object Freezer {
 @Composable
 fun FreezerScreen() {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var tick by remember { mutableIntStateOf(0) }
     var filter by remember { mutableStateOf("") }
     var showSystem by remember { mutableStateOf(false) }

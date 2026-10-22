@@ -72,7 +72,7 @@ fun LineChart(
     val grid = MaterialTheme.colorScheme.outlineVariant
     val ink = MaterialTheme.colorScheme.onSurface
     val reveal = remember(points) { Animatable(0f) }
-    LaunchedEffect(points) { reveal.animateTo(1f, Motion.enter()) }
+    LaunchedEffect(points) { com.nizam.app.ui.design.guard { reveal.animateTo(1f, Motion.enter()) } }
     var touch by remember { mutableStateOf<Int?>(null) }
     val haptic = LocalHapticFeedback.current
     // the latest point breathes, so a live number looks alive
@@ -154,7 +154,7 @@ fun BarChart(points: List<Point>, accent: Color, height: Int = 110) {
     val maxValue = points.maxOf { it.value }.takeIf { it > 0.0 } ?: 1.0
     val grid = MaterialTheme.colorScheme.surfaceVariant
     val grow = remember(points) { Animatable(0f) }
-    LaunchedEffect(points) { grow.animateTo(1f, Motion.settle()) }
+    LaunchedEffect(points) { com.nizam.app.ui.design.guard { grow.animateTo(1f, Motion.settle()) } }
     var touch by remember { mutableStateOf<Int?>(null) }
     val haptic = LocalHapticFeedback.current
 
@@ -211,7 +211,7 @@ fun Heatmap(values: List<Double>, accent: Color, columns: Int = 15) {
     val empty = MaterialTheme.colorScheme.surfaceVariant
     val rows = (values.size + columns - 1) / columns
     val fade = remember(values) { Animatable(0f) }
-    LaunchedEffect(values) { fade.animateTo(1f, Motion.enter()) }
+    LaunchedEffect(values) { com.nizam.app.ui.design.guard { fade.animateTo(1f, Motion.enter()) } }
     val pulse = if (Motion.still) null else rememberInfiniteTransition(label = "heatToday").animateFloat(0f, 1f,
         infiniteRepeatable(tween(2400, easing = LinearEasing), RepeatMode.Restart), label = "today")
 

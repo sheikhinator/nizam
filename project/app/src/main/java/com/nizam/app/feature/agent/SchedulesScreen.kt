@@ -73,13 +73,13 @@ private fun cadenceText(j: AgentJob) = when (j.cadence) {
 fun SchedulesScreen() {
     val c = LocalContext.current
     val container = remember { (c.applicationContext as com.nizam.app.NizamApplication).container }
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var tick by remember { mutableIntStateOf(0) }
     val jobs = remember(tick) { Schedules.all(c).sortedBy { Schedules.nextAt(it) ?: Long.MAX_VALUE } }
     var edit by remember { mutableStateOf<AgentJob?>(null) }
     var expanded by remember { mutableStateOf<Long?>(null) }
     var testing by remember { mutableStateOf<Long?>(null) }
-    LaunchedEffect(Unit) { while (true) { delay(30_000); tick++ } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { while (true) { delay(30_000); tick++ } } }
     edit?.let { j -> RoutineEditor(j, onSave = { Schedules.upsert(c, it); edit = null; tick++ }, onCancel = { edit = null }); return }
     LazyColumn(contentPadding = PaddingValues(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         item { Row(verticalAlignment = Alignment.CenterVertically) {

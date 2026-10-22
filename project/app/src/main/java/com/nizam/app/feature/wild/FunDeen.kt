@@ -108,13 +108,13 @@ object FunDeen {
 @Composable
 fun RadioHostScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var style by remember { mutableStateOf("Desi RJ") }
     var live by remember { mutableStateOf(false) }
     var now by remember { mutableStateOf("") }
     var tts by remember { mutableStateOf<TextToSpeech?>(null) }
     DisposableEffect(Unit) { var t: TextToSpeech? = null; t = TextToSpeech(c) { if (it == TextToSpeech.SUCCESS) tts = t }; onDispose { live = false; t?.shutdown() } }
-    LaunchedEffect(live) {
+    LaunchedEffect(live) { com.nizam.app.ui.design.guard {
         if (!live) return@LaunchedEffect
         val tracks = runCatching { com.nizam.app.feature.music.MusicLibrary.device(c) }.getOrDefault(emptyList()).shuffled().take(30)
         if (tracks.isEmpty()) { now = "No songs on this phone — add some music first."; live = false; return@LaunchedEffect }
@@ -140,7 +140,7 @@ fun RadioHostScreen(container: AppContainer) {
             i++
         }
         live = false
-    }
+    } }
     AtlasScreen(title = "Your radio show", subtitle = if (live) "On air" else "Your songs, with a host", hub = Hub.Media) {
         item("a") { Column(Modifier.padding(horizontal = Space.page)) {
             Art3D("microphone", 110.dp)
@@ -166,7 +166,7 @@ fun PalaceScreen(container: AppContainer) {
     var wall by remember { mutableIntStateOf(0) }
     var open by remember { mutableStateOf<com.nizam.app.feature.notes.Note?>(null) }
     val turn = remember { Animatable(0f) }
-    LaunchedEffect(wall) { turn.snapTo(if (turn.value >= 0) -60f else 60f); turn.animateTo(0f, tween(450)) }
+    LaunchedEffect(wall) { com.nizam.app.ui.design.guard { turn.snapTo(if (turn.value >= 0) -60f else 60f); turn.animateTo(0f, tween(450)) } }
     open?.let { n -> AlertDialog(onDismissRequest = { open = null }, confirmButton = { TextButton(onClick = { open = null }) { Text("Close") } },
         title = { Text(n.title) }, text = { Text(n.body.take(1500)) }) }
     val colours = listOf(Color(0xFF7C3AED), Color(0xFF0EA5E9), Color(0xFF10B981), Color(0xFFF59E0B), Color(0xFFEC4899), Color(0xFF6366F1), Color(0xFF14B8A6), Color(0xFFEF4444))
@@ -237,11 +237,11 @@ object Bosses {
 @Composable
 fun BossScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var tick by remember { mutableIntStateOf(0) }
     val list = remember(tick) { Bosses.store(c).all() }
     val dmg = remember { androidx.compose.runtime.mutableStateMapOf<String, Int>() }
-    LaunchedEffect(tick) { list.forEach { b -> dmg[b.optString("id")] = runCatching { Bosses.damage(c, container, b) }.getOrDefault(0) } }
+    LaunchedEffect(tick) { com.nizam.app.ui.design.guard { list.forEach { b -> dmg[b.optString("id")] = runCatching { Bosses.damage(c, container, b) }.getOrDefault(0) } } }
     var name by remember { mutableStateOf("") }; var goal by remember { mutableStateOf("") }; var kw by remember { mutableStateOf("") }
     var hp by remember { mutableStateOf("500") }; var src by remember { mutableStateOf(setOf("tasks", "habits")) }
     val shake = remember { Animatable(0f) }
@@ -311,7 +311,7 @@ object SocialDigest {
 @Composable
 fun SocialDigestScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var on by remember { mutableStateOf(SocialDigest.on(c)) }
     var text by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
@@ -348,7 +348,7 @@ object Masjids {
 @Composable
 fun MasjidScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var tick by remember { mutableIntStateOf(0) }
     val list = remember(tick) { Masjids.store(c).all() }
     var edit by remember { mutableStateOf<JSONObject?>(null) }
@@ -402,7 +402,7 @@ fun MasjidScreen(container: AppContainer) {
 @Composable
 fun TajweedScreen() {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var ref by remember { mutableStateOf("1:1") }
     var ayah by remember { mutableStateOf("") }
     var heard by remember { mutableStateOf("") }

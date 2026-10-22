@@ -375,13 +375,13 @@ fun NizamApp(container: AppContainer, startOnCurator: Boolean = false, startRout
     var guidedTabs by remember { mutableStateOf(emptyList<Pair<String, String>>()) }
     var lastGuidedRoute by remember { mutableStateOf(currentRoute) }
     val guidedTarget = guidedTabs.getOrNull(guidedStep)?.first
-    androidx.compose.runtime.LaunchedEffect(currentRoute, guidedVisible, guidedPaused, guidedStep, guidedTarget) {
+    androidx.compose.runtime.LaunchedEffect(currentRoute, guidedVisible, guidedPaused, guidedStep, guidedTarget) { com.nizam.app.ui.design.guard {
         val changedRoute = currentRoute != lastGuidedRoute
         if (guidedVisible && !guidedPaused && changedRoute && currentRoute == guidedTarget) {
             if (guidedStep + 1 >= guidedTabs.size) guidedVisible = false else guidedStep++
         }
         lastGuidedRoute = currentRoute
-    }
+    } }
 
     val tabRoutes = bottomItems.map { it.route }.toSet()
     // tablets, unfolded foldables and landscape: a side rail instead of the bottom bar
@@ -389,10 +389,10 @@ fun NizamApp(container: AppContainer, startOnCurator: Boolean = false, startRout
     val onSubScreen = currentRoute != null && currentRoute !in tabRoutes
 
     val snackbarHost = remember { androidx.compose.material3.SnackbarHostState() }
-    val feedbackScope = rememberCoroutineScope()
-    androidx.compose.runtime.LaunchedEffect(Unit) { com.nizam.app.ui.components.Feedback.attach(snackbarHost, feedbackScope) }
+    val feedbackScope = com.nizam.app.ui.design.rememberSafeScope()
+    androidx.compose.runtime.LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { com.nizam.app.ui.components.Feedback.attach(snackbarHost, feedbackScope) } }
     val navCtx = androidx.compose.ui.platform.LocalContext.current
-    androidx.compose.runtime.LaunchedEffect(Unit) {
+    androidx.compose.runtime.LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         // reopen where you were: offered once per launch when the last screen was used in the past 12 hours
         if (startRoute != null || startOnCurator) return@LaunchedEffect
         val rp = navCtx.getSharedPreferences("resume", 0)
@@ -401,7 +401,7 @@ fun NizamApp(container: AppContainer, startOnCurator: Boolean = false, startRout
         val name = last.substringAfterLast('/').replace('_', ' ').replaceFirstChar { it.uppercase() }
         val r = snackbarHost.showSnackbar("Continue in $name?", actionLabel = "Open", duration = androidx.compose.material3.SnackbarDuration.Long)
         if (r == androidx.compose.material3.SnackbarResult.ActionPerformed) runCatching { navController.navigate(last) }
-    }
+    } }
     androidx.compose.runtime.DisposableEffect(navController) {
         // what you open feeds "Jump back in" and lets each hub's most-used tools rise
         val l = androidx.navigation.NavController.OnDestinationChangedListener { _, _, args ->

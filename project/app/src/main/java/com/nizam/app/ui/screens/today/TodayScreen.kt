@@ -160,11 +160,11 @@ fun TodayScreen(container: AppContainer, onOpen: (String) -> Unit) {
     var summary by remember { mutableStateOf<ProgressSummary?>(null) }
     var insights by remember { mutableStateOf<List<Insight>>(emptyList()) }
 
-    LaunchedEffect(tasks.size, sets.size, entries.size, todaysLessons.size, prayerDay, habitEntries.size) {
+    LaunchedEffect(tasks.size, sets.size, entries.size, todaysLessons.size, prayerDay, habitEntries.size) { com.nizam.app.ui.design.guard {
         val computed = Xp.summarise(container)
         summary = computed
         insights = Insights.compute(computed)
-    }
+    } }
 
     val date = LocalDate.now()
     val hijri = if (modeState.hijriDates) runCatching {
@@ -279,7 +279,7 @@ fun TodayScreen(container: AppContainer, onOpen: (String) -> Unit) {
         // ── instruments: live figures, trend and your day on one strip ──
         if (!zen && !modeState.lowCognitiveLoad && com.nizam.app.feature.modes.AutoModes.current(modeContext) !in setOf("worship", "driving", "guest")) {
             var dash by remember { mutableStateOf<com.nizam.app.feature.dash.DashData?>(null) }
-            androidx.compose.runtime.LaunchedEffect(Unit) { dash = com.nizam.app.feature.dash.Dash.load(container) }
+            androidx.compose.runtime.LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { dash = com.nizam.app.feature.dash.Dash.load(container) } }
             dash?.let { d -> Box(Modifier.padding(top = 12.dp)) { com.nizam.app.feature.dash.Dash.Today(d, onOpen) } }
         }
         // ── after 8pm: what's left from today ──

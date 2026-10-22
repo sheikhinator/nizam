@@ -84,12 +84,12 @@ fun LensScreen(container: AppContainer) {
         if (r.resultCode == Activity.RESULT_OK) r.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()?.let { ask(it) }
     }
     // live mode: a fresh description every 8 seconds, spoken — for walking around or for low vision
-    LaunchedEffect(live) {
+    LaunchedEffect(live) { com.nizam.app.ui.design.guard {
         while (live) {
             delay(8000)
             if (!busy && grab.latest != null) ask("In one short sentence, what's in front of me now? Mention anything important or dangerous first.")
         }
-    }
+    } }
     Box(Modifier.fillMaxSize().background(Color.Black)) {
         CameraView(Modifier.fillMaxSize(), back = true, grab = grab)
         Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth().clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))

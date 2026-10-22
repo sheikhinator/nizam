@@ -113,7 +113,7 @@ fun AtlasSocialScreen() {
 
 @Composable
 private fun Join(chat: ChatEngine, @Suppress("UNUSED_PARAMETER") rev: Int) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var name by remember { mutableStateOf("") }
     var err by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
@@ -132,7 +132,7 @@ private fun Join(chat: ChatEngine, @Suppress("UNUSED_PARAMETER") rev: Int) {
 private fun SocialMain(chat: ChatEngine) {
     val ctx = LocalContext.current
     val social = remember { AtlasChat.social(ctx) }
-    LaunchedEffect(chat.registered) { social.start() }
+    LaunchedEffect(chat.registered) { com.nizam.app.ui.design.guard { social.start() } }
     val rev by social.rev.collectAsState()
     var tab by rememberSaveable { mutableIntStateOf(0) }
     var composing by remember { mutableStateOf(false) }
@@ -228,7 +228,7 @@ private fun PostCard(social: SocialEngine, p: Post, rev: Int, profile: (String) 
 @Composable
 private fun Composer(social: SocialEngine, close: () -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var text by remember { mutableStateOf("") }
     var photo by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
@@ -280,7 +280,7 @@ private fun StoryViewer(social: SocialEngine, author: String, close: () -> Unit)
     val list = remember(author) { social.storiesByAuthor()[author].orEmpty() }
     var i by remember { mutableIntStateOf(0) }
     var progress by remember { mutableFloatStateOf(0f) }
-    LaunchedEffect(i) { progress = 0f; while (progress < 1f) { delay(50); progress += 0.01f }; if (i < list.lastIndex) i++ else close() }
+    LaunchedEffect(i) { com.nizam.app.ui.design.guard { progress = 0f; while (progress < 1f) { delay(50); progress += 0.01f }; if (i < list.lastIndex) i++ else close() } }
     Dialog(close, DialogProperties(usePlatformDefaultWidth = false, dismissOnClickOutside = false)) {
         val s = list.getOrNull(i)
         Box(Modifier.fillMaxSize().background(Color.Black).clickable { if (i < list.lastIndex) i++ else close() }) {
@@ -299,7 +299,7 @@ private fun StoryViewer(social: SocialEngine, author: String, close: () -> Unit)
 
 @Composable
 private fun FindPage(chat: ChatEngine, social: SocialEngine, rev: Int, open: (String) -> Unit) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var q by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var msg by remember { mutableStateOf("") }

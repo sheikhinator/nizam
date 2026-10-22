@@ -87,13 +87,13 @@ fun QuickActionsBar(onOpen: (String) -> Unit, modifier: Modifier = Modifier) {
 /** Evening carry-over: what's still open from today, with one tap to move, reschedule or drop each. */
 @Composable
 fun CarryOver(container: AppContainer) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var tasks by remember { mutableStateOf<List<Task>?>(null) }
     var tick by remember { mutableStateOf(0) }
-    androidx.compose.runtime.LaunchedEffect(tick) {
+    androidx.compose.runtime.LaunchedEffect(tick) { com.nizam.app.ui.design.guard {
         val end = LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
         tasks = runCatching { container.taskRepository.openThrough(end).first() }.getOrDefault(emptyList())
-    }
+    } }
     val list = tasks ?: run { Text("Looking at today…"); return }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         if (list.isEmpty()) { Text("Nothing carried over. A clean slate for tomorrow.", style = MaterialTheme.typography.bodyMedium); return@Column }

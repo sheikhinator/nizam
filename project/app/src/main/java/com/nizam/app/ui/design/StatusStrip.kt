@@ -61,8 +61,8 @@ fun StatusStrip(ambience: Ambience?, nextPrayer: Pair<String, Int>?, modifier: M
     var net by remember { mutableStateOf(network(c)) }
     var battery by remember { mutableStateOf(battery(c)) }
     var place by remember { mutableStateOf<Pair<String, android.location.Location>?>(null) }
-    LaunchedEffect(Unit) { while (true) { now = LocalTime.now(); net = network(c); battery = battery(c); delay(15_000) } }
-    LaunchedEffect(Unit) { while (true) { place = locate(c) ?: place; delay(120_000) } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { while (true) { now = LocalTime.now(); net = network(c); battery = battery(c); delay(15_000) } } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { while (true) { place = locate(c) ?: place; delay(120_000) } } }
     Row(modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         Pill(Icons.Rounded.Schedule, now.format(DateTimeFormatter.ofPattern("h:mm a")))
         ambience?.let { a ->

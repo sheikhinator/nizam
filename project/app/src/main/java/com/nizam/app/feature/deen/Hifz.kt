@@ -136,12 +136,12 @@ fun HifzTab(container: AppContainer) {
     var tick by remember { mutableIntStateOf(0) }
     val meta = SURAHS.first { it.number == surah }
 
-    LaunchedEffect(surah) {
+    LaunchedEffect(surah) { com.nizam.app.ui.design.guard {
         ayat = emptyList(); error = null; result = emptyList()
         error = container.quranRepository.ensureDownloaded(surah)
         ayat = container.quranRepository.surah(surah).first()
         from = "1"; to = minOf(meta.ayahCount, 7).toString()
-    }
+    } }
     val a = (from.toIntOrNull() ?: 1).coerceIn(1, meta.ayahCount)
     val b = (to.toIntOrNull() ?: a).coerceIn(a, meta.ayahCount)
     val passage = ayat.filter { it.number in a..b }

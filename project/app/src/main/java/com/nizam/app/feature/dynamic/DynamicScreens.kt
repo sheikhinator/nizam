@@ -73,7 +73,7 @@ fun DynamicModuleScreen(
     onSettings: (String) -> Unit = {}
 ) {
     val repository = container.dynamicRepository
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val specs by repository.specs().collectAsState(initial = emptyList())
     val spec = specs.firstOrNull { it.key == moduleKey }
 

@@ -87,11 +87,11 @@ private fun AirTab(container: AppContainer) {
     val c = LocalContext.current
     var air by remember { mutableStateOf(AirCache.get(c)) }
     var error by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         runCatching {
             Open.air(container.settingsRepository.latitude.first(), container.settingsRepository.longitude.first())
         }.onSuccess { air = it; AirCache.put(c, it) }.onFailure { error = it.message }
-    }
+    } }
     val a = air
     Card {
         if (a == null) Text(error ?: "Checking the air…")

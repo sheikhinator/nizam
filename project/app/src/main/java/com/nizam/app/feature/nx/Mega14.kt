@@ -242,7 +242,7 @@ private fun NoSpendScreen(container: AppContainer) {
     var goal by remember { mutableStateOf(p.getInt("goal", 7)) }
     var txns by remember { mutableStateOf<List<Txn>>(emptyList()) }
     val cats = listOf("All", "Food", "Shopping", "Transport", "Groceries", "Bills", "Other")
-    LaunchedEffect(start) { txns = runCatching { container.financeRepository.since(LocalDate.now().minusDays(60).toString()).first() }.getOrDefault(emptyList()) }
+    LaunchedEffect(start) { com.nizam.app.ui.design.guard { txns = runCatching { container.financeRepository.since(LocalDate.now().minusDays(60).toString()).first() }.getOrDefault(emptyList()) } }
     fun matches(t: Txn) = t.kind == "EXPENSE" && (cat == "All" || t.category.equals(cat, true))
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text("Category", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
@@ -263,7 +263,7 @@ private fun NoSpendScreen(container: AppContainer) {
             com.nizam.app.ui.design.GoalRibbon((streak / goal.toFloat()).coerceAtMost(1f))
             Text("Estimated saved: ${rs(saved.toDouble())} (your usual daily spend in this category × clean days)", style = MaterialTheme.typography.bodyMedium)
             if (spentDays.contains(LocalDate.now().toString())) Text("You spent today — the streak restarts tomorrow. One slip isn't failure.", style = MaterialTheme.typography.bodySmall)
-            if (streak >= goal) { Text("🎉 Goal reached!"); LaunchedEffect(streak) { SoundFx.chime(c) } }
+            if (streak >= goal) { Text("🎉 Goal reached!"); LaunchedEffect(streak) { com.nizam.app.ui.design.guard { SoundFx.chime(c) } } }
             TextButton(onClick = { p.edit().remove("start").apply(); start = "" }) { Text("Restart") }
         }
     }
@@ -271,7 +271,7 @@ private fun NoSpendScreen(container: AppContainer) {
 
 @Composable
 private fun StatementScreen(container: AppContainer) {
-    val c = LocalContext.current; val scope = rememberCoroutineScope()
+    val c = LocalContext.current; val scope = com.nizam.app.ui.design.rememberSafeScope()
     var lines by remember { mutableStateOf<List<Statements.Line>>(emptyList()) }
     var status by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
@@ -314,7 +314,7 @@ private fun RoundUpScreen(container: AppContainer) {
     var since by remember { mutableStateOf(p.getString("since", LocalDate.now().withDayOfMonth(1).toString()).orEmpty()) }
     var txns by remember { mutableStateOf<List<Txn>>(emptyList()) }
     var tick by remember { mutableStateOf(0) }
-    LaunchedEffect(since, tick) { txns = runCatching { container.financeRepository.since(since).first() }.getOrDefault(emptyList()) }
+    LaunchedEffect(since, tick) { com.nizam.app.ui.design.guard { txns = runCatching { container.financeRepository.since(since).first() }.getOrDefault(emptyList()) } }
     val ex = txns.filter { it.kind == "EXPENSE" && it.localDate >= since }
     val pot = ex.sumOf { val r = it.amount % step; if (r == 0.0) 0.0 else step - r }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {

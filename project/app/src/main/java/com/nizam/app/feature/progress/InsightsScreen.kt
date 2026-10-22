@@ -34,11 +34,11 @@ fun InsightsScreen(container: AppContainer) {
     var summary by remember { mutableStateOf<ProgressSummary?>(null) }
     var insights by remember { mutableStateOf<List<Insight>>(emptyList()) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         val computed = Xp.summarise(container)
         summary = computed
         insights = Insights.compute(computed)
-    }
+    } }
 
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 18.dp)

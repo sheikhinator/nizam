@@ -337,7 +337,7 @@ object SimData {
 @Composable
 fun SimScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var tick by remember { mutableIntStateOf(0) }
     val list = remember(tick) { SimData.store(c).all() }
     var busy by remember { mutableStateOf(false) }
@@ -406,7 +406,7 @@ object Outage {
 @Composable
 fun OutageScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var devices by remember { mutableStateOf(Outage.devices(c).joinToString(", ")) }
     val next = remember { com.nizam.app.feature.next.LoadShedding.next(c) }
     var busy by remember { mutableStateOf(false) }
@@ -440,7 +440,7 @@ object Warranty {
 @Composable
 fun WarrantyScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var tick by remember { mutableIntStateOf(0) }
     val list = remember(tick) { Warranty.store(c).all().sortedBy { it.optString("until") } }
     var busy by remember { mutableStateOf(false) }

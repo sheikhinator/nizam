@@ -128,12 +128,12 @@ fun SensorScreen(container: AppContainer) {
     val sm = remember { ctx.getSystemService(SensorManager::class.java) }
     val tabs = listOf("Compass", "Level", "Light", "Metal", "Sound", "Altitude")
     var qibla by remember { mutableStateOf<Double?>(null) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         val la = runCatching { container.settingsRepository.latitude.first() }.getOrDefault(31.55)
         val lo = runCatching { container.settingsRepository.longitude.first() }.getOrDefault(74.34)
         val k1 = Math.toRadians(21.4225); val k2 = Math.toRadians(39.8262); val p1 = Math.toRadians(la); val l1 = Math.toRadians(lo)
         qibla = (Math.toDegrees(atan2(sin(k2 - l1), cos(p1) * kotlin.math.tan(k1) - sin(p1) * cos(k2 - l1))) + 360) % 360
-    }
+    } }
     val rot = rememberSensor(Sensor.TYPE_ROTATION_VECTOR, tab == "Compass")
     val acc = rememberSensor(Sensor.TYPE_ACCELEROMETER, tab == "Level")
     val light = rememberSensor(Sensor.TYPE_LIGHT, tab == "Light")
@@ -205,7 +205,7 @@ private fun SoundMeter() {
     var granted by remember { mutableStateOf(ContextCompat.checkSelfPermission(ctx, android.Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) }
     val perm = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted = it }
     if (!granted) { Button(onClick = { perm.launch(android.Manifest.permission.RECORD_AUDIO) }) { Text("Allow microphone") }; return }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         withContext(Dispatchers.IO) {
             val rate = 44100
             val size = android.media.AudioRecord.getMinBufferSize(rate, android.media.AudioFormat.CHANNEL_IN_MONO, android.media.AudioFormat.ENCODING_PCM_16BIT).coerceAtLeast(4096)
@@ -224,7 +224,7 @@ private fun SoundMeter() {
                 }
             } finally { runCatching { rec.stop() }; rec.release() }
         }
-    }
+    } }
     Big("${db.toInt()} dB", when { db < 40 -> "Quiet room"; db < 60 -> "Normal talk"; db < 75 -> "Busy street"; db < 85 -> "Loud — limit long exposure"; else -> "Harmful over time — protect your ears" } + " · peak ${peak.toInt()}",
         if (db >= 85) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface)
     Text("Approximate; phone mics aren't calibrated.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -236,7 +236,7 @@ fun BatteryScreen() {
     val ctx = LocalContext.current
     var i by remember { mutableStateOf<Intent?>(null) }
     var now by remember { mutableStateOf(0) }
-    LaunchedEffect(Unit) { while (true) { i = ctx.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED)); now++; delay(2000) } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { while (true) { i = ctx.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED)); now++; delay(2000) } } }
     val bm = remember { ctx.getSystemService(BatteryManager::class.java) }
     val b = i
     AtlasScreen(title = "Battery doctor", subtitle = "Live, refreshed every 2 seconds", hub = Hub.Tools, loading = b == null) {
@@ -278,7 +278,7 @@ fun BatteryScreen() {
 @Composable
 fun StorageScreen() {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var big by remember { mutableStateOf<List<Triple<String, Long, android.net.Uri>>?>(null) }
     var cache by remember { mutableStateOf(0L) }
     val st = remember { StatFs(Environment.getDataDirectory().path) }
@@ -286,7 +286,7 @@ fun StorageScreen() {
     fun gb(b: Long) = "%.1f GB".format(b / 1e9)
     fun mb(b: Long) = if (b > 1e9) gb(b) else "%.0f MB".format(b / 1e6)
     fun dirSize(f: java.io.File): Long = if (f.isFile) f.length() else f.listFiles().orEmpty().sumOf { dirSize(it) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         cache = withContext(Dispatchers.IO) { dirSize(ctx.cacheDir) }
         big = withContext(Dispatchers.IO) {
             runCatching {
@@ -300,7 +300,7 @@ fun StorageScreen() {
                 out.sortedByDescending { it.second }.take(30)
             }.getOrDefault(emptyList())
         }
-    }
+    } }
     AtlasScreen(title = "Storage", subtitle = "${gb(free)} free of ${gb(total)}", hub = Hub.Tools) {
         item("bar") { Group(Modifier.padding(horizontal = Space.page, vertical = Space.s)) {
             val used = (total - free).toFloat() / total
@@ -331,7 +331,7 @@ fun StorageScreen() {
 @Composable
 fun NetScreen() {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var lines by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
     var speed by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
@@ -455,12 +455,12 @@ fun PowerCutScreen(open: (String) -> Unit) {
     var sos by remember { mutableStateOf(false) }
     var lamp by remember { mutableStateOf(false) }
     fun set(on: Boolean) { runCatching { torchId?.let { cam?.setTorchMode(it, on) } } }
-    LaunchedEffect(sos) {
+    LaunchedEffect(sos) { com.nizam.app.ui.design.guard {
         if (sos) while (true) {
             for (d in listOf(200, 200, 200, 600, 600, 600, 200, 200, 200)) { set(true); delay(d.toLong()); set(false); delay(200) }
             delay(1200)
         }
-    }
+    } }
     DisposableEffect(Unit) { onDispose { set(false) } }
     if (lamp) {
         val activity = ctx as? android.app.Activity
@@ -515,7 +515,7 @@ fun AppManagerScreen() {
     var showSystem by remember { mutableStateOf(false) }
     var q by remember { mutableStateOf("") }
     var open by remember { mutableStateOf<AppInfo?>(null) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         apps = withContext(Dispatchers.IO) {
             val pm = ctx.packageManager
             @Suppress("DEPRECATION")
@@ -530,7 +530,7 @@ fun AppManagerScreen() {
                 AppInfo(pm.getApplicationLabel(ai).toString(), ai.packageName, ai.flags and ApplicationInfo.FLAG_SYSTEM != 0, tr, granted.mapNotNull { RISKY[it] }.distinct())
             }.sortedWith(compareByDescending<AppInfo> { it.trackers.size + it.risky.size }.thenBy { it.label.lowercase() })
         }
-    }
+    } }
     val o = open
     if (o != null) {
         AtlasScreen(title = o.label, subtitle = o.pkg, hub = Hub.Tools, actions = { Text("Close", Modifier.padding(Space.s).pressable { open = null }, style = MaterialTheme.typography.labelLarge) }) {
@@ -583,7 +583,7 @@ fun DataGuardScreen() {
     var rows by remember { mutableStateOf<List<Triple<String, Long, Long>>?>(null) }
     var needs by remember { mutableStateOf(false) }
     var reload by remember { mutableStateOf(0) }
-    LaunchedEffect(reload) {
+    LaunchedEffect(reload) { com.nizam.app.ui.design.guard {
         val ops = ctx.getSystemService(Context.APP_OPS_SERVICE) as android.app.AppOpsManager
         @Suppress("DEPRECATION")
         val mode = ops.checkOpNoThrow(android.app.AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), ctx.packageName)
@@ -611,7 +611,7 @@ fun DataGuardScreen() {
                 }.sortedByDescending { it.second }.filter { it.second + it.third > 1_000_000 }
             }.getOrDefault(emptyList())
         }
-    }
+    } }
     fun mb(b: Long) = if (b > 1e9) "%.2f GB".format(b / 1e9) else "%.0f MB".format(b / 1e6)
     val list = rows
     AtlasScreen(title = "Data guard", subtitle = list?.let { l -> "This month: ${mb(l.sumOf { it.second })} mobile · ${mb(l.sumOf { it.third })} Wi-Fi" } ?: "Counting…", hub = Hub.Tools, loading = list == null) {

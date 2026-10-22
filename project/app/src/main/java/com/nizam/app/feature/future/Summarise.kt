@@ -121,11 +121,11 @@ fun SummariseScreen(container: AppContainer) {
     val speaker = remember { com.nizam.app.feature.voice.Speaker(c) }
     DisposableEffect(Unit) { onDispose { speaker.release() } }
     // a link on the clipboard is almost always the one you came to summarise
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         kotlinx.coroutines.delay(400)
         runCatching { c.getSystemService(android.content.ClipboardManager::class.java).primaryClip?.getItemAt(0)?.text?.toString()?.trim() }.getOrNull()
             ?.takeIf { it.startsWith("http") && link.isBlank() }?.let { link = it }
-    }
+    } }
     fun run(q: String? = null) {
         busy = true; if (q == null) out = ""
         scope.launch {

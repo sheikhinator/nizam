@@ -96,7 +96,7 @@ fun Composer(
     showConnections: Boolean = true
 ) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var sheet by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(false) }
 

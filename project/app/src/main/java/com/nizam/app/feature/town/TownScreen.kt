@@ -167,7 +167,7 @@ private fun DrawScope.person(s: Sim) {
 @Composable
 fun TownScreen(container: AppContainer) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val store = remember { TownStore(context) }
     val measurer = rememberTextMeasurer()
 
@@ -185,7 +185,7 @@ fun TownScreen(container: AppContainer) {
     var newAdventure by remember { mutableStateOf<Adventure?>(null) }
     var showAdventures by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         val facts = TownData.facts(container)
         TownLayout.load(context)
         town = Town(store.seed(), facts).also { it.gentle = com.nizam.app.feature.wellbeing.Gentle.on(context) }
@@ -210,10 +210,10 @@ fun TownScreen(container: AppContainer) {
             s.hanafiAsr.first()
         )
         prayerHours = listOf(t.fajr, t.dhuhr, t.asr, t.maghrib, t.isha)
-    }
+    } }
 
     // ~20fps and only while this screen exists — the town costs nothing when you're elsewhere
-    LaunchedEffect(town) {
+    LaunchedEffect(town) { com.nizam.app.ui.design.guard {
         val t = town ?: return@LaunchedEffect
         val rnd = Random(System.nanoTime())
         var last = 0L; var schedAt = 0L; var thoughtAt = 0L; var dialogueIdx = 0
@@ -252,7 +252,7 @@ fun TownScreen(container: AppContainer) {
                 }
             }
         }
-    }
+    } }
 
     val hour = LocalTime.now().let { it.hour + it.minute / 60f }
     // night falls at your real Maghrib and lifts at your real Fajr

@@ -253,7 +253,7 @@ object LifeOps {
 @Composable
 fun LifeOpsScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var tick by remember { mutableIntStateOf(0) }
     var busy by remember { mutableStateOf(false) }
     val list = remember(tick) { LifeOps.store(c).all().sortedByDescending { it.optLong("at") } }
@@ -272,7 +272,7 @@ fun LifeOpsScreen(container: AppContainer) {
 @Composable
 fun NegotiatorScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val store = remember { JsonStore(c, "negotiations") }
     var list by remember { mutableStateOf(store.all()) }
     var openId by remember { mutableStateOf<String?>(null) }
@@ -297,7 +297,7 @@ fun NegotiatorScreen(container: AppContainer) {
 @Composable
 private fun NegotiationThread(container: AppContainer, o: JSONObject, save: (JSONObject) -> Unit, back: () -> Unit) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var theirs by remember { mutableStateOf("") }
     var draft by remember { mutableStateOf("") }
     var coach by remember { mutableStateOf("") }
@@ -378,7 +378,7 @@ object PriceHunter {
 @Composable
 fun PriceHunterScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var tick by remember { mutableIntStateOf(0) }
     val list = remember(tick) { PriceHunter.store(c).all() }
     var q by remember { mutableStateOf("") }; var target by remember { mutableStateOf("") }
@@ -417,7 +417,7 @@ fun PriceHunterScreen(container: AppContainer) {
 @Composable
 fun DebateScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var q by remember { mutableStateOf("") }
     var answers by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
     var verdict by remember { mutableStateOf("") }
@@ -459,8 +459,8 @@ object MemorySnapshots {
 @Composable
 fun MemoryTimeScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
-    LaunchedEffect(Unit) { runCatching { MemorySnapshots.take(c, container) } }
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { runCatching { MemorySnapshots.take(c, container) } } }
     val snaps = remember { MemorySnapshots.store(c).all().sortedBy { it.optString("d") } }
     var pick by remember { mutableIntStateOf(0) }
     var q by remember { mutableStateOf("") }
@@ -516,7 +516,7 @@ fun HandoffScreen(container: AppContainer) {
     val c = LocalContext.current
     var task by remember { mutableStateOf("") }
     var tick by remember { mutableIntStateOf(0) }
-    LaunchedEffect(Unit) { while (true) { kotlinx.coroutines.delay(5000); tick++ } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { while (true) { kotlinx.coroutines.delay(5000); tick++ } } }
     val list = remember(tick) { Handoff.store(c).all().sortedByDescending { it.optLong("at") } }
     val ready = remember { com.nizam.app.feature.connect.Connectors.values(c, "hermes") != null }
     AtlasScreen(title = "Send to PC", subtitle = if (ready) "Hermes on your computer does the heavy lifting" else "Connect Hermes Agent in Connectors first", hub = Hub.Work) {

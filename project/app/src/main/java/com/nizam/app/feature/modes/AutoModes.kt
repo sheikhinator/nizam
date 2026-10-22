@@ -153,7 +153,7 @@ fun ModeBar(container: AppContainer, onOpen: (String) -> Unit, modifier: Modifie
     var why by remember { mutableStateOf(AutoModes.reason(c)) }
     var open by remember { mutableStateOf(false) }
     var auto by remember { mutableStateOf(AutoModes.auto(c)) }
-    LaunchedEffect(Unit) { while (true) { AutoModes.tick(container); cur = AutoModes.current(c); why = AutoModes.reason(c); delay(60_000) } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { while (true) { AutoModes.tick(container); cur = AutoModes.current(c); why = AutoModes.reason(c); delay(60_000) } } }
     val info = AutoModes.info(cur)
     Column(modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth().clickableNoRipple { open = !open }.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {

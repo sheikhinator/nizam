@@ -213,7 +213,7 @@ fun DebtsScreen() {
 @Composable
 fun SubscriptionsScreen(container: AppContainer) {
     var found by remember { mutableStateOf<List<com.nizam.app.feature.jarvis.Recurring>?>(null) }
-    LaunchedEffect(Unit) { found = runCatching { com.nizam.app.feature.jarvis.BillRadar.find(container) }.getOrElse { emptyList() } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { found = runCatching { com.nizam.app.feature.jarvis.BillRadar.find(container) }.getOrElse { emptyList() } } }
     val monthly = found.orEmpty().sumOf { it.amount * 30.0 / it.everyDays.coerceAtLeast(1) }
     AtlasScreen(title = "Subscriptions", subtitle = "Recurring charges found in your own spending", loading = found == null) {
         item("s") {
@@ -285,7 +285,7 @@ object PriceWatch {
 @Composable
 fun PriceWatchScreen() {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var list by remember { mutableStateOf(PriceWatch.store(ctx).all()) }
     var url by remember { mutableStateOf("") }
     var target by remember { mutableStateOf("") }

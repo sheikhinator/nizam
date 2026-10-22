@@ -173,8 +173,8 @@ fun PhotoSearchScreen() {
     val progress by PhotoIndex.progress.collectAsState()
     var query by remember { mutableStateOf("") }
     var hits by remember { mutableStateOf<List<PhotoIndex.Hit>>(emptyList()) }
-    LaunchedEffect(granted) { if (granted) PhotoIndex.start(c) else ask.launch(perm) }
-    LaunchedEffect(query, progress.first / 200) { hits = if (query.isBlank()) emptyList() else PhotoIndex.search(c, query) }
+    LaunchedEffect(granted) { com.nizam.app.ui.design.guard { if (granted) PhotoIndex.start(c) else ask.launch(perm) } }
+    LaunchedEffect(query, progress.first / 200) { com.nizam.app.ui.design.guard { hits = if (query.isBlank()) emptyList() else PhotoIndex.search(c, query) } }
     LazyVerticalGrid(GridCells.Fixed(3), Modifier.fillMaxSize().padding(horizontal = 12.dp), horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)) {
         item(span = { GridItemSpan(3) }) {

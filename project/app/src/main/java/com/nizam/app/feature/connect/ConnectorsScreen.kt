@@ -116,7 +116,7 @@ fun ConnectorsScreen(container: AppContainer) {
         }
         item { Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) { cats.forEach { k -> Capsule(k, cat == k) { cat = k } } } }
         if (cat == "Connected") item {
-            val scope = rememberCoroutineScope()
+            val scope = com.nizam.app.ui.design.rememberSafeScope()
             var health by remember { mutableStateOf<Map<String, Pair<Boolean, String>>?>(null) }
             var checking by remember { mutableStateOf(false) }
             Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f)).padding(14.dp)) {
@@ -170,7 +170,7 @@ private fun Tile(s: Service, on: Boolean, modifier: Modifier, onClick: () -> Uni
 @Composable
 private fun Detail(container: AppContainer, s: Service, back: () -> Unit) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val v = Connectors.version
     val connected = remember(v) { Connectors.isConnected(c, s) }
     val values = remember { mutableStateMapOf<String, String>().apply { s.fields.forEach { put(it.key, it.default) } } }

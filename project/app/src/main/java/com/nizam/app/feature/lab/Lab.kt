@@ -162,7 +162,7 @@ private fun Versions(container: AppContainer) {
     var branch by remember { mutableStateOf("main") }
     var days by remember { mutableStateOf<List<DayVector>>(emptyList()) }
     var diff by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(Unit) { days = runCatching { Days.build(container, c, 200) }.getOrElse { emptyList() } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { days = runCatching { Days.build(container, c, 200) }.getOrElse { emptyList() } } }
     Card {
         Text("Commit a change", style = MaterialTheme.typography.titleMedium)
         Text("Every meaningful change to your life, recorded like a commit. Big shifts get their own branch name.",

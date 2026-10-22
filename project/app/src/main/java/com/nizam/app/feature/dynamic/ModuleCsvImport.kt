@@ -320,7 +320,7 @@ fun ModuleCsvImportSection(
     onImport: suspend (List<Pair<String, Map<String, String>>>) -> Unit
 ) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val mappings = remember(spec.key) { mutableStateMapOf<Int, String>() }
     val selectedRows = remember(spec.key) { mutableStateMapOf<Int, Boolean>() }
     var table by remember(spec.key) { mutableStateOf<CsvImportTable?>(null) }

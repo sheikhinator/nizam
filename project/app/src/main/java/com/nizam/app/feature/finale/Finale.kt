@@ -114,7 +114,7 @@ fun FinaleScreen(container: AppContainer) {
         when (tab) {
             "Ledger" -> {
                 var ledger by remember { mutableStateOf<Ledger?>(null) }
-                LaunchedEffect(Unit) { ledger = runCatching { LedgerOfYou.compute(container, c) }.getOrNull() }
+                LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { ledger = runCatching { LedgerOfYou.compute(container, c) }.getOrNull() } }
                 val l = ledger
                 if (l == null) Text("Working it out…", style = MaterialTheme.typography.bodyMedium)
                 else {

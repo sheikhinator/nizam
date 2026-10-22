@@ -126,7 +126,7 @@ fun ArcadePlayer(game: ArcadeGame, backTick: Int, onExit: () -> Unit) {
         }
         return
     }
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val prefs = remember { ctx.getSharedPreferences("arcade", 0) }
     val owner = remember(game.id) { PlayerLifecycle() }
     var menu by remember { mutableStateOf(false) }
@@ -139,15 +139,15 @@ fun ArcadePlayer(game: ArcadeGame, backTick: Int, onExit: () -> Unit) {
     val activity = remember { activityOf(ctx) }
     val originalOrientation = remember { activity?.requestedOrientation ?: ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED }
     var rotation by remember { mutableStateOf(prefs.getString("rot_" + system.id, null) ?: defaultRotation(system)) }
-    LaunchedEffect(rotation) {
+    LaunchedEffect(rotation) { com.nizam.app.ui.design.guard {
         activity?.requestedOrientation = when (rotation) {
             "land" -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
             "port" -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
             else -> ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR
         }
-    }
+    } }
     DisposableEffect(Unit) { onDispose { activity?.requestedOrientation = originalOrientation } }
-    LaunchedEffect(backTick) { if (backTick > 0) menu = !menu }
+    LaunchedEffect(backTick) { com.nizam.app.ui.design.guard { if (backTick > 0) menu = !menu } }
     val menuState = rememberUpdatedState(menu)
     val started = remember { System.currentTimeMillis() }
     var finished by remember { mutableStateOf(false) }
@@ -214,8 +214,8 @@ fun ArcadePlayer(game: ArcadeGame, backTick: Int, onExit: () -> Unit) {
         host.lifecycle.addObserver(o)
         onDispose { host.lifecycle.removeObserver(o) }
     }
-    LaunchedEffect(menu) { if (menu) owner.pause() else owner.resume() }
-    LaunchedEffect(view) {
+    LaunchedEffect(menu) { com.nizam.app.ui.design.guard { if (menu) owner.pause() else owner.resume() } }
+    LaunchedEffect(view) { com.nizam.app.ui.design.guard {
         launch { view.getGLRetroErrors().collect { problem = if (it == GLRetroView.ERROR_LOAD_LIBRARY) "This phone couldn't start the ${system.name} emulator." else "This game couldn't be started (error $it)." } }
         view.getGLRetroEvents().first { it is GLRetroView.GLRetroEvents.SurfaceCreated }
         delay(600)
@@ -225,8 +225,8 @@ fun ArcadePlayer(game: ArcadeGame, backTick: Int, onExit: () -> Unit) {
             val ok = runCatching { view.unserializeState(autoFile.readBytes()) }.getOrDefault(false)
             if (ok) note = "Back where you left off"
         }
-    }
-    LaunchedEffect(note) { if (note.isNotEmpty()) { delay(2200); note = "" } }
+    } }
+    LaunchedEffect(note) { com.nizam.app.ui.design.guard { if (note.isNotEmpty()) { delay(2200); note = "" } } }
 
 
     fun key(code: Int, down: Boolean) { view.sendKeyEvent(if (down) KeyEvent.ACTION_DOWN else KeyEvent.ACTION_UP, code) }

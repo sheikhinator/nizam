@@ -66,7 +66,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun CatchUpScreen(container: AppContainer, onOpen: (String) -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val seen = remember { AtlasNotificationListener.recent(60) }
     val waiting = remember { FollowUps.waiting(ctx, minHours = 1) }
     var summary by remember { mutableStateOf<String?>(null) }
@@ -85,7 +85,7 @@ fun CatchUpScreen(container: AppContainer, onOpen: (String) -> Unit) {
             busy = false
         }
     }
-    LaunchedEffect(Unit) { summarise() }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { summarise() } }
 
     AtlasScreen(title = "Catch me up", subtitle = "${seen.size} notifications since you last looked") {
         if (!AtlasNotificationListener.connected) item("perm") {
@@ -144,7 +144,7 @@ private fun offlineSummary(seen: List<AtlasNotificationListener.Seen>): String {
 @Composable
 fun RamblerScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var raw by remember { mutableStateOf("") }
     var clean by remember { mutableStateOf("") }
     var tone by remember { mutableStateOf("Friendly") }

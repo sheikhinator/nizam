@@ -111,7 +111,7 @@ private fun EmptyLibrary(onOpen: () -> Unit, onEssentials: () -> Unit) {
 @Composable
 private fun TodayTab(container: AppContainer, urdu: Boolean, setUrdu: (Boolean) -> Unit, reader: Reader) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val theme = remember { DailyPath.themeFor() }
     var src by remember { mutableStateOf<DailyPath.Sources?>(null) }
     var lesson by remember { mutableStateOf(DailyPath.cachedLesson(c)) }
@@ -121,7 +121,7 @@ private fun TodayTab(container: AppContainer, urdu: Boolean, setUrdu: (Boolean) 
     var note by remember { mutableStateOf(DailyPath.reflection(c)) }
     var showJournal by remember { mutableStateOf(false) }
 
-    LaunchedEffect(urdu) { src = withContext(Dispatchers.IO) { DailyPath.sources(c, theme, urdu) } }
+    LaunchedEffect(urdu) { com.nizam.app.ui.design.guard { src = withContext(Dispatchers.IO) { DailyPath.sources(c, theme, urdu) } } }
 
     fun write(refresh: Boolean) {
         val s = src ?: return
@@ -260,7 +260,7 @@ private fun SurahReader(c: Context, s: Int, onBack: () -> Unit, onGo: (Int) -> U
     var marks by remember { mutableStateOf(DailyPath.bookmarks(c)) }
     val ayahs = remember(s, shown) { DeenLibrary.surah(c, s, qp.filter { it.slug in shown }) }
     val list = rememberLazyListState()
-    LaunchedEffect(s) { list.scrollToItem(0) }
+    LaunchedEffect(s) { com.nizam.app.ui.design.guard { list.scrollToItem(0) } }
 
     LazyColumn(Modifier.fillMaxSize(), state = list, contentPadding = androidx.compose.foundation.layout.PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         item {
@@ -341,7 +341,7 @@ private fun HadithTab(c: Context) {
                 }
                 if (books.isEmpty()) items(listOf(0)) {
                     // collections like the Forty have no chapters
-                    LaunchedEffect(Unit) { book = DeenLibrary.HBook(0, pack.name, "", "") }
+                    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { book = DeenLibrary.HBook(0, pack.name, "", "") } }
                 }
             }
         }
@@ -372,10 +372,10 @@ private fun HadithCard(pack: DeenLibrary.Pack, h: DeenLibrary.Hadith) {
 private fun SearchTab(c: Context) {
     var q by remember { mutableStateOf("") }
     var hits by remember { mutableStateOf<List<DeenLibrary.Hit>>(emptyList()) }
-    LaunchedEffect(q) {
+    LaunchedEffect(q) { com.nizam.app.ui.design.guard {
         kotlinx.coroutines.delay(250)
         hits = withContext(Dispatchers.IO) { DeenLibrary.search(c, q) }
-    }
+    } }
     Column(Modifier.fillMaxSize().padding(12.dp)) {
         OutlinedTextField(q, { q = it }, Modifier.fillMaxWidth(), placeholder = { Text("Search the Quran and hadith: patience, صبر, mother…") }, singleLine = true)
         Text(if (q.isBlank()) "Searches every translation and hadith book you've downloaded, offline." else "${hits.size} results",
@@ -401,7 +401,7 @@ private fun SearchTab(c: Context) {
 @Composable
 private fun TalksTab(container: AppContainer, urdu: Boolean, reader: Reader) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var text by remember { mutableStateOf<String?>(null) }
     var title by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
@@ -453,13 +453,13 @@ private fun TalksTab(container: AppContainer, urdu: Boolean, reader: Reader) {
 
 @Composable
 private fun LibraryTab(c: Context, installed: List<DeenLibrary.Pack>, progress: Map<String, DeenLibrary.Progress>, changed: () -> Unit) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var catalog by remember { mutableStateOf<List<DeenLibrary.Pack>>(emptyList()) }
     var error by remember { mutableStateOf<String?>(null) }
     var kind by remember { mutableStateOf(DeenLibrary.Kind.TAFSIR) }
     var lang by remember { mutableStateOf("Urdu") }
-    LaunchedEffect(Unit) { runCatching { DeenLibrary.catalog(c) }.onSuccess { catalog = it }.onFailure { error = it.message } }
-    LaunchedEffect(progress.size) { changed() }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { runCatching { DeenLibrary.catalog(c) }.onSuccess { catalog = it }.onFailure { error = it.message } } }
+    LaunchedEffect(progress.size) { com.nizam.app.ui.design.guard { changed() } }
     val have = installed.map { it.id }.toSet()
     val langs = catalog.filter { it.kind == kind }.map { it.lang }.distinct().sortedBy { when (it) { "Urdu" -> 0; "English" -> 1; "Arabic" -> 2; else -> 3 } }
 

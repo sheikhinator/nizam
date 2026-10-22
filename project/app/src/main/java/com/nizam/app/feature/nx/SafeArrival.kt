@@ -122,7 +122,7 @@ private fun SafeArrivalScreen() {
     var name by remember { mutableStateOf(saved.first) }
     var phone by remember { mutableStateOf(saved.second) }
     var msg by remember { mutableStateOf(SafeArrival.message(c).ifBlank { "Assalamu alaikum, I set a safe-arrival timer on my trip and haven't checked in. Please call me." }) }
-    LaunchedEffect(until) { while (until > 0) { now = System.currentTimeMillis(); delay(1000) } }
+    LaunchedEffect(until) { com.nizam.app.ui.design.guard { while (until > 0) { now = System.currentTimeMillis(); delay(1000) } } }
 
     Column(Modifier.fillMaxWidth().padding(4.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         if (until > now) {

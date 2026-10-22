@@ -202,7 +202,7 @@ fun Md(text: String) {
 @Composable
 fun AiToolScreen(spec: AiSpec, container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val learnedPrefs = remember { ctx.getSharedPreferences("nxlearn_${spec.id}", 0) }
     // the tool remembers your last choices and numbers, so the same question is faster next time
     val values = remember { mutableStateMapOf<String, String>().apply {
@@ -290,7 +290,7 @@ fun AiToolScreen(spec: AiSpec, container: AppContainer) {
 @Composable
 fun ChatToolScreen(spec: ChatSpec, container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val storyStore = remember(spec.id) {
         if (spec.persistent) JsonStore(ctx, "nx_story_${spec.id}", sealed = true) else null
     }
@@ -592,7 +592,7 @@ fun LogToolScreen(spec: LogSpec) {
 @Composable
 fun CalcToolScreen(spec: CalcSpec, container: AppContainer? = null) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var why by remember { mutableStateOf<String?>(null) }
     var thinking by remember { mutableStateOf(false) }
     val prefs = remember { ctx.getSharedPreferences("nxcalc_${spec.id}", 0) }
@@ -655,7 +655,7 @@ fun LinkToolScreen(spec: LinkSpec) {
 fun NxScreen(id: String, container: AppContainer, open: (String) -> Unit) {
     val spec = Nx.find(id)
     val ctx = LocalContext.current
-    androidx.compose.runtime.LaunchedEffect(id) { Mind.opened(ctx, id) }
+    androidx.compose.runtime.LaunchedEffect(id) { com.nizam.app.ui.design.guard { Mind.opened(ctx, id) } }
     val withMind = spec != null && id !in SELF_WRAPPED && !(spec is LogSpec && spec.sealed)
     Box(Modifier.fillMaxSize()) {
         NxBody(id, container, open)

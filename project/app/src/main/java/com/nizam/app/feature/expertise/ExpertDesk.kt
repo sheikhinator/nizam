@@ -183,7 +183,7 @@ object Toolkits {
 @Composable
 fun ExpertDesk(expert: Expertise.Expert, container: AppContainer, open: (String) -> Unit, onBack: () -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val kit = remember(expert.sector) { Toolkits.of(expert.sector) }
     var talking by remember { mutableStateOf(false) }
     var items by remember { mutableStateOf<List<Roads.Item>>(emptyList()) }
@@ -203,12 +203,12 @@ fun ExpertDesk(expert: Expertise.Expert, container: AppContainer, open: (String)
         Pulse.emit(Pulse.Kind.THINKING, "Thinking as ${expert.name}", expert.sector, expert.hub.label)
         onDispose { Expertise.pin(null) }
     }
-    LaunchedEffect(expert.id) {
+    LaunchedEffect(expert.id) { com.nizam.app.ui.design.guard {
         runCatching { Roads.warm(container) }
         items = withContext(Dispatchers.IO) {
             Roads.items(ctx, 40).filter { i -> kit.reads.isEmpty() || kit.reads.any { k -> i.source.contains(k, true) || i.hub.label.equals(k, true) } }
         }
-    }
+    } }
 
     Column(Modifier.fillMaxSize().statusBarsPadding()) {
         Row(Modifier.fillMaxWidth().padding(horizontal = Space.s, vertical = Space.xs), verticalAlignment = Alignment.CenterVertically) {

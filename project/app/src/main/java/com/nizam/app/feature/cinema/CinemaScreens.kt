@@ -91,7 +91,7 @@ private fun Poster(url: String?, title: String, modifier: Modifier = Modifier) {
 @Composable
 fun CinemaScreen(onFilm: (Int) -> Unit, onPlay: () -> Unit) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val skipped = remember { c.getSharedPreferences("cinema_setup", 0).getBoolean("skipped", false) }
     var keySetup by remember { mutableStateOf(CinemaKeys.tmdb(c).isBlank() && !skipped) }
     // without a TMDB key only the free shelf can load — start there instead of on an error
@@ -141,7 +141,7 @@ fun CinemaScreen(onFilm: (Int) -> Unit, onPlay: () -> Unit) {
         }.onFailure { if (it !is kotlinx.coroutines.CancellationException) error = com.nizam.app.ui.components.Feedback.friendly(it) }
         loading = false
     } }
-    LaunchedEffect(shelf, keySetup) { if (!keySetup || shelf == "Free to watch") load() }
+    LaunchedEffect(shelf, keySetup) { com.nizam.app.ui.design.guard { if (!keySetup || shelf == "Free to watch") load() } }
 
     if (keySetup) { KeySetup(onDone = { keySetup = false }); return }
 
@@ -264,7 +264,7 @@ private fun KeySetup(onDone: () -> Unit) {
 @Composable
 fun FilmScreen(onFilm: (Int) -> Unit, onPlay: () -> Unit) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val store = remember { CinemaStore(c) }
     var d by remember { mutableStateOf<FilmDetail?>(null) }
     var scores by remember { mutableStateOf<ImdbScores?>(null) }
@@ -274,14 +274,14 @@ fun FilmScreen(onFilm: (Int) -> Unit, onPlay: () -> Unit) {
     var mine by remember { mutableStateOf(0) }
     val id = CinemaNav.filmId
 
-    LaunchedEffect(id) {
+    LaunchedEffect(id) { com.nizam.app.ui.design.guard {
         d = null; scores = null; free = null
         runCatching { Tmdb.detail(c, id) }.onSuccess { det ->
             d = det; saved = store.inWatchlist(det.film.id); mine = store.myRating(det.film.id)
             det.imdbId?.let { imdb -> scores = runCatching { Omdb.scores(c, imdb) }.getOrNull() }
             free = Archive.match(det.film.title, det.film.year)
         }.onFailure { error = "Couldn't load this film: " + com.nizam.app.ui.components.Feedback.friendly(it) }
-    }
+    } }
 
     val det = d
     if (det == null) {

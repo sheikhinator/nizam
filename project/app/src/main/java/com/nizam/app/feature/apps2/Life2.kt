@@ -135,7 +135,7 @@ private data class Ev(val id: Long, val title: String, val start: Long, val end:
 @Composable
 fun CalendarScreen() {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var granted by remember { mutableStateOf(ContextCompat.checkSelfPermission(ctx, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) }
     val perm = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted = it[Manifest.permission.READ_CALENDAR] == true }
     var month by remember { mutableStateOf(LocalDate.now().withDayOfMonth(1)) }
@@ -145,7 +145,7 @@ fun CalendarScreen() {
     var time by remember { mutableStateOf("10:00") }
     var reload by remember { mutableIntStateOf(0) }
     val zone = ZoneId.systemDefault()
-    LaunchedEffect(granted, month, reload) {
+    LaunchedEffect(granted, month, reload) { com.nizam.app.ui.design.guard {
         if (!granted) return@LaunchedEffect
         events = withContext(Dispatchers.IO) { runCatching {
             val from = month.minusDays(7).atStartOfDay(zone).toInstant().toEpochMilli(); val to = month.plusMonths(1).plusDays(7).atStartOfDay(zone).toInstant().toEpochMilli()
@@ -157,7 +157,7 @@ fun CalendarScreen() {
             }
             out
         }.getOrDefault(emptyList()) }
-    }
+    } }
     fun dateOf(ms: Long) = java.time.Instant.ofEpochMilli(ms).atZone(zone).toLocalDate()
     val byDay = events.groupBy { dateOf(it.start) }
     AtlasScreen(title = month.month.name.lowercase().replaceFirstChar { it.uppercase() } + " ${month.year}", subtitle = "${events.count { dateOf(it.start).month == month.month }} events this month", hub = Hub.Work, actions = {
@@ -223,7 +223,7 @@ fun ContactsPlusScreen() {
     var open by remember { mutableStateOf<Person?>(null) }
     val notes = remember { ctx.getSharedPreferences("contact_notes", 0) }
     var tick by remember { mutableIntStateOf(0) }
-    LaunchedEffect(granted) {
+    LaunchedEffect(granted) { com.nizam.app.ui.design.guard {
         if (!granted) return@LaunchedEffect
         people = withContext(Dispatchers.IO) { runCatching {
             val m = LinkedHashMap<Long, Pair<String, MutableList<String>>>()
@@ -234,7 +234,7 @@ fun ContactsPlusScreen() {
             }
             m.map { (id, v) -> Person(id, v.first, v.second) }
         }.getOrDefault(emptyList()) }
-    }
+    } }
     fun norm(n: String) = n.replace(Regex("[^0-9]"), "").takeLast(10)
     val o = open
     if (o != null) {
@@ -324,13 +324,13 @@ private val LEAGUES = linkedMapOf("Premier League" to 4328, "La Liga" to 4335, "
 
 @Composable
 fun SportsScreen(container: AppContainer) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var tab by remember { mutableStateOf("Cricket") }
     var league by remember { mutableStateOf("Premier League") }
     var next by remember { mutableStateOf<List<JSONObject>?>(null) }
     var past by remember { mutableStateOf<List<JSONObject>>(emptyList()) }
     var cricket by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(tab, league) {
+    LaunchedEffect(tab, league) { com.nizam.app.ui.design.guard {
         if (tab == "Football") {
             next = null
             val id = LEAGUES[league]
@@ -340,7 +340,7 @@ fun SportsScreen(container: AppContainer) {
             cricket = runCatching { Ai.generate(container.settingsRepository, "Live and today's cricket: Pakistan matches first, then PSL/international/major T20 leagues. Scores with overs, status, and upcoming fixtures in PKT. Mark the time you checked.",
                 maxOutputTokens = 700, useWeb = true) }.getOrElse { it.message }
         }
-    }
+    } }
     AtlasScreen(title = "Sports centre", subtitle = if (tab == "Football") league else "Cricket", hub = Hub.Media) {
         item("t") { Row(Modifier.padding(horizontal = Space.page), horizontalArrangement = Arrangement.spacedBy(Space.s)) {
             listOf("Cricket", "Football").forEach { t -> Capsule(t, tab == t) { tab = t } } } }

@@ -140,8 +140,8 @@ fun PakistanScreen(container: AppContainer) {
     var petrol by remember { mutableStateOf("") }
     var shedding by remember { mutableStateOf("") }
     var bills by remember { mutableStateOf(PakistanData.bills(c)) }
-    LaunchedEffect(Unit) { rates = runCatching { PakistanData.rates() }.getOrNull() }
-    LaunchedEffect(Unit) { while (true) { matches = runCatching { PakistanData.cricket() }.getOrElse { matches ?: emptyList() }; delay(60_000) } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { rates = runCatching { PakistanData.rates() }.getOrNull() } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { while (true) { matches = runCatching { PakistanData.cricket() }.getOrElse { matches ?: emptyList() }; delay(60_000) } } }
     fun rs(v: Double) = "Rs " + "%,.0f".format(v)
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 18.dp)) {
         ModuleTitle("Pakistan today", "Rates, fuel, cricket and your bills")

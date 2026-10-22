@@ -132,11 +132,11 @@ fun TownPlannerScreen(container: AppContainer) {
     var town by remember { mutableStateOf<Town?>(null) }
     var tab by remember { mutableStateOf("Plan") }
     var version by remember { mutableStateOf(0) }
-    LaunchedEffect(version) {
+    LaunchedEffect(version) { com.nizam.app.ui.design.guard {
         TownLayout.load(c)
         val facts = TownData.facts(container)
         town = Town(TownStore(c).seed(), facts).also { TownLife.snapshot(c, it) }
-    }
+    } }
     val t = town ?: run { Text("Building the town…"); return }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {

@@ -84,7 +84,7 @@ private fun SliderRow(label: String, v: Float, range: ClosedFloatingPointRange<F
 @Composable
 fun ThemeStudioScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val st = Style.s
     fun up(f: (Style.S) -> Style.S) = Style.update(ctx, f)
     // custom theme maker: six colours as hue/saturation/value

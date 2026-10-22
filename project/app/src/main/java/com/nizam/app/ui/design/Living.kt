@@ -79,7 +79,7 @@ fun ContextStrip(currentRoute: String?, onOpen: (String) -> Unit) {
     val track = com.nizam.app.feature.music.MusicPlayback.current
     val timerOn = FocusTimer.endsAt > 0L
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(timerOn) { while (FocusTimer.endsAt > 0L) { now = System.currentTimeMillis(); delay(1000) } }
+    LaunchedEffect(timerOn) { com.nizam.app.ui.design.guard { while (FocusTimer.endsAt > 0L) { now = System.currentTimeMillis(); delay(1000) } } }
     val c = MaterialTheme.colorScheme
     val showMusic = track != null && currentRoute != "music"
     if (!showMusic && !timerOn) return
@@ -145,7 +145,7 @@ fun GeometricPattern(modifier: Modifier = Modifier, color: Color = MaterialTheme
 @Composable
 fun AmbientScreen(nextPrayer: String?, onExit: () -> Unit) {
     var t by remember { mutableStateOf(LocalDateTime.now()) }
-    LaunchedEffect(Unit) { while (true) { t = LocalDateTime.now(); delay(1000) } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { while (true) { t = LocalDateTime.now(); delay(1000) } } }
     val night = t.hour >= 22 || t.hour < 6
     val ink = if (night) Color(0xFFB0413E) else Color(0xFFE8E6E1)
     val view = androidx.compose.ui.platform.LocalView.current

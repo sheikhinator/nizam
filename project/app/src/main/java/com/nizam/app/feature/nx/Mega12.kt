@@ -45,7 +45,7 @@ object Mega12 {
 private fun DashboardsScreen(container: AppContainer, open: (String) -> Unit) {
     var data by remember { mutableStateOf<com.nizam.app.feature.dash.DashData?>(null) }
     var tab by remember { mutableStateOf("Today") }
-    LaunchedEffect(Unit) { data = Dash.load(container) }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { data = Dash.load(container) } }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             listOf("Today", "Money", "Health", "Deen", "Study", "AI", "System").forEach { t -> FilterChip(selected = tab == t, onClick = { tab = t }, label = { Text(t) }) }
@@ -58,7 +58,7 @@ private fun DashboardsScreen(container: AppContainer, open: (String) -> Unit) {
 
 @Composable
 private fun InstrumentSettings(container: AppContainer) {
-    val c = LocalContext.current; val scope = rememberCoroutineScope()
+    val c = LocalContext.current; val scope = com.nizam.app.ui.design.rememberSafeScope()
     var style by remember { mutableStateOf(Instruments.style(c)) }
     var sound by remember { mutableStateOf(Instruments.sound(c)) }
     var motion by remember { mutableStateOf(Instruments.motion(c)) }

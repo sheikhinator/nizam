@@ -119,7 +119,7 @@ object Screenshots {
 @Composable
 fun ScreenshotsScreen() {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val perm = if (Build.VERSION.SDK_INT >= 33) Manifest.permission.READ_MEDIA_IMAGES else Manifest.permission.READ_EXTERNAL_STORAGE
     var granted by remember { mutableStateOf(ContextCompat.checkSelfPermission(ctx, perm) == PackageManager.PERMISSION_GRANTED) }
     val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted = it }
@@ -131,7 +131,7 @@ fun ScreenshotsScreen() {
     val deleter = rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
         shots = shots?.filter { it.id !in picked }; picked = emptySet()
     }
-    LaunchedEffect(granted) { if (granted) shots = Screenshots.load(ctx) { a, b -> progress = a to b } else ask.launch(perm) }
+    LaunchedEffect(granted) { com.nizam.app.ui.design.guard { if (granted) shots = Screenshots.load(ctx) { a, b -> progress = a to b } else ask.launch(perm) } }
     val list = shots.orEmpty().filter { query.isBlank() || it.text.contains(query, true) }.filter { query.isNotBlank() || it.kind == kind }
     AtlasScreen(title = "Screenshots", subtitle = if (shots == null && granted) "Reading ${progress.first} of ${progress.second}…"
         else "${shots?.size ?: 0} sorted by what's in them", loading = shots == null && granted) {
@@ -197,7 +197,7 @@ object BillReader {
 @Composable
 fun BillScanScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var text by remember { mutableStateOf("") }
     var bill by remember { mutableStateOf<BillReader.Bill?>(null) }
     var busy by remember { mutableStateOf(false) }

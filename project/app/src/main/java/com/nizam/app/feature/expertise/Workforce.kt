@@ -93,7 +93,7 @@ object Record {
 @Composable
 fun SwarmScreen(container: AppContainer, open: (String) -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var q by remember { mutableStateOf("") }
     var chosen by remember { mutableStateOf(listOf("planner", "analyst", "compliance").mapNotNull { Expertise.find(ctx, it) }) }
     val answers = remember { mutableStateListOf<Pair<Expertise.Expert, String>>() }
@@ -139,7 +139,7 @@ fun SwarmScreen(container: AppContainer, open: (String) -> Unit) {
 @Composable
 fun SyndicateScreen(container: AppContainer, open: (String) -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var topic by remember { mutableStateOf("") }
     var chosen by remember { mutableStateOf(listOf("research", "analyst").mapNotNull { Expertise.find(ctx, it) }) }
     val thread = remember { mutableStateListOf<Pair<String, String>>() }
@@ -188,7 +188,7 @@ fun SyndicateScreen(container: AppContainer, open: (String) -> Unit) {
 @Composable
 fun NexusScreen(container: AppContainer, open: (String) -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var goal by remember { mutableStateOf("") }
     val steps = remember { mutableStateListOf<Triple<String, String, String>>() }
     var report by remember { mutableStateOf<String?>(null) }
@@ -250,7 +250,7 @@ fun NexusScreen(container: AppContainer, open: (String) -> Unit) {
 @Composable
 fun SimulateScreen(container: AppContainer, open: (String) -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var chosen by remember { mutableStateOf(listOfNotNull(Expertise.find(ctx, "analyst"))) }
     var scenarios by remember { mutableStateOf("") }
     val results = remember { mutableStateListOf<Triple<String, Int, String>>() }
@@ -287,7 +287,7 @@ fun SimulateScreen(container: AppContainer, open: (String) -> Unit) {
 @Composable
 fun CompeteScreen(container: AppContainer, open: (String) -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var q by remember { mutableStateOf("") }
     var chosen by remember { mutableStateOf(listOf("research", "analyst").mapNotNull { Expertise.find(ctx, it) }) }
     var a by remember { mutableStateOf<String?>(null) }
@@ -337,7 +337,7 @@ fun CompeteScreen(container: AppContainer, open: (String) -> Unit) {
 @Composable
 fun TrainingScreen(container: AppContainer, open: (String) -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var chosen by remember { mutableStateOf(emptyList<Expertise.Expert>()) }
     var version by remember { mutableIntStateOf(0) }
     val drafts = remember { mutableStateListOf<Pair<String, String>>() }
@@ -390,7 +390,7 @@ fun TrainingScreen(container: AppContainer, open: (String) -> Unit) {
 @Composable
 fun AbLabScreen(container: AppContainer, open: (String) -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var mode by remember { mutableStateOf("instructions") }
     var q by remember { mutableStateOf("") }
     var chosen by remember { mutableStateOf(emptyList<Expertise.Expert>()) }
@@ -402,7 +402,7 @@ fun AbLabScreen(container: AppContainer, open: (String) -> Unit) {
     var endpoints by remember { mutableStateOf<List<Router.Endpoint>>(emptyList()) }
     var pickA by remember { mutableIntStateOf(0) }
     var pickB by remember { mutableIntStateOf(1) }
-    androidx.compose.runtime.LaunchedEffect(Unit) { endpoints = runCatching { Router.endpoints(container.settingsRepository, ctx, Router.Lane.CHAT) }.getOrDefault(emptyList()).distinctBy { it.name + it.model }.take(12) }
+    androidx.compose.runtime.LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { endpoints = runCatching { Router.endpoints(container.settingsRepository, ctx, Router.Lane.CHAT) }.getOrDefault(emptyList()).distinctBy { it.name + it.model }.take(12) } }
     Column(verticalArrangement = Arrangement.spacedBy(Space.s)) {
         Row(horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
             Capsule("Instructions A vs B", mode == "instructions") { mode = "instructions" }

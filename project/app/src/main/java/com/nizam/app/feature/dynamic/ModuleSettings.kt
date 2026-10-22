@@ -59,7 +59,7 @@ private val COLOUR_CHOICES = listOf(
 
 @Composable
 fun ModuleSettingsScreen(container: AppContainer, moduleKey: String, onDeleted: () -> Unit) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val specs by container.dynamicRepository.allSpecs().collectAsState(initial = emptyList())
     val spec = specs.firstOrNull { it.key == moduleKey }
 

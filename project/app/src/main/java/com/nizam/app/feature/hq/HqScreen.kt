@@ -314,7 +314,7 @@ fun HqScreen(container: AppContainer, open: (String) -> Unit) {
         toast?.let { tx ->
             Text(tx, color = Color.White, fontSize = 13.sp, modifier = Modifier.align(Alignment.TopCenter).padding(top = 120.dp)
                 .clip(RoundedCornerShape(50)).background(Color(0xCC0F1223)).padding(horizontal = 14.dp, vertical = 8.dp))
-            LaunchedEffect(tx) { delay(2200); toast = null }
+            LaunchedEffect(tx) { com.nizam.app.ui.design.guard { delay(2200); toast = null } }
         }
 
         // the team conversation happening right now, as it happens
@@ -370,7 +370,7 @@ fun HqScreen(container: AppContainer, open: (String) -> Unit) {
     }
 
     // the frame loop: 60 fps while you touch it, 30 when idle, 20 on battery saver
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         var last = 0L; var acc = 0f; var celebrations = scene.celebrations; var labelKeys = 0
         val rnd = java.util.Random()
         while (true) {
@@ -425,10 +425,10 @@ fun HqScreen(container: AppContainer, open: (String) -> Unit) {
                 tick = now
             }
         }
-    }
+    } }
 
     // feed the office: a fresh picture every 1.5 s
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         while (true) {
             val snap = runCatching { withContext(Dispatchers.IO) { Hq.snapshot(container) } }.getOrNull()
             if (snap != null) {
@@ -445,9 +445,9 @@ fun HqScreen(container: AppContainer, open: (String) -> Unit) {
             }
             delay(1500)
         }
-    }
-    LaunchedEffect(Unit) { withContext(Dispatchers.IO) { Hq.refreshPlugs(c) } }
-    LaunchedEffect(version) { views = withContext(Dispatchers.IO) { Hq.views(c) } }
+    } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { withContext(Dispatchers.IO) { Hq.refreshPlugs(c) } } }
+    LaunchedEffect(version) { com.nizam.app.ui.design.guard { views = withContext(Dispatchers.IO) { Hq.views(c) } } }
 
     // ───────────── sheets ─────────────
     val s = sheet ?: return
@@ -483,9 +483,9 @@ fun HqScreen(container: AppContainer, open: (String) -> Unit) {
         }
     }
     // mark finished work as read once you open it
-    if (s.first == "agent") LaunchedEffect(s.second) {
+    if (s.first == "agent") LaunchedEffect(s.second) { com.nizam.app.ui.design.guard {
         views.firstOrNull { it.id == s.second && it.status == "done" }?.thread?.let { work.launch(Dispatchers.IO) { Hq.markSeen(c, it); Crew.version++ } }
-    }
+    } }
 }
 
 /** A game-style minimap: the floor turns with you, people are dots, and a marker shows where to go. */

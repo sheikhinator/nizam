@@ -97,7 +97,7 @@ object Forge {
 @Composable
 fun ForgeScreen(container: AppContainer, open: (String) -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val list = remember { mutableStateListOf<JSONObject>().apply { addAll(Forge.store(ctx).all()) } }
     var busy by remember { mutableStateOf(false) }
     Column(verticalArrangement = Arrangement.spacedBy(Space.s)) {
@@ -198,7 +198,7 @@ object Orion {
 @Composable
 fun OrionScreen(container: AppContainer, open: (String) -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var busy by remember { mutableStateOf(false) }
     var version by remember { mutableIntStateOf(0) }
     var monthly by remember { mutableStateOf<String?>(null) }
@@ -225,7 +225,7 @@ fun OrionScreen(container: AppContainer, open: (String) -> Unit) {
 @Composable
 fun EvolveScreen(container: AppContainer, open: (String) -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var version by remember { mutableIntStateOf(0) }
     val changed = remember(version) { Versions.changed(ctx) }
     var expanded by remember { mutableStateOf<String?>(null) }
@@ -284,7 +284,7 @@ fun EvolveScreen(container: AppContainer, open: (String) -> Unit) {
 @Composable
 fun PersonasScreen(container: AppContainer, open: (String) -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var version by remember { mutableIntStateOf(0) }
     val mine = remember(version) { Personas.custom(ctx) }
     var name by remember { mutableStateOf("") }

@@ -29,7 +29,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun WidgetSetupScreen() {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var lines by remember { mutableStateOf(MyWidget.lines(ctx)) }
     var title by remember { mutableStateOf(MyWidget.title(ctx)) }
     fun push() { scope.launch { runCatching { MyWidget.refresh(ctx) } } }

@@ -146,7 +146,7 @@ object DocText {
 @Composable
 fun DocChatScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var name by remember { mutableStateOf<String?>(null) }
     var text by remember { mutableStateOf("") }
     var status by remember { mutableStateOf<String?>(null) }
@@ -198,7 +198,7 @@ fun DocChatScreen(container: AppContainer) {
 @Composable
 fun RoomScanScreen() {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var bmp by remember { mutableStateOf<Bitmap?>(null) }
     var labels by remember { mutableStateOf<List<String>>(emptyList()) }
     var picked by remember { mutableStateOf(setOf<String>()) }
@@ -273,7 +273,7 @@ fun ScrubScreen() {
 @Composable
 fun PassportScreen() {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var crop by remember { mutableStateOf<Bitmap?>(null) }
     var msg by remember { mutableStateOf("Use a plain light wall, face the camera, even light.") }
     fun make(src: Bitmap) {
@@ -403,7 +403,7 @@ fun VoiceFxScreen() {
 // ─────────────────────────────── Food scanner ───────────────────────────────
 @Composable
 fun FoodScreen(container: AppContainer) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var code by remember { mutableStateOf("") }
     var out by remember { mutableStateOf<String?>(null) }
     var ingredients by remember { mutableStateOf("") }
@@ -452,7 +452,7 @@ fun FoodScreen(container: AppContainer) {
 @Composable
 fun ExportScreen() {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var busy by remember { mutableStateOf(false) }
     AtlasScreen(title = "Portable Atlas", subtitle = "Your lists, logs and notes in one zip you own", hub = Hub.Tools) {
         item("what") { Group(Modifier.padding(horizontal = Space.page, vertical = Space.s)) {

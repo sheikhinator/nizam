@@ -148,7 +148,7 @@ object Suggestions {
 fun SuggestionsCard(container: AppContainer, onOpen: (String) -> Unit, modifier: Modifier = Modifier) {
     val c = LocalContext.current
     var list by remember { mutableStateOf<List<Suggestions.S>>(emptyList()) }
-    LaunchedEffect(Unit) { list = runCatching { Suggestions.compute(container) }.getOrDefault(emptyList()) }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { list = runCatching { Suggestions.compute(container) }.getOrDefault(emptyList()) } }
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         list.forEach { s -> Column(Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
             Text("💡 ${s.text}", style = MaterialTheme.typography.bodyMedium)

@@ -112,7 +112,7 @@ object MailApp {
 @Composable
 fun MailScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var acct by remember { mutableStateOf(MailApp.account(ctx)) }
     var list by remember { mutableStateOf<List<MailApp.Msg>?>(null) }
     var err by remember { mutableStateOf<String?>(null) }
@@ -139,7 +139,7 @@ fun MailScreen(container: AppContainer) {
         }
         return
     }
-    LaunchedEffect(a, reload) { err = null; runCatching { MailApp.inbox(a) }.onSuccess { list = it }.onFailure { err = it.message } }
+    LaunchedEffect(a, reload) { com.nizam.app.ui.design.guard { err = null; runCatching { MailApp.inbox(a) }.onSuccess { list = it }.onFailure { err = it.message } } }
     val c = compose
     if (c != null) {
         var to by remember(c) { mutableStateOf(c.first) }; var subj by remember(c) { mutableStateOf(c.second) }; var text by remember(c) { mutableStateOf(c.third) }
@@ -161,7 +161,7 @@ fun MailScreen(container: AppContainer) {
     }
     val o = open
     if (o != null) {
-        LaunchedEffect(o) { body = null; ai = null; body = runCatching { MailApp.read(a, o.n) }.getOrElse { "" to "Couldn't open: ${it.message}" } }
+        LaunchedEffect(o) { com.nizam.app.ui.design.guard { body = null; ai = null; body = runCatching { MailApp.read(a, o.n) }.getOrElse { "" to "Couldn't open: ${it.message}" } } }
         AtlasScreen(title = o.subject, subtitle = "${o.from} · ${o.date}", hub = Hub.Work, actions = { Text("Back", Modifier.padding(Space.s).pressable { open = null; reload++ }, style = MaterialTheme.typography.labelLarge) }) {
             item("ai") { Row(Modifier.padding(horizontal = Space.page), horizontalArrangement = Arrangement.spacedBy(Space.s)) {
                 Capsule("Summarise", false) { scope.launch { ai = runCatching { Ai.generate(container.settingsRepository, "Summarise this email in 3 bullets and list anything I must do or reply to, with dates:\n${body?.second?.take(8000)}", maxOutputTokens = 400) }.getOrElse { it.message } } }

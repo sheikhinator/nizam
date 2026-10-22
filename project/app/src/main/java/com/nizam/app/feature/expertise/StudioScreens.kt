@@ -38,7 +38,7 @@ import java.util.Date
 @Composable
 fun ExpertiseStudio(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var editing by remember { mutableStateOf<String?>(null) }
     var name by remember { mutableStateOf("") }
     var role by remember { mutableStateOf("") }

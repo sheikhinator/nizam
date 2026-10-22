@@ -68,11 +68,11 @@ class PauseActivity : ComponentActivity() {
             NizamTheme(darkTheme = true) {
                 var ready by remember { mutableStateOf(false) }
                 val scale = remember { Animatable(0.35f) }
-                LaunchedEffect(Unit) {
+                LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
                     scale.animateTo(1f, tween(4000, easing = LinearEasing))       // breathe in
                     scale.animateTo(0.35f, tween(4000, easing = LinearEasing))    // and out
                     ready = true
-                }
+                } }
                 Column(
                     Modifier.fillMaxSize().background(Color(0xFF0B0F1A)).padding(28.dp),
                     horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
@@ -96,9 +96,9 @@ class PauseActivity : ComponentActivity() {
                         // Earn-your-scroll: when on, the 15 minutes are paid for with time earned today
                         val earnMode = com.nizam.app.feature.jarvis.Earn.on(this@PauseActivity)
                         var balance by remember { mutableStateOf(-1) }
-                        LaunchedEffect(earnMode) {
+                        LaunchedEffect(earnMode) { com.nizam.app.ui.design.guard {
                             if (earnMode) balance = com.nizam.app.feature.jarvis.Earn.balance(com.nizam.app.feature.jarvis.Background.container(this@PauseActivity))
-                        }
+                        } }
                         val affordable = !earnMode || balance >= 15
                         OutlinedButton(enabled = affordable, onClick = {
                             if (earnMode) com.nizam.app.feature.jarvis.Earn.spend(this@PauseActivity, 15)

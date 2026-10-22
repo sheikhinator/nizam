@@ -60,7 +60,7 @@ object Mega9 {
 
 @Composable
 private fun SpeedCheck(container: AppContainer) {
-    val c = LocalContext.current; val scope = rememberCoroutineScope()
+    val c = LocalContext.current; val scope = com.nizam.app.ui.design.rememberSafeScope()
     val store = remember { JsonStore(c, "nx_speedcheck") }
     var hist by remember { mutableStateOf(store.all()) }
     var running by remember { mutableStateOf(false) }
@@ -121,7 +121,7 @@ private fun TvHandoff() {
 
 @Composable
 private fun PantrySync(container: AppContainer, open: (String) -> Unit) {
-    val c = LocalContext.current; val scope = rememberCoroutineScope()
+    val c = LocalContext.current; val scope = com.nizam.app.ui.design.rememberSafeScope()
     val pantryStore = remember { JsonStore(c, "nxlog_pantry") }
     var pantry by remember { mutableStateOf(pantryStore.all()) }
     var plan by remember { mutableStateOf("") }

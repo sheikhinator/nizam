@@ -121,7 +121,7 @@ private fun Stakes(container: AppContainer) {
     val c = LocalContext.current
     var stakes by remember { mutableStateOf(c.arr("stakes.json")) }
     var days by remember { mutableStateOf<List<DayVector>>(emptyList()) }
-    LaunchedEffect(Unit) { days = runCatching { Days.build(container, c, 120) }.getOrElse { emptyList() } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { days = runCatching { Days.build(container, c, 120) }.getOrElse { emptyList() } } }
     var title by remember { mutableStateOf("") }
     var metric by remember { mutableStateOf("prayers") }
     var target by remember { mutableStateOf("5") }
@@ -181,7 +181,7 @@ private fun Stakes(container: AppContainer) {
 @Composable
 private fun Sounds() {
     var playing by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(playing) {
+    LaunchedEffect(playing) { com.nizam.app.ui.design.guard {
         val kind = playing ?: return@LaunchedEffect
         withContext(Dispatchers.Default) {
             val rate = 22050
@@ -213,7 +213,7 @@ private fun Sounds() {
                 }
             } finally { track.stop(); track.release() }
         }
-    }
+    } }
     Card {
         Text("Focus soundscapes", style = MaterialTheme.typography.titleMedium)
         Text("Generated live on your phone — no files, works offline. Plays while this screen is open.",

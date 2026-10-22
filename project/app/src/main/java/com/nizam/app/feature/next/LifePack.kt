@@ -135,7 +135,7 @@ object Capture {
 @Composable
 fun CaptureScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var text by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var items by remember { mutableStateOf(Capture.store(ctx).all()) }
@@ -226,7 +226,7 @@ fun CaptureScreen(container: AppContainer) {
 @Composable
 fun NegotiatorScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var to by remember { mutableStateOf("") }
     var issue by remember { mutableStateOf("") }
     var want by remember { mutableStateOf("") }

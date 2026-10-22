@@ -56,10 +56,10 @@ fun GrowthScreen(container: AppContainer) {
     var tab by remember { mutableStateOf("Challenges") }
     var days by remember { mutableStateOf<List<DayVector>>(emptyList()) }
     var summary by remember { mutableStateOf<ProgressSummary?>(null) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         days = runCatching { Days.build(container, context, 365) }.getOrElse { emptyList() }
         summary = runCatching { Xp.summarise(container) }.getOrNull()
-    }
+    } }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 18.dp)) {
         ModuleTitle("Growth", "Challenges, habit stacks, streak insurance and what you've earned")
         summary?.let { s ->

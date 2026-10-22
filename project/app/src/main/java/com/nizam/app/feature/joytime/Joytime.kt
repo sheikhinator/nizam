@@ -104,7 +104,7 @@ fun JoytimeApp(container: AppContainer, open: (String) -> Unit) {
         if (secure) w?.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
         onDispose { w?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE) }
     }
-    LaunchedEffect(Unit) { if (!unlocked && ok18) ReAuth.prompt(c) { ok -> if (ok) unlocked = true else open(Routes.TODAY) } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { if (!unlocked && ok18) ReAuth.prompt(c) { ok -> if (ok) unlocked = true else open(Routes.TODAY) } } }
 
     when {
         !ok18 -> Gate(onAccept = { prefs.edit().putBoolean("ok18", true).apply(); ok18 = true; if (!unlocked) ReAuth.prompt(c) { ok -> if (ok) unlocked = true else open(Routes.TODAY) } }, onExit = { exit() })
@@ -210,7 +210,7 @@ private fun ListingBody(c: Context, url: String, title: String, onEntry: (JoyNet
     var hidden by remember(url) { mutableStateOf(0) }
     var reload by remember { mutableStateOf(0) }
     var query by rememberSaveable(url) { mutableStateOf("") }
-    LaunchedEffect(url, reload) {
+    LaunchedEffect(url, reload) { com.nizam.app.ui.design.guard {
         loading = true; err = ""
         val r = JoyNet.fetch(c, url, if (reload > 0) 0L else 6 * 3_600_000L)
         val all = JoyNet.parseListing(r.text, url)
@@ -219,7 +219,7 @@ private fun ListingBody(c: Context, url: String, title: String, onEntry: (JoyNet
         entries = ok.sortedWith(Comparator<JoyNet.Entry> { a, b -> if (a.isDir != b.isDir) (if (a.isDir) -1 else 1) else JoyNet.natural.compare(a.name, b.name) })
         if (all.isEmpty()) err = if (r.error.isNotBlank()) "Couldn't load this page: ${r.error}" else "Nothing was found on this page. Open Settings › Connection test to see what the site returned."
         loading = false
-    }
+    } }
     val shown = remember(entries, query) { if (query.isBlank()) entries else entries.filter { (it.name + " " + it.note).contains(query, true) } }
     LazyColumn(Modifier.fillMaxSize(), contentPadding = androidx.compose.foundation.layout.PaddingValues(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         item { OutlinedTextField(query, { query = it }, label = { Text("Search this list") }, singleLine = true, modifier = Modifier.fillMaxWidth()) }
@@ -240,14 +240,14 @@ private fun ListingBody(c: Context, url: String, title: String, onEntry: (JoyNet
 
 @Composable
 private fun StoryScreen(c: Context, url: String, title: String, cat: String, onBack: () -> Unit, onExit: () -> Unit, onRead: (Int) -> Unit, onFolder: (JoyNet.Entry) -> Unit) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var loading by remember(url) { mutableStateOf(true) }
     var chapters by remember(url) { mutableStateOf<List<JoyNet.Entry>>(emptyList()) }
     var folders by remember(url) { mutableStateOf<List<JoyNet.Entry>>(emptyList()) }
     var err by remember(url) { mutableStateOf("") }
     var tick by remember { mutableStateOf(0) }
     var dl by remember { mutableStateOf("") }
-    LaunchedEffect(url) {
+    LaunchedEffect(url) { com.nizam.app.ui.design.guard {
         loading = true; err = ""
         if (!url.endsWith("/")) { chapters = listOf(JoyNet.Entry(title, url, false, "")) }
         else {
@@ -260,7 +260,7 @@ private fun StoryScreen(c: Context, url: String, title: String, cat: String, onB
         }
         if (chapters.isNotEmpty()) JoyStore.touch(c, url, title, cat, chapters.map { it.url })
         loading = false
-    }
+    } }
     val entry = remember(tick, chapters) { JoyStore.get(c, url) }
     val lastCh = entry?.optInt("ch") ?: 0
     Column(Modifier.fillMaxSize()) {
@@ -340,27 +340,27 @@ private fun ReaderScreen(c: Context, storyUrl: String, chapterIdx: Int, onBack: 
     val list = rememberLazyListState()
     val view = LocalView.current
 
-    LaunchedEffect(chUrl) {
+    LaunchedEffect(chUrl) { com.nizam.app.ui.design.guard {
         val r = JoyNet.fetch(c, chUrl, Long.MAX_VALUE / 4)
         if (r.text.isBlank()) { err = if (r.error.isNotBlank()) "Couldn't load this chapter: ${r.error}" else "This chapter is empty."; return@LaunchedEffect }
         if (JoySafety.blockedText(r.text)) { blocked = true; return@LaunchedEffect }
         parsed = JoyText.parse(r.text)
         // read ahead: the next chapter is fetched quietly so it opens instantly (and works offline)
         chapterUrls.getOrNull(idx + 1)?.let { n -> launch { JoyNet.fetch(c, n, Long.MAX_VALUE / 4) } }
-    }
+    } }
     // return to where you stopped
-    LaunchedEffect(parsed) {
+    LaunchedEffect(parsed) { com.nizam.app.ui.design.guard {
         val p = parsed ?: return@LaunchedEffect
         val e = JoyStore.get(c, storyUrl)
         if (e != null && e.optInt("ch") == idx && e.optInt("para") in 1 until p.paragraphs.size) list.scrollToItem(e.optInt("para"))
-    }
-    LaunchedEffect(parsed) {
+    } }
+    LaunchedEffect(parsed) { com.nizam.app.ui.design.guard {
         val p = parsed ?: return@LaunchedEffect
         snapshotFlow { list.firstVisibleItemIndex }.debounce(700).collect { at ->
             val inChapter = if (p.paragraphs.isEmpty()) 0f else at.toFloat() / p.paragraphs.size
             JoyStore.progress(c, storyUrl, idx, at, (((idx + inChapter) / chapterUrls.size) * 100).toInt().coerceIn(1, 100))
         }
-    }
+    } }
     DisposableEffect(bright) {
         val w = activityOf(c)?.window
         if (w != null) { val lp = w.attributes; lp.screenBrightness = if (bright < 0f) WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE else bright.coerceIn(0.02f, 1f); w.attributes = lp }
@@ -382,13 +382,13 @@ private fun ReaderScreen(c: Context, storyUrl: String, chapterIdx: Int, onBack: 
         tts.value = ref
         onDispose { runCatching { ref.stop(); ref.shutdown() } }
     }
-    LaunchedEffect(reading, readIdx, parsed) {
+    LaunchedEffect(reading, readIdx, parsed) { com.nizam.app.ui.design.guard {
         val p = parsed ?: return@LaunchedEffect
         if (!reading) { tts.value?.stop(); return@LaunchedEffect }
         if (readIdx >= p.paragraphs.size) { reading = false; return@LaunchedEffect }
         list.animateScrollToItem(readIdx)
         tts.value?.speak(p.paragraphs[readIdx], TextToSpeech.QUEUE_FLUSH, null, "joy$readIdx")
-    }
+    } }
 
     val family = when (font) { "Sans" -> FontFamily.SansSerif; "Mono" -> FontFamily.Monospace; else -> FontFamily.Serif }
     Box(Modifier.fillMaxSize().background(theme.bg)) {
@@ -426,7 +426,7 @@ private fun ReaderScreen(c: Context, storyUrl: String, chapterIdx: Int, onBack: 
                         item {
                             Column(Modifier.fillMaxWidth().padding(vertical = 24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 if (idx + 1 < chapterUrls.size) Button(onClick = { onChapter(idx + 1) }) { Text("Next chapter ›") }
-                                else { Text("The end", color = theme.dim); LaunchedEffect(Unit) { JoyStore.update(c, storyUrl) { it.put("done", true).put("pct", 100) } } }
+                                else { Text("The end", color = theme.dim); LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { JoyStore.update(c, storyUrl) { it.put("done", true).put("pct", 100) } } } }
                                 if (idx > 0) TextButton(onClick = { onChapter(idx - 1) }) { Text("‹ Previous chapter", color = theme.fg) }
                             }
                         }
@@ -508,7 +508,7 @@ private fun LibraryTab(c: Context, onResume: (String, Int) -> Unit) {
 @Composable
 private fun SettingsTab(c: Context) {
     val prefs = remember { c.getSharedPreferences("joytime", 0) }
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var lock by remember { mutableStateOf(prefs.getBoolean("lock", true)) }
     var secure by remember { mutableStateOf(prefs.getBoolean("secure", true)) }
     var base by remember { mutableStateOf(JoyNet.base(c)) }

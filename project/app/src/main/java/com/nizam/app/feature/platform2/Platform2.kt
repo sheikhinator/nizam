@@ -188,11 +188,11 @@ private fun SyncScreen() {
 
 @Composable
 private fun UpdatesScreen() {
-    val c = LocalContext.current; val scope = rememberCoroutineScope()
+    val c = LocalContext.current; val scope = com.nizam.app.ui.design.rememberSafeScope()
     var info by remember { mutableStateOf<Updater.Info?>(null) }; var status by remember { mutableStateOf("Checking…") }; var pct by remember { mutableStateOf(-1) }
     fun check() = scope.launch { status = "Checking…"; val i = runCatching { Updater.latest(c) }.getOrNull(); info = i
         status = when { i == null -> "Couldn't reach GitHub, or no build is published yet."; Updater.newer(c, i) -> "A newer build is available: ${i.tag}"; else -> "You're on the latest build (${i.tag})." } }
-    LaunchedEffect(Unit) { check() }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { check() } }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text("Channel: ${if (Labs.on(c, "beta_updates")) "Beta (new builds at once)" else "Stable (builds after 24 hours)"}. Change it in Labs.", style = MaterialTheme.typography.bodySmall)
         Text(status, style = MaterialTheme.typography.titleMedium)
@@ -240,7 +240,7 @@ private val WHATS_NEW = listOf(
 @Composable
 private fun WhatsNew() {
     val c = LocalContext.current
-    LaunchedEffect(Unit) { c.getSharedPreferences("whatsnew", 0).edit().putLong("seen", Updater.installedAt(c)).apply() }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { c.getSharedPreferences("whatsnew", 0).edit().putLong("seen", Updater.installedAt(c)).apply() } }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text("What's new in this version", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         WHATS_NEW.forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
@@ -253,10 +253,10 @@ fun whatsNewUnseen(c: Context) = Updater.installedAt(c) > c.getSharedPreferences
 
 @Composable
 private fun CalendarSync(container: AppContainer) {
-    val c = LocalContext.current; val scope = rememberCoroutineScope()
+    val c = LocalContext.current; val scope = com.nizam.app.ui.design.rememberSafeScope()
     var events by remember { mutableStateOf<List<PlanEngine.Block>>(emptyList()) }
     var status by remember { mutableStateOf("") }
-    LaunchedEffect(Unit) { events = runCatching { PlanEngine.events(c) }.getOrDefault(emptyList()) }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { events = runCatching { PlanEngine.events(c) }.getOrDefault(emptyList()) } }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text("Atlas reads today's events from your calendar. To put your tasks on the calendar, export them as a calendar file (opens in Google Calendar and others).", style = MaterialTheme.typography.bodyMedium)
         Text("Today", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
@@ -276,10 +276,10 @@ private fun CalendarSync(container: AppContainer) {
 
 @Composable
 private fun AtlasApps(container: AppContainer) {
-    val c = LocalContext.current; val scope = rememberCoroutineScope()
+    val c = LocalContext.current; val scope = com.nizam.app.ui.design.rememberSafeScope()
     var specs by remember { mutableStateOf(emptyList<com.nizam.app.feature.dynamic.ModuleSpec>()) }
     var paste by remember { mutableStateOf("") }; var status by remember { mutableStateOf("") }
-    LaunchedEffect(Unit) { specs = container.dynamicRepository.specs().first().filter { !it.builtIn } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { specs = container.dynamicRepository.specs().first().filter { !it.builtIn } } }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text("Share a tracker you made as a single piece of text. A friend pastes it below and gets the same tracker (fields only, none of your data).", style = MaterialTheme.typography.bodyMedium)
         if (specs.isEmpty()) Text("You haven't made any custom trackers yet. Ask Atlas to build one, then share it from here.", style = MaterialTheme.typography.bodySmall)

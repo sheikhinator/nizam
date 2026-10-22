@@ -85,7 +85,7 @@ private val QUESTIONS = listOf(
 
 @Composable
 fun OnboardingScreen(settings: SettingsRepository, onDone: () -> Unit) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var index by remember { mutableStateOf(-1) }
     val answers = remember { AnswerStore() }
     var name by remember { mutableStateOf("") }

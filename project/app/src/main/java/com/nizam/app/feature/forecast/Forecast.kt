@@ -236,7 +236,7 @@ internal suspend fun loadSeries(c: AppContainer, s: Series, days: Int = 120): Li
 @Composable
 internal fun ForecastScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var series by remember { mutableStateOf(Series.Spend) }
     var horizon by remember { mutableStateOf(14) }
     var hist by remember { mutableStateOf<List<Double>>(emptyList()) }
@@ -247,13 +247,13 @@ internal fun ForecastScreen(container: AppContainer) {
     var msg by remember { mutableStateOf("") }
     var tick by remember { mutableStateOf(0) }
 
-    LaunchedEffect(series, horizon, ready, tick) {
+    LaunchedEffect(series, horizon, ready, tick) { com.nizam.app.ui.design.guard {
         busy = true
         val h = Forecast.clean(loadSeries(container, series))
         hist = h
         pred = if (h.size >= 3) runCatching { Forecast.predict(c, h, horizon) }.getOrNull() else null
         busy = false
-    }
+    } }
 
     // No verticalScroll: this screen is reached through the generic tool-screen shell, which already
     // scrolls its content in a LazyColumn — nesting another scrollable Column crashes Compose.

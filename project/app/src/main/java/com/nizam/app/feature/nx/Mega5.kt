@@ -213,7 +213,7 @@ private fun H(t: String) = Text(t, style = MaterialTheme.typography.titleSmall, 
 
 @Composable
 private fun EpgScreen(open: (String) -> Unit) {
-    val c = LocalContext.current; val scope = rememberCoroutineScope()
+    val c = LocalContext.current; val scope = com.nizam.app.ui.design.rememberSafeScope()
     var url by remember { mutableStateOf(Epg.source(c)) }
     var guide by remember { mutableStateOf(Epg.guide(c)) }
     var status by remember { mutableStateOf("") }
@@ -284,7 +284,7 @@ private fun AllowancesScreen() {
     var granted by remember { mutableStateOf(Allowances.granted(c)) }
     var limits by remember { mutableStateOf(Allowances.all(c)) }
     var used by remember { mutableStateOf(emptyMap<String, Int>()) }
-    LaunchedEffect(granted) { if (granted) used = withContext(Dispatchers.IO) { Allowances.usedToday(c) } }
+    LaunchedEffect(granted) { com.nizam.app.ui.design.guard { if (granted) used = withContext(Dispatchers.IO) { Allowances.usedToday(c) } } }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         if (!granted) {
             Text("Atlas needs Usage access to see how long you've used each app today. Nothing leaves the phone.", style = MaterialTheme.typography.bodyMedium)

@@ -255,9 +255,9 @@ fun ListRow(title: String, modifier: Modifier = Modifier, supporting: String? = 
 /** Fades and lifts content in the first time it appears — for cards arriving on a screen. */
 fun Modifier.arrive(index: Int = 0): Modifier = composed {
     val t = remember { androidx.compose.animation.core.Animatable(0f) }
-    androidx.compose.runtime.LaunchedEffect(Unit) {
+    androidx.compose.runtime.LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         kotlinx.coroutines.delay(40L * index.coerceAtMost(8))
         t.animateTo(1f, Motion.enter())
-    }
+    } }
     this.graphicsLayer { alpha = t.value; translationY = (1f - t.value) * 24f }
 }

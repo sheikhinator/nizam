@@ -147,7 +147,7 @@ fun AuthenticatorScreen() {
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
     var scanning by remember { mutableStateOf(false) }
     var manual by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { while (true) { now = System.currentTimeMillis(); delay(500) } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { while (true) { now = System.currentTimeMillis(); delay(500) } } }
     fun addFrom(text: String) {
         val found = Totp.parse(text)
         if (found.isEmpty()) { Feedback.show("That isn't a 2FA code QR"); return }

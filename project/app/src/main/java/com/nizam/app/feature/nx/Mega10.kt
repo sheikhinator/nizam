@@ -162,7 +162,7 @@ private fun ApprenticeScreen(open: (String) -> Unit) {
 
 @Composable
 private fun CarePackScreen(container: AppContainer) {
-    val c = LocalContext.current; val scope = rememberCoroutineScope()
+    val c = LocalContext.current; val scope = com.nizam.app.ui.design.rememberSafeScope()
     var mode by remember { mutableStateOf("make") }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row { listOf("make" to "For someone else", "receive" to "I received one", "log" to "What's been applied").forEach { (k, l) ->

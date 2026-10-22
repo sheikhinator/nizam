@@ -168,7 +168,7 @@ object PetMind {
 @Composable
 fun PetChatScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val haptics = rememberHaptics()
     val pet = remember { Companion.load(ctx) }
     val msgs = remember { mutableStateListOf<PetMind.Msg>().apply { addAll(PetMind.history(ctx)) } }
@@ -212,10 +212,10 @@ fun PetChatScreen(container: AppContainer) {
     val listen = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
         if (r.resultCode == Activity.RESULT_OK) r.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()?.let { send(it) }
     }
-    LaunchedEffect(msgs.size, busy) { if (msgs.isNotEmpty()) list.animateScrollToItem(msgs.size - 1 + if (busy) 1 else 0) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(msgs.size, busy) { com.nizam.app.ui.design.guard { if (msgs.isNotEmpty()) list.animateScrollToItem(msgs.size - 1 + if (busy) 1 else 0) } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         if (msgs.isEmpty()) { msgs += PetMind.Msg(false, "Hi! It's me, ${pet.name}! Want to chat, play a game, or hear a joke? 🐾", "EXCITED"); mood = Companion.Mood.EXCITED }
-    }
+    } }
     val c = MaterialTheme.colorScheme
     Column(Modifier.fillMaxSize().imePadding()) {
         // the pet itself, big, reacting

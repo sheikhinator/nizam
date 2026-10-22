@@ -87,7 +87,7 @@ object Dash {
         val spend = spendByDay(d.txns)
         val spentToday = spend[LocalDate.now().toString()] ?: 0.0
         val yday = last.getOrNull(last.size - 2)
-        LaunchedEffect(Unit) { SoundFx.boot(c) }
+        LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { SoundFx.boot(c) } }
         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 KpiTile("Prayers", (today?.prayers ?: 0).toDouble(), Modifier.weight(1f), suffix = " / 5", trend = last.map { it.prayers.toDouble() })
@@ -248,7 +248,7 @@ object Dash {
     @Composable
     fun ForHub(hub: Hub, container: AppContainer, onOpen: (String) -> Unit) {
         var data by remember { mutableStateOf<DashData?>(null) }
-        LaunchedEffect(hub) { data = load(container) }
+        LaunchedEffect(hub) { com.nizam.app.ui.design.guard { data = load(container) } }
         val d = data ?: run { Text("Reading your data…", Modifier.padding(16.dp), style = MaterialTheme.typography.bodySmall); return }
         when (hub) {
             Hub.Money -> Money(d, onOpen)

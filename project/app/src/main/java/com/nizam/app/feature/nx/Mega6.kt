@@ -132,7 +132,7 @@ private fun HabitGenome() {
     var outcome by remember { mutableStateOf<String?>(null) }
     var field by remember { mutableStateOf<String?>(null) }
     var result by remember { mutableStateOf<List<String>>(emptyList()) }
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     fun dateOf(o: JSONObject): String? = listOf("d", "date", "day").map { o.optString(it) }.firstOrNull { it.matches(Regex("\\d{4}-\\d{2}-\\d{2}")) }
         ?: o.optString("id").take(13).toLongOrNull()?.let { java.time.Instant.ofEpochMilli(it).atZone(java.time.ZoneId.systemDefault()).toLocalDate().toString() }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -175,11 +175,11 @@ private fun HabitGenome() {
 private fun PrayerClockScreen(container: AppContainer) {
     val c = LocalContext.current
     var times by remember { mutableStateOf(emptyMap<String, Int>()) }
-    LaunchedEffect(Unit) { times = PrayerClock.prayers(container) }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { times = PrayerClock.prayers(container) } }
     var phrase by remember { mutableStateOf("Asr + 40") }
     var what by remember { mutableStateOf("") }
     val at = PrayerClock.parse(phrase, times)
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         if (times.isNotEmpty()) Text(times.entries.joinToString(" · ") { "${it.key} ${PrayerClock.hm(it.value)}" }, style = MaterialTheme.typography.bodySmall)
         OutlinedTextField(phrase, { phrase = it }, label = { Text("When (e.g. after Fajr, Asr + 40, before Maghrib, Isha + 1h)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
@@ -198,7 +198,7 @@ private fun PrayerClockScreen(container: AppContainer) {
 
 @Composable
 private fun PaperAtlas(container: AppContainer) {
-    val c = LocalContext.current; val scope = rememberCoroutineScope()
+    val c = LocalContext.current; val scope = com.nizam.app.ui.design.rememberSafeScope()
     var habits by remember { mutableStateOf("Fajr on time, Quran 1 page, Walk 20 min, No phone after 11") }
     var status by remember { mutableStateOf("") }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {

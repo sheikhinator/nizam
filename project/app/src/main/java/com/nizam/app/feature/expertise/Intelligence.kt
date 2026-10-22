@@ -119,7 +119,7 @@ object Oracle {
 @Composable
 fun OracleScreen(container: AppContainer, open: (String) -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var q by remember { mutableStateOf("") }
     var web by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
@@ -206,7 +206,7 @@ object Knowledge {
 @Composable
 fun KnowledgeScreen(container: AppContainer, open: (String) -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var q by remember { mutableStateOf("") }
     var adding by remember { mutableStateOf(false) }
     var title by remember { mutableStateOf("") }
@@ -217,7 +217,7 @@ fun KnowledgeScreen(container: AppContainer, open: (String) -> Unit) {
     var busy by remember { mutableStateOf(false) }
     val docs = remember(version) { Knowledge.store(ctx).all().sortedByDescending { it.optLong("at") } }
     var hits by remember { mutableStateOf<List<Knowledge.Hit>>(emptyList()) }
-    LaunchedEffect(q) { hits = if (q.length < 3) emptyList() else withContext(Dispatchers.IO) { Knowledge.search(ctx, q) } }
+    LaunchedEffect(q) { com.nizam.app.ui.design.guard { hits = if (q.length < 3) emptyList() else withContext(Dispatchers.IO) { Knowledge.search(ctx, q) } } }
 
     Column(verticalArrangement = Arrangement.spacedBy(Space.s)) {
         Row(horizontalArrangement = Arrangement.spacedBy(Space.s)) {
@@ -307,13 +307,13 @@ object MemoryGraph {
 @Composable
 fun MemoryGraphScreen(container: AppContainer, open: (String) -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var graph by remember { mutableStateOf<MemoryGraph.Graph?>(null) }
     var filter by remember { mutableStateOf("all") }
     var picked by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
     var version by remember { mutableIntStateOf(0) }
-    LaunchedEffect(version) { runCatching { Roads.warm(container) }; graph = withContext(Dispatchers.IO) { MemoryGraph.build(ctx) } }
+    LaunchedEffect(version) { com.nizam.app.ui.design.guard { runCatching { Roads.warm(container) }; graph = withContext(Dispatchers.IO) { MemoryGraph.build(ctx) } } }
     val g = graph
     val primary = MaterialTheme.colorScheme.primary
     val people = Hub.Social.tint(); val places = Hub.Travel.tint(); val things = Hub.Memory.tint()
@@ -418,12 +418,12 @@ object Predict {
 @Composable
 fun PredictScreen(container: AppContainer, open: (String) -> Unit) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var items by remember { mutableStateOf<List<Roads.Item>>(emptyList()) }
     var key by remember { mutableStateOf("spend") }
     var why by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { runCatching { Roads.warm(container) }; items = withContext(Dispatchers.IO) { Roads.items(ctx, 400) } }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { runCatching { Roads.warm(container) }; items = withContext(Dispatchers.IO) { Roads.items(ctx, 400) } } }
     val s = Predict.series.first { it.key == key }
     val f = remember(items, key) { if (items.isEmpty()) null else Predict.run(items, s) }
     val tint = MaterialTheme.colorScheme.primary

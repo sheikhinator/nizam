@@ -109,13 +109,13 @@ fun CuratorScreen(container: AppContainer) {
 
     // an expert's desk can hand over a first question; the expertise stays pinned while it's open
     val pinnedExpert by com.nizam.app.feature.expertise.Expertise.pinned.collectAsState()
-    androidx.compose.runtime.LaunchedEffect(Unit) { com.nizam.app.feature.expertise.Expertise.takeAsk()?.let { draft = it } }
+    androidx.compose.runtime.LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { com.nizam.app.feature.expertise.Expertise.takeAsk()?.let { draft = it } } }
 
     // Open the connection to the AI and build the app snapshot before the first message is typed
-    androidx.compose.runtime.LaunchedEffect(Unit) {
+    androidx.compose.runtime.LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         runCatching { com.nizam.app.net.Router.warm(container.settingsRepository, context) }
         runCatching { Snapshot.of(container) }
-    }
+    } }
 
     fun performSend(message: String, files: List<com.nizam.app.feature.attach.Attachment>, contextParts: List<RunContextPart>) {
         if (message.isBlank() && files.isEmpty()) return
@@ -215,7 +215,7 @@ fun CuratorScreen(container: AppContainer) {
     }
 
     // A question handed over from Search ("Ask Atlas") is reviewed before its first network request.
-    androidx.compose.runtime.LaunchedEffect(Unit) { AskAtlas.take()?.let { send(it) } }
+    androidx.compose.runtime.LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { AskAtlas.take()?.let { send(it) } } }
 
     Column(Modifier.fillMaxSize().imePadding().padding(horizontal = 18.dp)) {
         Row(Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -260,10 +260,10 @@ fun CuratorScreen(container: AppContainer) {
         Spacer(Modifier.height(10.dp))
 
         val listState = androidx.compose.foundation.lazy.rememberLazyListState()
-        androidx.compose.runtime.LaunchedEffect(turns.size, streaming.length / 60, busy) {
+        androidx.compose.runtime.LaunchedEffect(turns.size, streaming.length / 60, busy) { com.nizam.app.ui.design.guard {
             val n = listState.layoutInfo.totalItemsCount
             if (n > 0) listState.animateScrollToItem(n - 1)
-        }
+        } }
         pinnedExpert?.let { ex ->
             Row(Modifier.fillMaxWidth().padding(bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text("Thinking as ${ex.name}", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, modifier = Modifier.weight(1f))

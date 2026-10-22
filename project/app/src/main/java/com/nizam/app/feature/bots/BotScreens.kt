@@ -137,7 +137,7 @@ fun BotThreadScreen(container: AppContainer, onBack: () -> Unit = {}) {
     var attachments by remember { mutableStateOf<List<com.nizam.app.feature.attach.Attachment>>(emptyList()) }
     var busyLabel by remember { mutableStateOf<String?>(null) }
     val listState = rememberLazyListState()
-    LaunchedEffect(turns.size) { if (turns.isNotEmpty()) listState.animateScrollToItem(turns.size - 1) }
+    LaunchedEffect(turns.size) { com.nizam.app.ui.design.guard { if (turns.isNotEmpty()) listState.animateScrollToItem(turns.size - 1) } }
     if (bot == null) { Text("Bot not found", Modifier.padding(20.dp)); return }
 
     fun send() {

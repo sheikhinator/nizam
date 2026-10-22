@@ -182,7 +182,7 @@ object Mega11 {
 @Composable
 private fun WhyNumbers(container: AppContainer) {
     var s by remember { mutableStateOf<com.nizam.app.feature.progress.ProgressSummary?>(null) }
-    LaunchedEffect(Unit) { s = runCatching { com.nizam.app.feature.progress.Xp.summarise(container) }.getOrNull() }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { s = runCatching { com.nizam.app.feature.progress.Xp.summarise(container) }.getOrNull() } }
     val x = com.nizam.app.feature.progress.Xp
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         val sum = s ?: run { Text("Adding it up…"); return@Column }
@@ -203,7 +203,7 @@ private fun WhyNumbers(container: AppContainer) {
 
 @Composable
 private fun PlaceNotesScreen() {
-    val c = LocalContext.current; val scope = rememberCoroutineScope()
+    val c = LocalContext.current; val scope = com.nizam.app.ui.design.rememberSafeScope()
     var seen by remember { mutableStateOf<Set<String>>(emptySet()) }
     var mode by remember { mutableStateOf("read") }
     var place by remember { mutableStateOf("") }
@@ -250,7 +250,7 @@ private fun HouseholdScreen() {
     var live by remember { mutableStateOf(false) }
     val session = remember { Household.Session(c.applicationContext) { e -> log = (listOf(e) + log).take(6) } }
     DisposableEffect(Unit) { onDispose { session.stop() } }
-    LaunchedEffect(live) { while (live) { kotlinx.coroutines.delay(2000); items = Household.items(c) } }
+    LaunchedEffect(live) { com.nizam.app.ui.design.guard { while (live) { kotlinx.coroutines.delay(2000); items = Household.items(c) } } }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text("Everyone at home uses the same phrase. While this screen is open on two phones on the same Wi-Fi, their lists merge — no internet or accounts.", style = MaterialTheme.typography.bodyMedium)
         OutlinedTextField(phrase, { phrase = it; Household.setPhrase(c, it) }, label = { Text("Household phrase") }, singleLine = true, modifier = Modifier.fillMaxWidth())

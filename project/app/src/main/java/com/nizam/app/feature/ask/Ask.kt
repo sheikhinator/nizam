@@ -119,7 +119,7 @@ fun AskScreen(container: AppContainer, onOpen: (String) -> Unit) {
 
 @Composable
 private fun DoPane(container: AppContainer, onOpen: (String) -> Unit) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var text by rememberSaveable { mutableStateOf("") }
     var pending by remember { mutableStateOf<Intent?>(null) }
     var status by remember { mutableStateOf("") }

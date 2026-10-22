@@ -99,9 +99,9 @@ fun AtlasMessengerScreen() {
     var chatPub by rememberSaveable { mutableStateOf("") }
     DisposableEffect(Unit) { AtlasChat.appInForeground = true; onDispose { AtlasChat.appInForeground = false; engine.openChat = null } }
     val notifPerm = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
-    LaunchedEffect(engine.registered) {
+    LaunchedEffect(engine.registered) { com.nizam.app.ui.design.guard {
         if (engine.registered) { AtlasChat.schedulePolling(ctx); if (Build.VERSION.SDK_INT >= 33) notifPerm.launch(android.Manifest.permission.POST_NOTIFICATIONS) }
-    }
+    } }
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
       Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) { Box(Modifier.widthIn(max = 640.dp).fillMaxSize()) {
         when {
@@ -122,7 +122,7 @@ fun AtlasMessengerScreen() {
 
 @Composable
 private fun Onboarding(engine: ChatEngine) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var name by remember { mutableStateOf("") }
     var err by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
@@ -259,7 +259,7 @@ private fun ChatScreen(engine: ChatEngine, pub: String, rev: Int, back: () -> Un
     var editing by remember(pub) { mutableStateOf<Msg?>(null) }
     var menuFor by remember { mutableStateOf<Msg?>(null) }
     val clip = LocalClipboardManager.current
-    LaunchedEffect(pub, msgs.size) { engine.markRead(pub); if (msgs.isNotEmpty()) list.animateScrollToItem(msgs.size - 1) }
+    LaunchedEffect(pub, msgs.size) { com.nizam.app.ui.design.guard { engine.markRead(pub); if (msgs.isNotEmpty()) list.animateScrollToItem(msgs.size - 1) } }
     val byId = remember(msgs) { msgs.associateBy { it.id } }
     val me = engine.myPub.orEmpty()
 
@@ -395,7 +395,7 @@ private fun TopBar(title: String, back: () -> Unit, actions: @Composable RowScop
 
 @Composable
 private fun NewChat(engine: ChatEngine, back: () -> Unit, open: (String) -> Unit) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val clip = LocalClipboardManager.current
     var q by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }

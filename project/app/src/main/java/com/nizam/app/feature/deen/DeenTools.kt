@@ -104,11 +104,11 @@ fun RamadanTab(container: AppContainer) {
     val c = LocalContext.current
     var tick by remember { mutableIntStateOf(0) }
     var times by remember { mutableStateOf<PrayerTimes.Times?>(null) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
         val s = container.settingsRepository
         times = PrayerTimes.calculate(LocalDate.now(), s.latitude.first(), s.longitude.first(),
             runCatching { PrayerTimes.Method.valueOf(s.prayerMethod.first()) }.getOrElse { PrayerTimes.Method.KARACHI }, s.hanafiAsr.first())
-    }
+    } }
     if (!Ramadan.inRamadan()) {
         val n = Ramadan.daysUntil()
         Group {

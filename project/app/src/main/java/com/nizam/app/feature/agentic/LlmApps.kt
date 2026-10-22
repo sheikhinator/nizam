@@ -158,7 +158,7 @@ private fun summarise(rows: List<List<String>>): String {
 @Composable
 private fun AskDataScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var raw by remember { mutableStateOf("") }
     var q by remember { mutableStateOf("") }
     var out by remember { mutableStateOf("") }
@@ -197,7 +197,7 @@ private fun htmlToText(h: String): String = h
 
 @Composable
 private fun WebChatScreen(container: AppContainer) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var url by remember { mutableStateOf("") }
     var page by remember { mutableStateOf("") }
     var status by remember { mutableStateOf("") }
@@ -247,7 +247,7 @@ private fun tagOf(b: String, n: String) = Regex("(?s)<$n[^>]*>(.*?)</$n>").find(
 @Composable
 private fun PapersScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val pr = remember { c.getSharedPreferences("agentic", 0) }
     var q by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
@@ -302,7 +302,7 @@ private fun retrieve(notes: List<com.nizam.app.feature.notes.Note>, q: String, k
 
 @Composable
 private fun CitedAnswerScreen(container: AppContainer) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var q by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var answer by remember { mutableStateOf("") }
@@ -346,7 +346,7 @@ private fun CitedAnswerScreen(container: AppContainer) {
 
 @Composable
 private fun MoneyCoachScreen(container: AppContainer) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var goal by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var out by remember { mutableStateOf("") }

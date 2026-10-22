@@ -48,7 +48,7 @@ fun sharedPayloadFrom(intent: Intent?): SharedPayload? {
 /** Where shared text and images land. Capture shouldn't require opening the app and navigating. */
 @Composable
 fun ShareInboxScreen(container: AppContainer, payload: SharedPayload, onDone: () -> Unit) {
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val context = androidx.compose.ui.platform.LocalContext.current
     var title by remember { mutableStateOf(payload.text?.lines()?.firstOrNull()?.take(60).orEmpty()) }
     var body by remember { mutableStateOf(payload.text.orEmpty()) }

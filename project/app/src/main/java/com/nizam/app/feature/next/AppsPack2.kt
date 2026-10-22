@@ -53,7 +53,7 @@ private fun money(v: Double) = "Rs " + "%,d".format(v.toLong())
 @Composable
 fun VehicleScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val store = remember { JsonStore(ctx, "vehicle") }
     var list by remember { mutableStateOf(store.all()) }
     var kind by remember { mutableStateOf("Fuel") }
@@ -118,7 +118,7 @@ fun VehicleScreen(container: AppContainer) {
 @Composable
 fun PetsScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val store = remember { JsonStore(ctx, "pets") }
     var list by remember { mutableStateOf(store.all()) }
     var name by remember { mutableStateOf("") }
@@ -210,7 +210,7 @@ fun InventoryScreen() {
 @Composable
 fun TravelPlannerScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var where by remember { mutableStateOf("") }
     var days by remember { mutableStateOf("4") }
     var who by remember { mutableStateOf("Family") }

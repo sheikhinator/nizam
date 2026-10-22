@@ -101,11 +101,11 @@ object SelfCheck {
 
 @Composable
 private fun SelfCheckScreen(container: AppContainer, open: (String) -> Unit) {
-    val c = LocalContext.current; val scope = rememberCoroutineScope()
+    val c = LocalContext.current; val scope = com.nizam.app.ui.design.rememberSafeScope()
     var list by remember { mutableStateOf<List<SelfCheck.Finding>?>(null) }
     var msg by remember { mutableStateOf("") }
     fun rerun() = scope.launch { list = null; list = SelfCheck.run(container) }
-    LaunchedEffect(Unit) { list = SelfCheck.run(container) }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { list = SelfCheck.run(container) } }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         val l = list ?: run { Text("Checking everything…"); return@Column }
         val bad = l.count { it.level == SelfCheck.Level.BAD }; val warn = l.count { it.level == SelfCheck.Level.WARN }

@@ -440,14 +440,14 @@ private fun ChartBlock(block: Block.Chart, accent: Color) {
 private fun ImageBlock(block: Block.Image) {
     var bitmap by remember(block.url) { mutableStateOf<android.graphics.Bitmap?>(null) }
     var failed by remember(block.url) { mutableStateOf(false) }
-    androidx.compose.runtime.LaunchedEffect(block.url) {
+    androidx.compose.runtime.LaunchedEffect(block.url) { com.nizam.app.ui.design.guard {
         bitmap = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
             runCatching {
                 java.net.URL(block.url).openStream().use { android.graphics.BitmapFactory.decodeStream(it) }
             }.getOrNull()
         }
         failed = bitmap == null
-    }
+    } }
     Column(Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
         when {
             bitmap != null -> androidx.compose.foundation.Image(

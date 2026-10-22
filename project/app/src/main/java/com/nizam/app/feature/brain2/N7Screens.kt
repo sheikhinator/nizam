@@ -92,7 +92,7 @@ fun PlacesScreen() {
 @Composable
 fun CardsScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var tick by remember { mutableStateOf(0) }
     var studying by remember { mutableStateOf<String?>(null) }
     var queue by remember { mutableStateOf<List<JSONObject>>(emptyList()) }
@@ -174,7 +174,7 @@ fun TwinScreen(container: AppContainer) {
     var l by remember { mutableStateOf(Twin.Levers()) }
     var startText by remember { mutableStateOf("") }
     var goalText by remember { mutableStateOf("") }
-    LaunchedEffect(Unit) { base = Twin.base(container) }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { base = Twin.base(container) } }
     val b = base
     AtlasScreen(title = "Financial twin", subtitle = "Your real spending, run forward. Pull a lever and watch the future move.", hub = Hub.Money, loading = b == null) {
         if (b == null) return@AtlasScreen
@@ -234,7 +234,7 @@ fun TwinScreen(container: AppContainer) {
 @Composable
 fun InboxScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val version by AtlasNotificationListener.version.collectAsState()
     val threads = remember(version) { Inbox.threads(ctx) }
     var drafts by remember { mutableStateOf(mapOf<String, String>()) }

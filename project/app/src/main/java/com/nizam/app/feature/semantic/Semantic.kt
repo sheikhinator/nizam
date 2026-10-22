@@ -210,7 +210,7 @@ object Semantic {
 @Composable
 internal fun SemanticScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var ready by remember { mutableStateOf(Semantic.ready(c)) }
     var prog by remember { mutableStateOf<Float?>(null) }
     var msg by remember { mutableStateOf("") }

@@ -156,7 +156,7 @@ fun LibraryScreen(container: AppContainer) {
     val vm: LibraryViewModel = viewModel(factory = vmFactory { LibraryViewModel(container.bookRepository) })
     val books by vm.books.collectAsState()
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
 
     var reading by remember { mutableStateOf<Book?>(null) }
     var editing by remember { mutableStateOf<Book?>(null) }
@@ -382,7 +382,7 @@ private fun PdfReader(book: Book, onBack: () -> Unit, onSave: (Book) -> Unit) {
     var error by remember(book.id) { mutableStateOf<String?>(null) }
     var loading by remember(book.id) { mutableStateOf(true) }
 
-    LaunchedEffect(book.id, page) {
+    LaunchedEffect(book.id, page) { com.nizam.app.ui.design.guard {
         loading = true
         error = null
         val rendered = withContext(Dispatchers.IO) {
@@ -420,7 +420,7 @@ private fun PdfReader(book: Book, onBack: () -> Unit, onSave: (Book) -> Unit) {
                 )
             )
         }
-    }
+    } }
 
     Column(Modifier.fillMaxSize().padding(horizontal = 18.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -482,7 +482,7 @@ private fun TextReader(book: Book, onBack: () -> Unit) {
     var text by remember(book.id) { mutableStateOf("Loading…") }
     var fontSize by remember { mutableStateOf(17f) }
 
-    LaunchedEffect(book.id) {
+    LaunchedEffect(book.id) { com.nizam.app.ui.design.guard {
         text = withContext(Dispatchers.IO) {
             runCatching {
                 context.contentResolver.openInputStream(Uri.parse(book.fileUri))?.use { stream ->
@@ -490,7 +490,7 @@ private fun TextReader(book: Book, onBack: () -> Unit) {
                 } ?: "Could not open this file."
             }.getOrElse { "Could not open this file. It may have been moved or deleted." }
         }
-    }
+    } }
 
     Column(Modifier.fillMaxSize().padding(horizontal = 18.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {

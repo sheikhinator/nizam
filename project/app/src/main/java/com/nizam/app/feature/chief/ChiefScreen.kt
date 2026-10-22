@@ -137,7 +137,7 @@ private fun DiffBox(diff: String) {
 @Composable
 fun ChiefScreen(container: AppContainer, open: (String) -> Unit = {}) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var tick by remember { mutableIntStateOf(0) }
     val runnerTick by ChiefRunner.tick.collectAsState()
     val running by ChiefRunner.running.collectAsState()
@@ -174,9 +174,9 @@ fun ChiefScreen(container: AppContainer, open: (String) -> Unit = {}) {
         if (res.resultCode == Activity.RESULT_OK) res.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()?.let { input = (input + " " + it).trim() }
     }
 
-    LaunchedEffect(Unit) { ChiefRunner.resume(c) }
-    LaunchedEffect(running) { elapsed = 0; while (running) { delay(1000); elapsed++ } }
-    LaunchedEffect(blocks.size, running) { if (blocks.isNotEmpty()) listState.animateScrollToItem(blocks.size + 1) }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { ChiefRunner.resume(c) } }
+    LaunchedEffect(running) { com.nizam.app.ui.design.guard { elapsed = 0; while (running) { delay(1000); elapsed++ } } }
+    LaunchedEffect(blocks.size, running) { com.nizam.app.ui.design.guard { if (blocks.isNotEmpty()) listState.animateScrollToItem(blocks.size + 1) } }
 
     fun send() {
         if (ChiefStore.githubToken(c).isBlank()) { showSetup = true; ChiefRunner.log += Step.Note("Add your GitHub token in Setup first, so I can save changes and build them."); return }
@@ -254,7 +254,7 @@ fun ChiefScreen(container: AppContainer, open: (String) -> Unit = {}) {
             var releases by remember { mutableStateOf<List<org.json.JSONObject>?>(null) }
             var installingTag by remember { mutableStateOf<String?>(null) }
             var rollProgress by remember { mutableStateOf<Int?>(null) }
-            LaunchedEffect(view) { releases = runCatching { GitHubApi(ChiefStore.githubToken(c)).recentReleases() }.getOrNull() }
+            LaunchedEffect(view) { com.nizam.app.ui.design.guard { releases = runCatching { GitHubApi(ChiefStore.githubToken(c)).recentReleases() }.getOrNull() } }
             TextButton(onClick = { view = "chat" }) { Text("← Back to chat") }
             Text("Any past build still works — pick one to go back to it. This never changes the code, only which build is installed.",
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(vertical = 4.dp))

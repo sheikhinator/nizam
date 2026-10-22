@@ -57,7 +57,7 @@ private fun Box2(content: @Composable () -> Unit) {
 @Composable
 fun FlowsScreen(container: AppContainer) {
     val c = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     var version by remember { mutableIntStateOf(0) }
     var view by remember { mutableStateOf("list") }
     var editing by remember { mutableStateOf<JSONObject?>(null) }

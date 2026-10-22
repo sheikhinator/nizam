@@ -322,7 +322,7 @@ fun RatesScreen() {
     val ctx = LocalContext.current
     var data by remember { mutableStateOf<JSONObject?>(null) }
     var amount by remember { mutableStateOf("100") }
-    LaunchedEffect(Unit) { data = Rates.fetch(ctx) }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { data = Rates.fetch(ctx) } }
     val r = data?.optJSONObject("rates")
     val codes = listOf("USD" to "US dollar", "SAR" to "Saudi riyal", "AED" to "UAE dirham", "GBP" to "Pound", "EUR" to "Euro",
         "CAD" to "Canadian dollar", "AUD" to "Australian dollar", "CNY" to "Chinese yuan", "TRY" to "Turkish lira", "MYR" to "Ringgit")

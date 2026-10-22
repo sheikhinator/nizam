@@ -88,7 +88,7 @@ fun ReplayTab(container: AppContainer) {
     var filter by remember { mutableStateOf("All") }
     val day = when (which) { "Yesterday" -> LocalDate.now().minusDays(1); "2 days ago" -> LocalDate.now().minusDays(2); else -> LocalDate.now() }
     var moments by remember { mutableStateOf<List<Moment>>(emptyList()) }
-    LaunchedEffect(day) { moments = Replay.moments(container, day) }
+    LaunchedEffect(day) { com.nizam.app.ui.design.guard { moments = Replay.moments(container, day) } }
     var question by remember { mutableStateOf("") }
     var answer by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }

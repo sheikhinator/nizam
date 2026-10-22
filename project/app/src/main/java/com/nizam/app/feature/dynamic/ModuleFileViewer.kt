@@ -123,13 +123,13 @@ fun ModuleFileViewer(uriString: String, name: String, mime: String, onBack: () -
             val duration = player?.duration ?: 0
 
             DisposableEffect(player) { onDispose { runCatching { player?.release() } } }
-            LaunchedEffect(playing) {
+            LaunchedEffect(playing) { com.nizam.app.ui.design.guard {
                 while (playing && player != null) {
                     position = runCatching { player.currentPosition }.getOrDefault(0)
                     if (!player.isPlaying) playing = false
                     delay(400)
                 }
-            }
+            } }
             fun clock(ms: Int) = "%d:%02d".format(ms / 60000, (ms / 1000) % 60)
 
             Column(Modifier.fillMaxSize().padding(20.dp)) {
@@ -169,7 +169,7 @@ fun ModuleFileViewer(uriString: String, name: String, mime: String, onBack: () -
         }
 
         else -> {
-            LaunchedEffect(uriString) {
+            LaunchedEffect(uriString) { com.nizam.app.ui.design.guard {
                 runCatching {
                     context.startActivity(
                         Intent(Intent.ACTION_VIEW).apply {
@@ -179,7 +179,7 @@ fun ModuleFileViewer(uriString: String, name: String, mime: String, onBack: () -
                     )
                 }
                 onBack()
-            }
+            } }
             Column(Modifier.fillMaxSize().padding(20.dp)) {
                 Header(name, onBack, MaterialTheme.colorScheme.onBackground)
                 Text("Opening in another app…", style = MaterialTheme.typography.bodyMedium)

@@ -76,7 +76,7 @@ private fun JSONArray?.objs() = this?.let { a -> (0 until a.length()).mapNotNull
 @Composable
 fun EbooksScreen() {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val shelf = remember { JsonStore(ctx, "ebook_shelf") }
     var books by remember { mutableStateOf(shelf.all()) }
     var q by remember { mutableStateOf("") }
@@ -85,7 +85,7 @@ fun EbooksScreen() {
     var busy by remember { mutableStateOf(false) }
     val r = reading
     if (r != null) { BookReader(r) { pos -> shelf.update(r.optString("id")) { it.put("pos", pos) }; books = shelf.all(); reading = null }; return }
-    LaunchedEffect(Unit) { if (results == null) results = runCatching { JSONObject(Http.getJson("https://gutendex.com/books?sort=popular")).optJSONArray("results").objs() }.getOrDefault(emptyList()) }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { if (results == null) results = runCatching { JSONObject(Http.getJson("https://gutendex.com/books?sort=popular")).optJSONArray("results").objs() }.getOrDefault(emptyList()) } }
     AtlasScreen(title = "Free ebooks", subtitle = "${books.size} on your shelf", hub = Hub.Learn) {
         item("q") { Row(Modifier.padding(horizontal = Space.page), horizontalArrangement = Arrangement.spacedBy(Space.s), verticalAlignment = Alignment.CenterVertically) {
             OutlinedTextField(q, { q = it }, Modifier.weight(1f), placeholder = { Text("Title or author") }, singleLine = true)
@@ -166,7 +166,7 @@ private val SAFE = "&contentRating[]=safe&contentRating[]=suggestive"
 @Composable
 fun MangaScreen() {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val follows = remember { JsonStore(ctx, "manga_follows") }
     var followed by remember { mutableStateOf(follows.all()) }
     var q by remember { mutableStateOf("") }
@@ -180,7 +180,7 @@ fun MangaScreen() {
     suspend fun search(term: String) = runCatching {
         JSONObject(Http.getJson("$MD/manga?limit=20&includes[]=cover_art$SAFE" + if (term.isBlank()) "&order[followedCount]=desc" else "&title=${enc(term)}")).optJSONArray("data").objs()
     }.getOrDefault(emptyList())
-    LaunchedEffect(Unit) { list = search("") }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { list = search("") } }
     val p = pages
     if (p != null) {
         AtlasScreen(title = manga?.let { title(it) }.orEmpty(), subtitle = "${p.size} pages", hub = Hub.Media, actions = {
@@ -258,18 +258,18 @@ fun MangaScreen() {
 @Composable
 fun AnimeScreen() {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val listStore = remember { JsonStore(ctx, "anime_list") }
     var mine by remember { mutableStateOf(listStore.all()) }
     var tab by remember { mutableStateOf("Airing") }
     var q by remember { mutableStateOf("") }
     var shows by remember { mutableStateOf<List<JSONObject>?>(null) }
     var open by remember { mutableStateOf<JSONObject?>(null) }
-    LaunchedEffect(tab) {
+    LaunchedEffect(tab) { com.nizam.app.ui.design.guard {
         if (tab == "My list") return@LaunchedEffect
         shows = null
         shows = runCatching { JSONObject(Http.getJson(when (tab) { "Airing" -> "https://api.jikan.moe/v4/seasons/now?sfw=true&limit=24"; else -> "https://api.jikan.moe/v4/top/anime?sfw=true&limit=24" })).optJSONArray("data").objs() }.getOrDefault(emptyList())
-    }
+    } }
     fun img(a: JSONObject) = a.optJSONObject("images")?.optJSONObject("jpg")?.optString("image_url")
     val o = open
     if (o != null) {
@@ -326,7 +326,7 @@ fun AnimeScreen() {
 @Composable
 fun ForumsScreen(container: AppContainer) {
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
     val p = remember { ctx.getSharedPreferences("forums", 0) }
     var subs by remember { mutableStateOf(p.getString("subs", "pakistan,lahore,karachi,islam,technology,worldnews,cricket").orEmpty().split(',').filter { it.isNotBlank() }) }
     var sub by remember { mutableStateOf(subs.first()) }
@@ -337,18 +337,18 @@ fun ForumsScreen(container: AppContainer) {
     var summary by remember { mutableStateOf<String?>(null) }
     var add by remember { mutableStateOf("") }
     val ua = mapOf("User-Agent" to "android:com.nizam.atlas:1.0 (reader)")
-    LaunchedEffect(sub, sort) {
+    LaunchedEffect(sub, sort) { com.nizam.app.ui.design.guard {
         posts = null
         posts = runCatching { JSONObject(Http.getText("https://www.reddit.com/r/$sub/$sort.json?limit=40&raw_json=1", ua)).getJSONObject("data").optJSONArray("children").objs()
             .map { it.getJSONObject("data") }.filter { !it.optBoolean("over_18") } }.getOrElse { emptyList() }
-    }
+    } }
     val o = open
     if (o != null) {
-        LaunchedEffect(o) {
+        LaunchedEffect(o) { com.nizam.app.ui.design.guard {
             summary = null
             comments = runCatching { JSONArray(Http.getText("https://www.reddit.com${o.optString("permalink")}.json?limit=60&raw_json=1", ua)).getJSONObject(1).getJSONObject("data")
                 .optJSONArray("children").objs().mapNotNull { it.optJSONObject("data") }.filter { it.optString("body").isNotBlank() } }.getOrDefault(emptyList())
-        }
+        } }
         AtlasScreen(title = o.optString("title").take(80), subtitle = "r/${o.optString("subreddit")} · ${o.optInt("score")} points · ${o.optInt("num_comments")} comments", hub = Hub.Social, actions = {
             Text("Back", Modifier.padding(Space.s).pressable { open = null }, style = MaterialTheme.typography.labelLarge) }) {
             item("b") { Column(Modifier.padding(horizontal = Space.page)) {

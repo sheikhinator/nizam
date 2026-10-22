@@ -62,9 +62,9 @@ object CrashGuard {
 
 @Composable
 fun SafeModeScreen(container: AppContainer, onContinue: () -> Unit) {
-    val c = LocalContext.current; val scope = rememberCoroutineScope()
+    val c = LocalContext.current; val scope = com.nizam.app.ui.design.rememberSafeScope()
     var findings by remember { mutableStateOf<List<SelfCheck.Finding>?>(null) }
-    LaunchedEffect(Unit) { findings = runCatching { SelfCheck.run(container) }.getOrNull() }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { findings = runCatching { SelfCheck.run(container) }.getOrNull() } }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text("Safe mode", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Text("Atlas stopped unexpectedly twice in a row, so it opened here instead of crashing again. Your data is untouched.", style = MaterialTheme.typography.bodyMedium)
