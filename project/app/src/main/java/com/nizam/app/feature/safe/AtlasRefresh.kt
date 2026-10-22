@@ -109,7 +109,7 @@ object AtlasRefresh {
             val now = System.currentTimeMillis()
             // the app's cache folder: images, web pages, temporary scans and shares (anything not used in the last few minutes)
             // (the image cache and the web view's own cache are cleared through their owners, never pulled out from under them)
-            val owned = setOf("image_cache", "WebView", "org.chromium.android_webview", "http_cache")
+            val owned = setOf("image_cache", "WebView", "org.chromium.android_webview", "http_cache", "update", "apks")
             c.cacheDir.listFiles()?.filter { it.name !in owned }?.forEach { f -> if (now - f.lastModified() > 5 * 60_000L) { val sz = sizeOf(f); if (f.deleteRecursively()) n += sz } }
             runCatching { coil.Coil.imageLoader(c).diskCache?.let { dc -> n += dc.size; dc.clear() } }
             c.externalCacheDir?.listFiles()?.forEach { f -> if (now - f.lastModified() > 5 * 60_000L) { val sz = sizeOf(f); if (f.deleteRecursively()) n += sz } }
@@ -174,12 +174,23 @@ object AtlasRefresh {
         _tick.value = _tick.value + 1
         d()
 
+        // a tap on refresh also looks for a newer Atlas build on GitHub
+        var newBuild: com.nizam.app.feature.platform2.Updater.Info? = null
+        if (!quiet) {
+            s("Checking for a new Atlas build")
+            newBuild = withContext(Dispatchers.IO) { runCatching { com.nizam.app.feature.platform2.Updater.recent(c).firstOrNull() }.getOrNull() }
+            val isNew = newBuild != null && com.nizam.app.feature.platform2.Updater.newer(c, newBuild)
+            d(when { newBuild == null -> "couldn't reach GitHub"; isNew -> "${newBuild?.tag} is out"; else -> "up to date" })
+            if (!isNew) newBuild = null
+        }
+
         val ms = System.currentTimeMillis() - t0
         val summary = "Freed ${mb(freed)}" + (if (fixed > 0) " · fixed $fixed" else "") + " · Atlas is in top shape"
         c.getSharedPreferences("refresh", 0).edit().putLong("last", System.currentTimeMillis()).putString("summary", summary).apply()
         runCatching { com.nizam.app.feature.expertise.Pulse.emit(com.nizam.app.feature.expertise.Pulse.Kind.DONE, "Refreshed Atlas", "$summary (${ms / 100 / 10.0} s)") }
         if (!quiet) {
             _state.value = _state.value.copy(running = false, summary = summary)
+            if (newBuild != null) _update.value = Upd(newBuild)
             delay(3200)
             if (!_state.value.running) _state.value = State()
         }
@@ -196,6 +207,25 @@ object AtlasRefresh {
     }
 
     fun dismiss() { if (!_state.value.running) _state.value = State() }
+
+    // ── the "new build" prompt that a refresh can bring up ──
+    data class Upd(val info: com.nizam.app.feature.platform2.Updater.Info, val pct: Int = -1, val error: String = "", val done: Boolean = false)
+    private val _update = MutableStateFlow<Upd?>(null)
+    val update: StateFlow<Upd?> = _update
+    fun later() { if ((_update.value?.pct ?: -1) !in 0..99) _update.value = null }
+    fun updateNow(c: Context) {
+        val u = _update.value ?: return
+        if (u.pct in 0..99) return
+        val ctx = c.applicationContext
+        scope.launch {
+            _update.value = u.copy(pct = 0, error = "")
+            runCatching {
+                val f = com.nizam.app.feature.platform2.Updater.download(ctx, u.info) { p -> _update.value = _update.value?.copy(pct = p.coerceAtMost(99)) }
+                com.nizam.app.feature.platform2.Updater.install(ctx, f)
+            }.onSuccess { _update.value = _update.value?.copy(pct = 100, done = true); delay(6000); _update.value = null }
+             .onFailure { e -> _update.value = _update.value?.copy(pct = -1, error = e.message ?: "Download failed") }
+        }
+    }
 }
 
 /** The refresh button: a circular arrow wrapped round a tiny Atlas gem; it spins while Atlas refreshes. */
@@ -247,6 +277,37 @@ fun RefreshOverlay(modifier: Modifier = Modifier) {
                 }
             }
             if (st.summary.isNotBlank()) Text(st.summary, style = MaterialTheme.typography.labelLarge, color = c.primary, modifier = Modifier.padding(top = 4.dp))
+        }
+    }
+    UpdatePrompt(modifier)
+}
+
+/** "Atlas build-N is ready" with Update now / Later, shown after a refresh finds a newer build. */
+@Composable
+private fun UpdatePrompt(modifier: Modifier) {
+    val u by AtlasRefresh.update.collectAsState()
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    val st by AtlasRefresh.state.collectAsState()
+    AnimatedVisibility(u != null && !st.running && st.summary.isBlank(), modifier, enter = fadeIn() + slideInVertically { -it }, exit = fadeOut() + slideOutVertically { -it }) {
+        val up = u ?: return@AnimatedVisibility
+        val c = MaterialTheme.colorScheme
+        Column(Modifier.statusBarsPadding().padding(top = 8.dp, start = 16.dp, end = 16.dp).widthIn(max = 460.dp).fillMaxWidth()
+            .clip(RoundedCornerShape(22.dp)).background(c.surface.copy(alpha = 0.98f)).border(1.dp, c.primary.copy(alpha = 0.5f), RoundedCornerShape(22.dp))
+            .padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(if (up.done) "Tap Install on Android's prompt" else "Atlas ${up.info.tag} is ready", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            val mine = com.nizam.app.feature.platform2.Updater.myBuild
+            val fmt = java.time.format.DateTimeFormatter.ofPattern("d MMM · h:mm a").withZone(java.time.ZoneId.systemDefault())
+            Text((if (mine > 0) "You have build-$mine · " else "") + "published ${fmt.format(java.time.Instant.ofEpochMilli(up.info.published))} · ${up.info.size / 1_048_576} MB",
+                style = MaterialTheme.typography.labelMedium, color = c.onSurfaceVariant)
+            up.info.notes.lineSequence().firstOrNull { it.isNotBlank() && !it.startsWith("Built from") }?.let {
+                Text(it, style = MaterialTheme.typography.bodySmall, color = c.onSurfaceVariant, maxLines = 2) }
+            if (up.pct in 0..99) androidx.compose.material3.LinearProgressIndicator(progress = { up.pct / 100f }, modifier = Modifier.fillMaxWidth().padding(top = 4.dp))
+            if (up.error.isNotBlank()) Text(up.error, style = MaterialTheme.typography.bodySmall, color = c.error)
+            if (!up.done) Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                androidx.compose.material3.Button(enabled = up.pct !in 0..99, onClick = { AtlasRefresh.updateNow(ctx) }) {
+                    Text(if (up.pct in 0..99) "Downloading ${up.pct}%" else if (up.error.isNotBlank()) "Try again" else "Update now") }
+                if (up.pct !in 0..99) androidx.compose.material3.TextButton(onClick = { AtlasRefresh.later() }) { Text("Later") }
+            }
         }
     }
 }
