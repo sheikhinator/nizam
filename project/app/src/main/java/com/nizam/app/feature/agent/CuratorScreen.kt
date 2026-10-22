@@ -1,6 +1,7 @@
 package com.nizam.app.feature.agent
 
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Computer
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.TravelExplore
@@ -83,6 +84,7 @@ fun CuratorScreen(container: AppContainer) {
     var expertOn by remember { mutableStateOf(com.nizam.app.feature.expertise.Expertise.autoOn(context)) }
     var speakBack by remember { mutableStateOf(false) }
     var autoApprove by remember { mutableStateOf(false) }
+    var usePc by remember { mutableStateOf(false) }
     var pending by remember { mutableStateOf<List<Pair<String, JSONObject>>>(emptyList()) }
     var lastSteps by remember { mutableStateOf<List<AgentLoop.Step>>(emptyList()) }
 
@@ -208,6 +210,14 @@ fun CuratorScreen(container: AppContainer) {
     fun send(message: String) {
         val files = attachments
         if (message.isBlank() && files.isEmpty()) return
+        // "Use PC": Atlas does this on its own Linux computer while you watch
+        if (usePc && message.isNotBlank()) {
+            draft = ""
+            scope.launch { container.agentMemory.addTurn(true, message) }
+            com.nizam.app.feature.pc.PcAgent.queued = message
+            com.nizam.app.ui.screens.search.AtlasNav.go?.invoke(com.nizam.app.feature.nx.Nx.route("pc"))
+            return
+        }
         // seamless: no review step before sending; Atlas uses the usual context (receipts stay in Run context receipts)
         scope.launch {
             busy = true
@@ -385,6 +395,8 @@ fun CuratorScreen(container: AppContainer) {
             onSend = { send(draft) },
             onMic = { listener.launch(speechIntent()) },
             toggles = listOf(
+                com.nizam.app.ui.components.ComposerToggle("Use PC", "Atlas does the task on its own Linux computer while you watch",
+                    androidx.compose.material.icons.Icons.Filled.Computer, usePc) { usePc = it },
                 com.nizam.app.ui.components.ComposerToggle("Web", "Search the web while answering",
                     androidx.compose.material.icons.Icons.Filled.Language, useWeb) { useWeb = it },
                 com.nizam.app.ui.components.ComposerToggle("Voice", "Read replies aloud",

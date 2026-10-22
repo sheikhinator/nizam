@@ -184,6 +184,7 @@ object Actions {
         plan_day           {note}        builds today's plan around prayers and tasks
         shield_on          {minutes}     shield_off {}   focus shield that holds distracting apps
         search_web         {query}       read_link {url}
+        use_pc             {task}        does a task on Atlas's own Linux desktop computer (browsing, apps, files) while the user watches
         run_command        {command, cwd, timeout}   runs in Atlas Terminal's Linux (user approves first); files in /root/projects
         read_notifications {limit}       reply_notification {match, message}
     """.trimIndent()
@@ -869,6 +870,15 @@ object Actions {
                 Result(true, "Your company is making it now. It will be on the Deliverables shelf when ready (you'll get a notification).")
             }
             "list_screens" -> Result(true, com.nizam.app.ui.screens.search.DESTINATIONS.joinToString { it.name })
+            "use_pc" -> {
+                // hands the task to Atlas's own Linux computer and shows it working
+                val t = args.optString("task").ifBlank { args.optString("text") }
+                if (t.isBlank()) return Result(false, "What should I do on the PC?")
+                com.nizam.app.feature.pc.PcAgent.queued = t
+                val go = com.nizam.app.ui.screens.search.AtlasNav.go ?: return Result(false, "Atlas isn't open on screen right now")
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) { go(com.nizam.app.feature.nx.Nx.route("pc")) }
+                return Result(true, "Working on it on Atlas's PC — you can watch it there.")
+            }
             "run_command" -> {
                 // a shell command in Atlas Terminal's Linux (always asked for first, see AgentLoop)
                 val cmd = args.optString("command").ifBlank { args.optString("cmd") }

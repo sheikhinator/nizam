@@ -232,6 +232,9 @@
             android:permission="android.permission.BIND_SCREENING_SERVICE">
             <intent-filter><action android:name="android.telecom.CallScreeningService" /></intent-filter>
         </service>
+        <service android:name=".feature.pc.PcService" android:exported="false" android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="Keeps the Linux desktop the user started running while they switch apps" />
+        </service>
         <service android:name=".feature.wild.LaptopService" android:exported="false" android:foregroundServiceType="specialUse">
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="Local web dashboard the user starts to use Atlas from their own computer" />
         </service>

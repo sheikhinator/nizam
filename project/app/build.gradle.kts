@@ -166,6 +166,8 @@ dependencies {
     implementation("org.nanohttpd:nanohttpd:2.3.1")
     // Atlas Terminal: the terminal emulator and view Termux is built on (Apache 2.0)
     implementation("com.github.termux.termux-app:terminal-view:v0.118.0")
+    // Atlas's PC: zstd-compressed image layers
+    implementation("io.airlift:aircompressor:0.27") { isTransitive = false }
     implementation("dev.rikka.shizuku:provider:13.1.5")
     implementation("com.sun.mail:android-mail:1.6.7")
     implementation("com.sun.mail:android-activation:1.6.7")
