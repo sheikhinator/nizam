@@ -46,6 +46,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -237,7 +238,7 @@ private fun Lines(d: ChartData) {
                         }
                     }
                     val reveal = w * grow
-                    androidx.compose.ui.graphics.drawscope.clipRect(right = reveal) {
+                    clipRect(right = reveal) {
                         if (d.series.size == 1 || d.type == "area") {
                             val fill = Path().apply { addPath(path); lineTo(pts.last().x, h); lineTo(pts.first().x, h); close() }
                             drawPath(fill, Brush.verticalGradient(listOf(col.copy(alpha = 0.32f), col.copy(alpha = 0.02f))))
