@@ -60,20 +60,44 @@ object PcEnv {
         val r = root(c, id)
         try {
             if (!LinuxEnv.available(c)) error("This build of Atlas doesn't include the Linux runtime.")
+            keepAlive(c, true)
             _progress.value = Progress(id, "Finding $image")
             r.mkdirs()
             Oci.pull(image, r) { st, p -> _progress.value = Progress(id, st, p) }
             prepare(r)
             meta(c, id).writeText(JSONObject().put("id", id).put("name", name).put("image", image).put("desktop", desktop).put("size", size)
                 .put("ready", false).put("created", System.currentTimeMillis()).toString())
+        } catch (e: Throwable) {
+            keepAlive(c, false)
+            _progress.value = Progress(id, "Couldn't finish", -1, error = e.message ?: e.javaClass.simpleName)
+            return@withContext false
+        }
+        finishSetup(c, id)
+    }
+
+    /**
+     * Installs the desktop. Android sometimes kills a long install when Atlas is in the background, so this keeps
+     * a foreground service and the CPU awake, and picks up where it stopped (up to five tries) — also from "Finish setup".
+     */
+    suspend fun finishSetup(c: Context, id: String): Boolean = withContext(Dispatchers.IO) {
+        val i = info(c, id) ?: return@withContext false
+        val desktop = i.optString("desktop")
+        try {
+            keepAlive(c, true)
             if (desktop != "none") {
-                _progress.value = Progress(id, "Installing the $desktop desktop, a browser and the screen server (this takes a while)…", -1)
                 val log = StringBuilder()
-                val res = shell(c, id, setupScript(desktop), 3600) { line ->
-                    synchronized(log) { log.appendLine(line); if (log.length > 6000) log.delete(0, log.length - 4000) }
-                    _progress.value = Progress(id, "Installing the $desktop desktop…", -1, synchronized(log) { log.toString() })
+                var res = -1 to ""
+                for (attempt in 1..5) {
+                    _progress.value = Progress(id, "Installing the $desktop desktop, a browser and the screen server" + (if (attempt > 1) " · picking up where it stopped (try $attempt)" else "") + "…", -1, synchronized(log) { log.toString() })
+                    res = shell(c, id, setupScript(desktop), 5400) { line ->
+                        synchronized(log) { log.appendLine(line); if (log.length > 6000) log.delete(0, log.length - 4000) }
+                        _progress.value = Progress(id, "Installing the $desktop desktop" + (if (attempt > 1) " (try $attempt)" else "") + "…", -1, synchronized(log) { log.toString() })
+                    }
+                    if (res.first == 0) break
+                    // a network blip or a killed step: wait a moment and continue
+                    kotlinx.coroutines.delay(3000)
                 }
-                if (res.first != 0) error("Setup failed (exit ${res.first}). The last lines:\n" + res.second.takeLast(1200))
+                if (res.first != 0) error("Setup stopped (exit ${res.first})" + (if (res.first == 137) " — Android stopped it. Keep Atlas open on this screen, then tap Finish setup; it continues from where it was." else "") + "\n\nThe last lines:\n" + res.second.takeLast(1200))
             }
             meta(c, id).writeText(info(c, id)!!.put("ready", true).toString())
             _progress.value = Progress(id, "Ready", 100)
@@ -81,6 +105,21 @@ object PcEnv {
         } catch (e: Throwable) {
             _progress.value = Progress(id, "Couldn't finish", -1, error = e.message ?: e.javaClass.simpleName)
             false
+        } finally { keepAlive(c, false) }
+    }
+
+    @Volatile private var wake: android.os.PowerManager.WakeLock? = null
+    @Volatile var installing = false
+    /** The foreground service plus a CPU wake lock, so Android lets a long install finish. */
+    private fun keepAlive(c: Context, on: Boolean) {
+        installing = on
+        if (on) {
+            runCatching { androidx.core.content.ContextCompat.startForegroundService(c, Intent(c, PcService::class.java)) }
+            if (wake?.isHeld != true) wake = runCatching { (c.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager)
+                .newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK, "atlas:pc-setup").apply { acquire(2 * 60 * 60_000L) } }.getOrNull()
+        } else {
+            runCatching { wake?.takeIf { it.isHeld }?.release() }; wake = null
+            if (running == null) runCatching { c.startService(Intent(c, PcService::class.java).setAction("stop")) }
         }
     }
 
@@ -104,6 +143,7 @@ object PcEnv {
         set -e
         export DEBIAN_FRONTEND=noninteractive
         if command -v apt-get >/dev/null; then
+          dpkg --configure -a || true
           apt-get update
           case "$desktop" in
             xfce) P="xfce4 xfce4-terminal xfce4-goodies" ;;
@@ -112,7 +152,8 @@ object PcEnv {
             kde)  P="kde-plasma-desktop konsole" ;;
           esac
           B=firefox-esr; apt-cache show firefox-esr >/dev/null 2>&1 || B=falkon
-          apt-get install -y --no-install-recommends ${'$'}P dbus-x11 tigervnc-standalone-server tigervnc-tools xdotool x11-utils fonts-dejavu-core ca-certificates sudo nano curl wget git python3 ${'$'}B
+          apt-get install -y -f || true
+          nice -n 10 apt-get install -y --no-install-recommends ${'$'}P dbus-x11 tigervnc-standalone-server tigervnc-tools xdotool x11-utils fonts-dejavu-core ca-certificates sudo nano curl wget git python3 ${'$'}B
         elif command -v dnf >/dev/null; then
           case "$desktop" in xfce) G="xfce-desktop" ;; lxqt) G="lxqt-desktop" ;; mate) G="mate-desktop" ;; kde) G="kde-desktop" ;; esac
           dnf -y install epel-release 2>/dev/null || true
@@ -121,7 +162,7 @@ object PcEnv {
         elif command -v pacman >/dev/null; then
           pacman-key --init >/dev/null 2>&1 || true; pacman-key --populate >/dev/null 2>&1 || true
           case "$desktop" in xfce) P="xfce4 xfce4-goodies" ;; lxqt) P="lxqt openbox" ;; mate) P="mate mate-terminal" ;; kde) P="plasma-desktop konsole" ;; esac
-          pacman -Syu --noconfirm --needed ${'$'}P tigervnc xdotool firefox ttf-dejavu git python nano curl
+          nice -n 10 pacman -Syu --noconfirm --needed ${'$'}P tigervnc xdotool firefox ttf-dejavu git python nano curl
         elif command -v zypper >/dev/null; then
           case "$desktop" in xfce) T=xfce ;; lxqt) T=lxqt ;; mate) T=mate ;; kde) T=kde_plasma ;; esac
           zypper -n refresh
@@ -197,7 +238,7 @@ object PcEnv {
         desktopProc?.destroy(); desktopProc = null
         running = null
         Vnc.disconnect()
-        runCatching { c.startService(Intent(c, PcService::class.java).setAction("stop")) }
+        if (!installing) runCatching { c.startService(Intent(c, PcService::class.java).setAction("stop")) }
     }
 
     fun alive() = desktopProc?.isAlive == true
@@ -211,7 +252,7 @@ class PcService : Service() {
         val nm = getSystemService(NotificationManager::class.java)
         if (Build.VERSION.SDK_INT >= 26) nm.createNotificationChannel(NotificationChannel("atlas_pc", "Atlas's PC", NotificationManager.IMPORTANCE_LOW))
         val open = android.app.PendingIntent.getActivity(this, 0, packageManager.getLaunchIntentForPackage(packageName), android.app.PendingIntent.FLAG_IMMUTABLE)
-        val n = Notification.Builder(this, "atlas_pc").setSmallIcon(android.R.drawable.ic_menu_manage).setContentTitle("Atlas's PC is running")
+        val n = Notification.Builder(this, "atlas_pc").setSmallIcon(android.R.drawable.ic_menu_manage).setContentTitle(if (PcEnv.installing) "Setting up Atlas's PC…" else "Atlas's PC is running")
             .setContentText("Open Atlas to see the desktop").setContentIntent(open).setOngoing(true).build()
         if (Build.VERSION.SDK_INT >= 34) startForeground(5710, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE) else startForeground(5710, n)
         return START_NOT_STICKY

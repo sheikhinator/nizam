@@ -106,6 +106,7 @@ fun PcScreen(container: AppContainer, open: (String) -> Unit) {
 @Composable
 private fun Machines(container: AppContainer, pcs: List<org.json.JSONObject>, onAdd: () -> Unit, changed: () -> Unit) {
     val c = LocalContext.current
+    val setupScope = com.nizam.app.ui.design.rememberSafeScope()
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("🖥  Atlas's PC", color = FG, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Black)
         Text("Full Linux desktops on your phone. Use them yourself, or give Atlas a task and watch it work.", color = DIM, style = MaterialTheme.typography.bodySmall)
@@ -116,7 +117,8 @@ private fun Machines(container: AppContainer, pcs: List<org.json.JSONObject>, on
                 Text(p.optString("name"), color = FG, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Text("${p.optString("image")} · ${p.optString("desktop")} · ${p.optString("size")}" + if (!p.optBoolean("ready")) " · setup unfinished" else "", color = DIM, style = MaterialTheme.typography.labelSmall, fontFamily = FontFamily.Monospace)
                 Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(enabled = p.optBoolean("ready") || p.optString("desktop") == "none", onClick = {
+                    if (!p.optBoolean("ready")) Button(onClick = { setupScope.launch { PcEnv.finishSetup(c, id); changed() } }) { Text("Finish setup") }
+                    else Button(onClick = {
                         PcEnv.start(c, id); Vnc.connect(); changed()
                         PcAgent.queued?.let { t -> PcAgent.queued = null; PcAgent.start(container, id, t) }
                     }) { Text("Start") }
@@ -141,7 +143,10 @@ private fun Installer(onDone: () -> Unit, onCancel: (() -> Unit)?) {
     var desktop by remember { mutableStateOf("xfce") }
     var size by remember { mutableStateOf("1280x720") }
     val busy = progress != null && progress?.stage !in setOf("Ready", "Couldn't finish")
+    val view = androidx.compose.ui.platform.LocalView.current
+    androidx.compose.runtime.DisposableEffect(busy) { view.keepScreenOn = busy; onDispose { view.keepScreenOn = false } }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        if (busy) Text("Keep Atlas open on this screen while it installs (the screen stays on).", color = WARN, style = MaterialTheme.typography.labelSmall)
         Text("Set up a PC", color = FG, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Black)
         val p = progress
         if (p != null) Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(CARD).padding(14.dp)) {
@@ -162,7 +167,7 @@ private fun Installer(onDone: () -> Unit, onCancel: (() -> Unit)?) {
                     Column { Text(d.title, color = FG, fontWeight = FontWeight.SemiBold); Text(d.note, color = DIM, style = MaterialTheme.typography.labelSmall) }
                 }
             }
-            OutlinedTextField(custom, { custom = it.trim() }, label = { Text("…or any image (e.g. linuxmintd/mint22-amd64 won't work; needs arm64)") }, placeholder = { Text("owner/image:tag") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(custom, { custom = it.trim() }, label = { Text("…or any Linux image (must have an ARM64 version)") }, placeholder = { Text("owner/image:tag") }, singleLine = true, modifier = Modifier.fillMaxWidth())
             Text("DESKTOP", color = DIM, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 6.dp))
             PcEnv.DESKTOPS.forEach { (k, l) ->
                 Text((if (desktop == k) "◉  " else "○  ") + l, color = if (desktop == k) TEAL else FG, modifier = Modifier.fillMaxWidth().clickable { desktop = k }.padding(vertical = 8.dp))
@@ -187,81 +192,193 @@ private fun Installer(onDone: () -> Unit, onCancel: (() -> Unit)?) {
 }
 
 // ── the desktop ─────────────────────────────────────────────────────────────────────
+/**
+ * Two ways to drive it, switchable any time:
+ *  • Trackpad (default): drag anywhere to move the pointer, tap = click, double-tap = double-click,
+ *    tap-then-drag = hold and drag, two-finger tap = right-click, two-finger drag = scroll, pinch = zoom.
+ *  • Touch: tap where you want to click, long-press = right-click, drag = hold and drag, two fingers as above.
+ */
 @Composable
 private fun Desktop(container: AppContainer, id: String, changed: () -> Unit) {
     val c = LocalContext.current
     val kb = LocalSoftwareKeyboardController.current
+    val view = androidx.compose.ui.platform.LocalView.current
     val focus = remember { FocusRequester() }
     var typing by remember { mutableStateOf(TextFieldValue(" ", TextRange(1))) }
-    var showKeys by remember { mutableStateOf(false) }
+    var keysOpen by remember { mutableStateOf(false) }
+    var trackpad by remember { mutableStateOf(c.getSharedPreferences("pc", 0).getBoolean("trackpad", true)) }
+    var full by remember { mutableStateOf(false) }
+    var panelOpen by remember { mutableStateOf(true) }
     var taskText by remember { mutableStateOf("") }
     var answer by remember { mutableStateOf("") }
     var zoom by remember { mutableStateOf(1f) }
     var pan by remember { mutableStateOf(Offset.Zero) }
     var boxSize by remember { mutableStateOf(IntSize.Zero) }
+    var mouse by remember { mutableStateOf(Offset(200f, 200f)) }   // pointer position on the PC
+    val mods = remember { androidx.compose.runtime.mutableStateListOf<String>() }
     LaunchedEffect(id) { Vnc.connect() }
+    // the screen stays on while you use the PC
+    androidx.compose.runtime.DisposableEffect(Unit) { view.keepScreenOn = true; onDispose { view.keepScreenOn = false } }
+    // full screen: landscape, no system bars
+    androidx.compose.runtime.DisposableEffect(full) {
+        val act = c as? android.app.Activity
+        val ctl = act?.let { androidx.core.view.WindowCompat.getInsetsController(it.window, it.window.decorView) }
+        if (full) { act?.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE; ctl?.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+            ctl?.systemBarsBehavior = androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE }
+        onDispose { if (full) { act?.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED; ctl?.show(androidx.core.view.WindowInsetsCompat.Type.systemBars()) } }
+    }
+    fun bg(block: () -> Unit) = Thread { runCatching(block) }.start()
+    /** A key with whatever modifiers are switched on, then the modifiers let go. */
+    fun press(spec: String) { val combo = (mods.map { it.lowercase() } + spec).joinToString("+"); mods.clear(); bg { Vnc.combo(combo) } }
+
     Column(Modifier.fillMaxSize().imePadding()) {
-        // top bar
-        Row(Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("🖥", modifier = Modifier.padding(end = 6.dp))
-            Text(PcEnv.info(c, id)?.optString("name").orEmpty(), color = FG, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-            if (!Vnc.connected) Text("connecting…", color = DIM, style = MaterialTheme.typography.labelSmall)
-            Text("⌨", color = FG, fontSize = 18.sp, modifier = Modifier.clip(CircleShape).clickable { focus.requestFocus(); kb?.show(); showKeys = true }.padding(8.dp))
+        if (!full) Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(PcEnv.info(c, id)?.optString("name").orEmpty(), color = FG, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), maxLines = 1)
+            if (!Vnc.connected) Text("connecting… ", color = DIM, style = MaterialTheme.typography.labelSmall)
             Text("⏻", color = Color(0xFFF56565), fontSize = 18.sp, modifier = Modifier.clip(CircleShape).clickable { PcAgent.stop(); PcEnv.stop(c); changed() }.padding(8.dp))
         }
-        // the screen
+        // ── the screen ──
         Box(Modifier.fillMaxWidth().weight(1f).background(Color.Black).onSizeChanged { boxSize = it }) {
             val bmp = Vnc.bitmap
-            if (bmp != null && Vnc.width > 0) {
-                val fit = minOf(boxSize.width / Vnc.width.toFloat(), boxSize.height / Vnc.height.toFloat()).takeIf { it > 0 } ?: 1f
+            if (bmp != null && Vnc.width > 0 && boxSize.width > 0) {
+                val fit = minOf(boxSize.width / Vnc.width.toFloat(), boxSize.height / Vnc.height.toFloat())
                 val s = fit * zoom
-                val ox = (boxSize.width - Vnc.width * s) / 2f + pan.x
-                val oy = (boxSize.height - Vnc.height * s) / 2f + pan.y
-                fun toPc(o: Offset) = (((o.x - ox) / s).toInt()) to (((o.y - oy) / s).toInt())
-                Canvas(Modifier.fillMaxSize()
-                    .pointerInput(s, ox, oy) {
-                        detectTapGestures(
-                            onTap = { o -> if (!PcAgent.running) { val (x, y) = toPc(o); Thread { Vnc.click(x, y) }.start() } },
-                            onDoubleTap = { o -> if (!PcAgent.running) { val (x, y) = toPc(o); Thread { Vnc.click(x, y, times = 2) }.start() } },
-                            onLongPress = { o -> if (!PcAgent.running) { val (x, y) = toPc(o); Thread { Vnc.click(x, y, button = 3) }.start() } })
-                    }
-                    .pointerInput(s, ox, oy) {
-                        detectTransformGestures { centroid, p, z, _ ->
-                            if (z != 1f) { zoom = (zoom * z).coerceIn(1f, 4f); pan += p }
-                            else if (zoom > 1.01f) pan += p
-                            else if (!PcAgent.running) { val (x, y) = toPc(centroid); Thread { Vnc.scroll(x, y, if (p.y < 0) 1 else -1) }.start() }
+                val maxPanX = maxOf(0f, (Vnc.width * s - boxSize.width) / 2f); val maxPanY = maxOf(0f, (Vnc.height * s - boxSize.height) / 2f)
+                val p0 = Offset(pan.x.coerceIn(-maxPanX, maxPanX), pan.y.coerceIn(-maxPanY, maxPanY))
+                val ox = (boxSize.width - Vnc.width * s) / 2f + p0.x
+                val oy = (boxSize.height - Vnc.height * s) / 2f + p0.y
+                fun toPc(o: Offset) = Offset(((o.x - ox) / s).coerceIn(0f, Vnc.width - 1f), ((o.y - oy) / s).coerceIn(0f, Vnc.height - 1f))
+                val agentBusy = PcAgent.running && !PcAgent.paused
+                Canvas(Modifier.fillMaxSize().pointerInput(trackpad, s, ox, oy, agentBusy) {
+                    if (agentBusy) return@pointerInput
+                    var lastTapAt = 0L
+                    androidx.compose.foundation.gestures.awaitEachGesture {
+                        val first = androidx.compose.foundation.gestures.awaitFirstDown(requireUnconsumed = false)
+                        val t0 = System.currentTimeMillis()
+                        val start = first.position
+                        var maxFingers = 1; var moved = 0f; var dragging = false; var scrollAcc = 0f
+                        val tapThenDrag = t0 - lastTapAt < 300
+                        var prevSpan = 0f; var pinching = false; var longFired = false
+                        if (!trackpad) bg { val q = toPc(start); Vnc.pointer(q.x.toInt(), q.y.toInt(), 0) }
+                        while (true) {
+                            val ev = awaitPointerEvent()
+                            val down = ev.changes.filter { it.pressed }
+                            if (down.isEmpty()) break
+                            maxFingers = maxOf(maxFingers, down.size)
+                            if (down.size >= 2) {
+                                val a = down[0].position; val b = down[1].position
+                                val span = (a - b).getDistance()
+                                val d = (down[0].position - down[0].previousPosition + down[1].position - down[1].previousPosition) / 2f
+                                if (prevSpan > 0f && kotlin.math.abs(span - prevSpan) > 6f) pinching = true
+                                if (pinching) { zoom = (zoom * (span / prevSpan.coerceAtLeast(1f))).coerceIn(1f, 5f); pan += d }
+                                else if (zoom > 1.05f) pan += d
+                                else { scrollAcc += d.y; while (kotlin.math.abs(scrollAcc) > 36f) { val dir = if (scrollAcc > 0) -1 else 1; scrollAcc -= -dir * 36f
+                                    val q = if (trackpad) mouse else toPc((a + b) / 2f); bg { Vnc.scroll(q.x.toInt(), q.y.toInt(), dir) } } }
+                                prevSpan = span; moved += 50f
+                                down.forEach { it.consume() }; continue
+                            }
+                            val ch = down[0]
+                            val delta = ch.position - ch.previousPosition
+                            moved += delta.getDistance()
+                            if (trackpad) {
+                                // relative pointer, faster when you move faster
+                                val speed = 1.4f / s * (1f + (delta.getDistance() / 18f).coerceAtMost(2.5f))
+                                mouse = Offset((mouse.x + delta.x * speed).coerceIn(0f, Vnc.width - 1f), (mouse.y + delta.y * speed).coerceIn(0f, Vnc.height - 1f))
+                                if (tapThenDrag && !dragging && moved > 8f) { dragging = true; bg { Vnc.pointer(mouse.x.toInt(), mouse.y.toInt(), 1) } }
+                                val m = mouse; val mask = if (dragging) 1 else 0
+                                if (moved > 2f) bg { Vnc.pointer(m.x.toInt(), m.y.toInt(), mask) }
+                                // keep the pointer in view when zoomed
+                                if (zoom > 1.05f) { val sx = ox + m.x * s; val sy = oy + m.y * s
+                                    if (sx < 40) pan += Offset(40 - sx, 0f); if (sx > boxSize.width - 40) pan -= Offset(sx - boxSize.width + 40, 0f)
+                                    if (sy < 40) pan += Offset(0f, 40 - sy); if (sy > boxSize.height - 40) pan -= Offset(0f, sy - boxSize.height + 40) }
+                            } else {
+                                val q = toPc(ch.position); mouse = q
+                                if (!dragging && moved > 14f) { dragging = true; val st = toPc(start); bg { Vnc.pointer(st.x.toInt(), st.y.toInt(), 1) } }
+                                if (dragging) bg { Vnc.pointer(q.x.toInt(), q.y.toInt(), 1) }
+                                if (!dragging && !longFired && System.currentTimeMillis() - t0 > 550 && moved < 14f) {
+                                    longFired = true; bg { Vnc.click(q.x.toInt(), q.y.toInt(), button = 3) }
+                                    view.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS)
+                                }
+                            }
+                            ch.consume()
                         }
-                    }) {
+                        val quick = System.currentTimeMillis() - t0 < 300
+                        when {
+                            dragging -> { val m = mouse; bg { Vnc.pointer(m.x.toInt(), m.y.toInt(), 0) } }
+                            maxFingers >= 2 && !pinching && quick && moved < 120f -> { val m = if (trackpad) mouse else toPc(start); bg { Vnc.click(m.x.toInt(), m.y.toInt(), button = 3) }; view.performHapticFeedback(android.view.HapticFeedbackConstants.CONTEXT_CLICK) }
+                            maxFingers == 1 && !longFired && moved < 14f && quick -> {
+                                val m = if (trackpad) mouse else toPc(start)
+                                val dbl = tapThenDrag
+                                lastTapAt = if (dbl) 0L else System.currentTimeMillis()
+                                bg { if (dbl) { Vnc.click(m.x.toInt(), m.y.toInt()) } else Vnc.click(m.x.toInt(), m.y.toInt()) }
+                            }
+                        }
+                    }
+                }) {
                     if (Vnc.frame < 0) return@Canvas  // reading the frame counter redraws on every new picture
                     drawImage(bmp.asImageBitmap(), dstOffset = IntOffset(ox.toInt(), oy.toInt()), dstSize = IntSize((Vnc.width * s).toInt(), (Vnc.height * s).toInt()))
-                    PcAgent.cursor?.let { (x, y) ->
-                        val p = Offset(ox + x * s, oy + y * s)
-                        drawCircle(TEAL.copy(alpha = 0.35f), 22f, p); drawCircle(TEAL, 22f, p, style = Stroke(4f))
+                    // your pointer (trackpad) and Atlas's (when it's working)
+                    if (trackpad && !agentBusy) {
+                        val p = Offset(ox + mouse.x * s, oy + mouse.y * s)
+                        val path = androidx.compose.ui.graphics.Path().apply { moveTo(p.x, p.y); lineTo(p.x, p.y + 34f); lineTo(p.x + 9f, p.y + 26f); lineTo(p.x + 16f, p.y + 40f)
+                            lineTo(p.x + 22f, p.y + 37f); lineTo(p.x + 15f, p.y + 24f); lineTo(p.x + 26f, p.y + 24f); close() }
+                        drawPath(path, Color.White); drawPath(path, Color.Black, style = Stroke(2.5f))
                     }
+                    PcAgent.cursor?.let { (x, y) -> if (PcAgent.running) { val p = Offset(ox + x * s, oy + y * s)
+                        drawCircle(TEAL.copy(alpha = 0.3f), 26f, p); drawCircle(TEAL, 26f, p, style = Stroke(4f)) } }
                 }
+                if (agentBusy) Text("Atlas is using the PC · tap ✋ to take over", color = Color.Black, style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.align(Alignment.TopCenter).padding(6.dp).clip(CircleShape).background(TEAL).padding(horizontal = 10.dp, vertical = 4.dp))
             } else Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
                 CircularProgressIndicator(color = TEAL)
                 Text("Starting the desktop… " + Vnc.error.takeIf { it.isNotBlank() }.orEmpty().take(80), color = DIM, style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(top = 10.dp))
             }
-            // hidden field that turns the phone keyboard into PC keystrokes
+            // hidden field: the phone keyboard types into the PC
             BasicTextField(typing, { v ->
                 val old = typing.text; val new = v.text
-                Thread {
-                    if (new.length < old.length) repeat(old.length - new.length) { Vnc.tap(0xff08) }
-                    else if (new.startsWith(old)) Vnc.type(new.substring(old.length))
-                }.start()
+                if (new.length < old.length) press("backspace")
+                else if (new.startsWith(old)) { val add = new.substring(old.length)
+                    if (mods.isNotEmpty() && add.length == 1) press(if (add == "\n") "enter" else add) else bg { Vnc.type(add) } }
                 typing = TextFieldValue(" ", TextRange(1))
             }, modifier = Modifier.size(1.dp).focusRequester(focus))
-        }
-        if (showKeys) Row(Modifier.fillMaxWidth().background(CARD).horizontalScroll(rememberScrollState()).padding(4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            listOf("Esc" to "esc", "Tab" to "tab", "Enter" to "enter", "⌫" to "backspace", "←" to "left", "↑" to "up", "↓" to "down", "→" to "right",
-                "Ctrl+C" to "ctrl+c", "Ctrl+V" to "ctrl+v", "Ctrl+L" to "ctrl+l", "Alt+Tab" to "alt+tab", "Alt+F4" to "alt+f4", "Super" to "super", "F5" to "f5").forEach { (l, k) ->
-                Text(l, color = FG, fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(EDGE).clickable { Thread { Vnc.combo(k) }.start() }.padding(horizontal = 10.dp, vertical = 8.dp))
+            // floating controls on the screen
+            Row(Modifier.align(Alignment.BottomEnd).padding(8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Fab(if (trackpad) "🖱" else "👆") { trackpad = !trackpad; c.getSharedPreferences("pc", 0).edit().putBoolean("trackpad", trackpad).apply() }
+                Fab("⌨") { keysOpen = true; focus.requestFocus(); kb?.show() }
+                if (zoom > 1.05f) Fab("1:1") { zoom = 1f; pan = Offset.Zero }
+                Fab(if (full) "⤡" else "⤢") { full = !full }
+                if (full) Fab(if (panelOpen) "▾" else "✳") { panelOpen = !panelOpen }
             }
         }
-        // Atlas at work
-        Column(Modifier.fillMaxWidth().background(CARD).padding(10.dp)) {
+        // mouse buttons (trackpad) and keys
+        if (trackpad) Row(Modifier.fillMaxWidth().background(CARD).padding(horizontal = 6.dp, vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            listOf("Left click" to 1, "Right click" to 3).forEach { (l, b) ->
+                Text(l, color = FG, style = MaterialTheme.typography.labelMedium, modifier = Modifier.weight(1f).clip(RoundedCornerShape(10.dp)).background(EDGE)
+                    .clickable { val m = mouse; bg { Vnc.click(m.x.toInt(), m.y.toInt(), button = b) } }.padding(vertical = 10.dp), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+            }
+            Text("▲", color = FG, modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(EDGE).clickable { val m = mouse; bg { Vnc.scroll(m.x.toInt(), m.y.toInt(), -3) } }.padding(horizontal = 14.dp, vertical = 10.dp))
+            Text("▼", color = FG, modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(EDGE).clickable { val m = mouse; bg { Vnc.scroll(m.x.toInt(), m.y.toInt(), 3) } }.padding(horizontal = 14.dp, vertical = 10.dp))
+        }
+        if (keysOpen) Column(Modifier.fillMaxWidth().background(CARD).padding(4.dp)) {
+            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                listOf("Ctrl", "Alt", "Shift", "Super").forEach { m -> val on = m in mods
+                    Text(m, color = if (on) Color.Black else FG, fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(if (on) TEAL else EDGE).clickable { if (on) mods.remove(m) else mods.add(m) }.padding(horizontal = 12.dp, vertical = 9.dp)) }
+                listOf("Esc" to "esc", "Tab" to "tab", "Enter" to "enter", "⌫" to "backspace", "Del" to "delete", "←" to "left", "↑" to "up", "↓" to "down", "→" to "right",
+                    "Home" to "home", "End" to "end", "PgUp" to "pageup", "PgDn" to "pagedown", "F5" to "f5", "F11" to "f11").forEach { (l, k) ->
+                    Text(l, color = FG, fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(EDGE).clickable { press(k) }.padding(horizontal = 10.dp, vertical = 9.dp)) }
+                Text("✕", color = DIM, modifier = Modifier.clickable { keysOpen = false; kb?.hide() }.padding(horizontal = 10.dp, vertical = 9.dp))
+            }
+            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                listOf("Copy" to "ctrl+c", "Paste" to "ctrl+v", "Cut" to "ctrl+x", "Undo" to "ctrl+z", "Select all" to "ctrl+a", "Save" to "ctrl+s", "Find" to "ctrl+f",
+                    "New tab" to "ctrl+t", "Address bar" to "ctrl+l", "Close" to "ctrl+w", "Switch app" to "alt+tab", "Quit app" to "alt+f4", "Terminal" to "ctrl+alt+t").forEach { (l, k) ->
+                    Text(l, color = FG, style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(EDGE.copy(alpha = 0.6f)).clickable { mods.clear(); bg { Vnc.combo(k) } }.padding(horizontal = 10.dp, vertical = 8.dp)) }
+            }
+        }
+        // ── Atlas at work ──
+        if (!full || panelOpen) Column(Modifier.fillMaxWidth().background(CARD).padding(10.dp)) {
             PcAgent.confirm?.let { q ->
                 Text("⚠ Atlas wants to: $q", color = WARN)
                 Row { Button(onClick = { PcAgent.answerConfirm(true) }) { Text("Allow") }; TextButton(onClick = { PcAgent.answerConfirm(false) }) { Text("No") } }
@@ -278,25 +395,28 @@ private fun Desktop(container: AppContainer, id: String, changed: () -> Unit) {
                     if (PcAgent.running) CircularProgressIndicator(Modifier.size(14.dp), strokeWidth = 2.dp, color = TEAL)
                     Text("  " + (if (PcAgent.running) PcAgent.status else "Finished: ${PcAgent.task}"), color = FG, style = MaterialTheme.typography.labelMedium, maxLines = 2, modifier = Modifier.weight(1f))
                     if (PcAgent.running) {
-                        Text(if (PcAgent.paused) "▶ Resume" else "✋ Take over", color = TEAL, style = MaterialTheme.typography.labelMedium, modifier = Modifier.clickable { PcAgent.paused = !PcAgent.paused }.padding(6.dp))
+                        Text(if (PcAgent.paused) "▶ Give back" else "✋ Take over", color = TEAL, style = MaterialTheme.typography.labelMedium, modifier = Modifier.clickable { PcAgent.paused = !PcAgent.paused }.padding(6.dp))
                         Text("■", color = Color(0xFFF56565), modifier = Modifier.clickable { PcAgent.stop() }.padding(6.dp))
-                    }
+                    } else Text("✕", color = DIM, modifier = Modifier.clickable { PcAgent.steps.clear() }.padding(6.dp))
                 }
                 val lst = rememberLazyListState()
                 LaunchedEffect(PcAgent.steps.size) { if (PcAgent.steps.isNotEmpty()) runCatching { lst.scrollToItem(PcAgent.steps.size - 1) } }
-                LazyColumn(Modifier.fillMaxWidth().heightIn(max = 110.dp), state = lst) {
+                LazyColumn(Modifier.fillMaxWidth().heightIn(max = 96.dp), state = lst) {
                     items(PcAgent.steps.size) { i -> val st = PcAgent.steps[i]
                         Text(st.text, color = if (st.ok) DIM else Color(0xFFF56565), style = MaterialTheme.typography.labelSmall, maxLines = 3) }
                 }
             }
             if (!PcAgent.running) Row(verticalAlignment = Alignment.CenterVertically) {
-                OutlinedTextField(taskText, { taskText = it }, placeholder = { Text("Give Atlas a task on this PC…") }, modifier = Modifier.weight(1f), maxLines = 3)
-                Button(enabled = taskText.isNotBlank(), onClick = { PcAgent.start(container, id, taskText); taskText = "" }, modifier = Modifier.padding(start = 6.dp)) { Text("Go") }
+                OutlinedTextField(taskText, { taskText = it }, placeholder = { Text("✳ Give Atlas a task on this PC…") }, modifier = Modifier.weight(1f), maxLines = 3)
+                Button(enabled = taskText.isNotBlank(), onClick = { PcAgent.start(container, id, taskText); taskText = ""; kb?.hide() }, modifier = Modifier.padding(start = 6.dp)) { Text("Go") }
             }
         }
     }
 }
 
+@Composable
+private fun Fab(label: String, onClick: () -> Unit) = Box(Modifier.size(42.dp).clip(CircleShape).background(Color(0xCC14181F)).border(1.dp, EDGE, CircleShape).clickable { onClick() },
+    contentAlignment = Alignment.Center) { Text(label, color = FG, fontSize = 16.sp) }
 
 val PcSpecs: List<com.nizam.app.feature.nx.Spec> get() = listOf(
     com.nizam.app.feature.nx.ScreenSpec("pc", "Atlas's PC", "A full Linux desktop on your phone, any distro; use it yourself or watch Atlas work on it",
