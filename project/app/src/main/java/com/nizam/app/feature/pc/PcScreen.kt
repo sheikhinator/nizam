@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -270,8 +272,8 @@ private fun Desktop(container: AppContainer, id: String, changed: () -> Unit) {
                 Canvas(Modifier.fillMaxSize().pointerInput(trackpad, s, ox, oy, agentBusy) {
                     if (agentBusy) return@pointerInput
                     var lastTapAt = 0L
-                    androidx.compose.foundation.gestures.awaitEachGesture {
-                        val first = androidx.compose.foundation.gestures.awaitFirstDown(requireUnconsumed = false)
+                    awaitEachGesture {
+                        val first = awaitFirstDown(requireUnconsumed = false)
                         val t0 = System.currentTimeMillis()
                         val start = first.position
                         var maxFingers = 1; var moved = 0f; var dragging = false; var scrollAcc = 0f
