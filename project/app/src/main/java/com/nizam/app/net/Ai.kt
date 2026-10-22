@@ -162,7 +162,18 @@ object Ai {
         }
         val start = s.indexOfFirst { it == '{' || it == '[' }
         val end = s.indexOfLast { it == '}' || it == ']' }
-        return if (start >= 0 && end > start) s.substring(start, end + 1) else s
+        val json = if (start >= 0 && end > start) s.substring(start, end + 1) else s
+        return numbersFixed(json)
+    }
+
+    // "~280", "280 kcal", "Rs 1,200", "14g" written as strings become plain numbers, so every screen that reads a number
+    // gets one (org.json reads "280" fine, but not "~280" or "280 kcal"). Plain digit strings (phone numbers, ids) are left alone.
+    private val UNIT_NUMBER = Regex("\"\\s*(?:~|≈|approx\\.?\\s*|about\\s+|rs\\.?\\s*|pkr\\s*)?(-?\\d{1,3}(?:,\\d{3})+(?:\\.\\d+)?|-?\\d+(?:\\.\\d+)?)\\s*(?:kcal|cal|calories|g|grams|kg|ml|mg|pkr|rs|rupees|min|mins|minutes)?\\s*\"", RegexOption.IGNORE_CASE)
+    private fun numbersFixed(json: String): String = UNIT_NUMBER.replace(json) { m ->
+        val inner = m.value.trim('"').trim()
+        val plain = Regex("^-?\\d+(\\.\\d+)?$").matches(inner)
+        if (plain) m.value                                   // "0300…", "42": untouched
+        else m.groupValues[1].replace(",", "").let { n -> if (n.toDoubleOrNull() != null) n else m.value }
     }
 
     /** Model lists for the picker in Settings. */
