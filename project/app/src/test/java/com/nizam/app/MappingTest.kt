@@ -66,6 +66,13 @@ class MappingTest {
         check("local: bench 60 x 8", "log_set", LocalCommands.parse("bench 60 x 8")?.action)
         check("local: spent 500 on food", 500.0, LocalCommands.parse("spent 500 on food")?.args?.optDouble("amount"))
 
+        val j = org.json.JSONObject(com.nizam.app.net.Ai.cleanJson("Here you go: {\"kcal\":\"~280\",\"protein\":\"14g\",\"phone\":\"03001234567\",\"amount\":\"Rs 1,200\",\"title\":\"Room 12\"}"))
+        check("json ~280", 280.0, j.optDouble("kcal"))
+        check("json 14g", 14.0, j.optDouble("protein"))
+        check("json phone kept", "03001234567", j.optString("phone"))
+        check("json Rs 1,200", 1200.0, j.optDouble("amount"))
+        check("json title kept", "Room 12", j.optString("title"))
+
         val dir = File(System.getProperty("user.dir"), "build/audit").apply { mkdirs() }
         File(dir, "mapping.txt").writeText(log.toString())
         val fails = log.lines().filter { it.startsWith("FAIL") }
