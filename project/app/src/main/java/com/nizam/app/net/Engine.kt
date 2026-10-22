@@ -54,6 +54,14 @@ object Health {
         if (persist) prefs(Router.appContext)?.edit()?.putLong(id, t)?.apply()
     }
 
+    /** Refresh: endpoints resting for a short while (rate limits, outages) get a fresh chance; long rests (a refused key) stay. */
+    fun freshStart(): Int {
+        val soon = System.currentTimeMillis() + 30 * 60_000L
+        val short = until.filterValues { it in 1..soon }.keys
+        short.forEach { until.remove(it); why.remove(it) }
+        return short.size
+    }
+
     /** Milliseconds this endpoint still has to rest (0 = ready). */
     fun resting(e: Router.Endpoint): Long {
         load()

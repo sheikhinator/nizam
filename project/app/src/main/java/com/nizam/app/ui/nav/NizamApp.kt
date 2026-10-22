@@ -369,6 +369,24 @@ fun NizamApp(container: AppContainer, startOnCurator: Boolean = false, startRout
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
+    // Refresh (F5): when Atlas finishes refreshing, the screen you're on is rebuilt with fresh data
+    val refreshTick by com.nizam.app.feature.safe.AtlasRefresh.tick.collectAsState()
+    var seenRefresh by remember { androidx.compose.runtime.mutableIntStateOf(refreshTick) }
+    androidx.compose.runtime.LaunchedEffect(refreshTick) { com.nizam.app.ui.design.guard {
+        if (refreshTick != seenRefresh) {
+            seenRefresh = refreshTick
+            val entry = navController.currentBackStackEntry
+            val pattern = entry?.destination?.route
+            if (pattern != null && pattern !in setOf(Routes.TODAY, Routes.PLAYER, Routes.IPTV_PLAYER, Routes.BEDSIDE, Routes.AMBIENT)) {
+                var actual: String = pattern
+                Regex("\\{(\\w+)\\}").findAll(pattern).forEach { m ->
+                    @Suppress("DEPRECATION") val v = entry.arguments?.get(m.groupValues[1])?.toString().orEmpty()
+                    actual = actual.replace(m.value, v)
+                }
+                if (!actual.contains("{")) navController.navigate(actual) { popUpTo(pattern) { inclusive = true }; launchSingleTop = false }
+            }
+        }
+    } }
     var guidedVisible by remember { mutableStateOf(false) }
     var guidedPaused by remember { mutableStateOf(false) }
     var guidedStep by remember { mutableStateOf(0) }
@@ -463,6 +481,7 @@ fun NizamApp(container: AppContainer, startOnCurator: Boolean = false, startRout
                         Spacer(Modifier.size(30.dp))
                     }
                     Spacer(Modifier.weight(1f))
+                    com.nizam.app.feature.safe.RefreshButton(container, currentRoute)
                     TextButton(onClick = {
                         val currentIndex = bottomItems.indexOfFirst { it.route == currentRoute }
                         guidedTabs = (1..bottomItems.size).map { offset ->

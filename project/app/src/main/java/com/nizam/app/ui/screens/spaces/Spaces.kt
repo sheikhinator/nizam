@@ -178,7 +178,7 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
         Dock(Modifier.align(Alignment.BottomCenter).parallax(0.3f), accent,
             onAsk = { openOrPeek(com.nizam.app.feature.nx.Nx.route("atlastalk")) }, onTalk = { open(Routes.VOICE) }, onAll = { open(Routes.MODULES) },
             onSearch = { openOrPeek(com.nizam.app.feature.nx.Nx.route("find")) },
-            onLycho = { open(com.nizam.app.feature.nx.Nx.route("command")) }, onLychoHold = { open(com.nizam.app.feature.nx.Nx.route("pulse")) })
+            onLycho = { open(com.nizam.app.feature.nx.Nx.route("command")) }, onLychoHold = { open(com.nizam.app.feature.nx.Nx.route("pulse")) }, container = container)
         QuickCaptureFab(container, Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 92.dp))
         com.nizam.app.feature.next.ShakeToUndo()
         val peek = sheetRoute
@@ -293,13 +293,14 @@ private fun Wide(f: Feature, onClick: () -> Unit) {
  */
 @Composable
 private fun Dock(modifier: Modifier, accent: Color, onAsk: () -> Unit, onTalk: () -> Unit, onAll: () -> Unit, onSearch: () -> Unit,
-                 onLycho: () -> Unit, onLychoHold: () -> Unit) {
+                 onLycho: () -> Unit, onLychoHold: () -> Unit, container: com.nizam.app.AppContainer? = null) {
     val halo by com.nizam.app.feature.agentic.AgentHalo.state.collectAsState()
     val expert by com.nizam.app.feature.expertise.Expertise.current.collectAsState()
     val mindState = when { halo.active -> OrbState.Working; expert != null -> OrbState.Thinking; else -> OrbState.Idle }
     Row(modifier.windowInsetsPadding(WindowInsets.navigationBars).padding(bottom = 12.dp).height(64.dp)
         .shadow(16.dp, RoundedCornerShape(32.dp)).liquidGlass(RoundedCornerShape(32.dp)).padding(horizontal = 14.dp),
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        if (container != null) com.nizam.app.feature.safe.RefreshButton(container, null, size = 40.dp)
         Box(Modifier.size(44.dp).clip(RoundedCornerShape(22.dp)).pressable { onSearch() }, contentAlignment = Alignment.Center) {
             Icon(Icons.Outlined.Search, "Search", tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }

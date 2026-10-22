@@ -11,5 +11,6 @@ object MindModules {
         runCatching { Orion.nightly(c) }
         runCatching { Scout.daily(c) }
         runCatching { Sense.daily(c) }
+        runCatching { com.nizam.app.feature.safe.AtlasRefresh.nightly(c) }
     }
 }

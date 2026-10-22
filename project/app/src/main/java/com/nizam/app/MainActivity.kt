@@ -124,6 +124,7 @@ class MainActivity : ComponentActivity() {
                         NizamApp(container, startOnCurator = openCurator,
                             startRoute = intent?.getStringExtra("route") ?: com.nizam.app.feature.agentic.ToolServer.routeFrom(this@MainActivity, intent) ?: if (intent?.action == ACTION_OPEN_MUSIC) com.nizam.app.ui.nav.Routes.MUSIC else null)
                         com.nizam.app.feature.agentic.HaloHost(androidx.compose.ui.Modifier.align(androidx.compose.ui.Alignment.TopCenter))
+                        com.nizam.app.feature.safe.RefreshOverlay(androidx.compose.ui.Modifier.align(androidx.compose.ui.Alignment.TopCenter))
                     }
                 }
                 }
