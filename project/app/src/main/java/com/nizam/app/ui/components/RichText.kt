@@ -180,6 +180,8 @@ fun RichText(text: String, modifier: Modifier = Modifier, onUrl: ((String) -> Un
     val codeBg = cs.onSurface.copy(alpha = 0.07f)
     val blocks = remember(text) { parse(text) }
     val open: (String) -> Unit = onUrl ?: { u -> runCatching { com.nizam.app.feature.nx.Share.open(ctx, u) } }
+    // every piece of text follows the theme's reading colour, whatever surface the answer sits on (dark or light)
+    androidx.compose.runtime.CompositionLocalProvider(androidx.compose.material3.LocalContentColor provides cs.onSurface) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         blocks.forEach { b ->
             when (b) {
@@ -209,6 +211,7 @@ fun RichText(text: String, modifier: Modifier = Modifier, onUrl: ((String) -> Un
                 is Block.Fence -> Fence(b, codeBg)
             }
         }
+    }
     }
 }
 
@@ -468,43 +471,86 @@ private fun flowData(src: String): FlowData? {
     // order: a simple walk from the nodes nothing points at
     val order = mutableListOf<String>()
     val incoming = edges.map { it.to }.toSet()
-    val queue = ArrayDeque(names.keys.filter { it !in incoming }.ifEmpty { listOf(names.keys.first()) })
-    while (queue.isNotEmpty()) { val n = queue.removeFirst(); if (n in order) continue; order += n; edges.filter { it.from == n }.forEach { queue.addLast(it.to) } }
+    fun visit(n: String) {
+        if (n in order) return
+        // a node joins once everything leading into it is placed (so a shared end like "Deliver" comes last)
+        order += n
+        edges.filter { it.from == n }.forEach { e ->
+            val waiting = edges.filter { it.to == e.to }.any { it.from !in order && it.from != e.to }
+            if (!waiting) visit(e.to)
+        }
+    }
+    names.keys.filter { it !in incoming }.ifEmpty { listOf(names.keys.first()) }.forEach { visit(it) }
+    // anything left (its inputs came later in the walk)
+    var guard = 0
+    while (names.keys.any { it !in order } && guard++ < 50) names.keys.filter { it !in order }.forEach { visit(it) }
     names.keys.filter { it !in order }.forEach { order += it }
     return FlowData(names, shapes, edges.map { Triple(it.from, it.to, it.label) }, order)
 }
 
 @Composable
-private fun FlowBlock(d: FlowData) {
-    val names = d.names; val shapes = d.shapes; val order = d.order
-    val edges = d.edges.map { Triple(it.first, it.second, it.third) }
+private fun FlowBox(d: FlowData, id: String) {
     val cs = MaterialTheme.colorScheme
-    Card(null) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-            order.forEachIndexed { i, id ->
-                val shape = shapes[id]
-                val bg = when (shape) { 'd' -> Color(0xFFE38B4F).copy(alpha = 0.16f); 'r' -> cs.tertiary.copy(alpha = 0.16f); else -> cs.primary.copy(alpha = 0.13f) }
-                val border = when (shape) { 'd' -> Color(0xFFE38B4F); 'r' -> cs.tertiary; else -> cs.primary }
-                Text((if (shape == 'd') "◆ " else "") + names[id].orEmpty(), Modifier.widthIn(min = 140.dp, max = 300.dp)
-                    .clip(RoundedCornerShape(if (shape == 'r') 50 else 12)).background(bg).border(1.5.dp, border.copy(alpha = 0.7f), RoundedCornerShape(if (shape == 'r') 50 else 12))
-                    .padding(horizontal = 14.dp, vertical = 10.dp), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
-                val outs = edges.filter { it.first == id }
-                if (i < order.lastIndex || outs.isNotEmpty()) {
-                    val next = order.getOrNull(i + 1)
-                    val direct = outs.firstOrNull { it.second == next }
-                    val others = outs.filter { it.second != next }
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        if (direct != null || (outs.isEmpty() && next != null && edges.any { it.second == next })) {
-                            Text("↓" + (direct?.third?.takeIf { it.isNotBlank() }?.let { "  $it" } ?: ""), color = cs.onSurfaceVariant, style = MaterialTheme.typography.labelMedium,
-                                modifier = Modifier.padding(vertical = 2.dp))
-                        } else Spacer(Modifier.height(10.dp))
-                        others.forEach { e ->
-                            Text("↳ ${e.third.ifBlank { "then" }}: ${names[e.second].orEmpty()}", color = cs.onSurfaceVariant, style = MaterialTheme.typography.labelMedium,
-                                modifier = Modifier.padding(bottom = 4.dp))
+    val shape = d.shapes[id]
+    val accent = when (shape) { 'd' -> Color(0xFFE38B4F); 'r' -> cs.tertiary; else -> cs.primary }
+    Text((if (shape == 'd') "◆ " else "") + d.names[id].orEmpty(), Modifier.widthIn(min = 120.dp, max = 300.dp)
+        .clip(RoundedCornerShape(if (shape == 'r') 50 else 12)).background(accent.copy(alpha = 0.15f))
+        .border(1.5.dp, accent.copy(alpha = 0.75f), RoundedCornerShape(if (shape == 'r') 50 else 12))
+        .padding(horizontal = 12.dp, vertical = 9.dp), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold,
+        textAlign = TextAlign.Center, color = cs.onSurface)
+}
+
+@Composable
+private fun FlowArrow(label: String) {
+    Text("↓" + if (label.isNotBlank()) "  $label" else "", color = MaterialTheme.colorScheme.onSurfaceVariant,
+        style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(vertical = 3.dp))
+}
+
+private fun reach(d: FlowData, from: String): List<String> {
+    val seen = LinkedHashSet<String>(); val q = ArrayDeque(listOf(from))
+    while (q.isNotEmpty()) { val n = q.removeFirst(); if (!seen.add(n)) continue; d.edges.filter { it.first == n }.forEach { q.addLast(it.second) } }
+    return seen.toList()
+}
+
+/** Draws a path top to bottom; a decision splits into side-by-side branches that join again where they meet. */
+@Composable
+private fun FlowChain(d: FlowData, start: String, stopAt: Set<String>, seen: MutableSet<String>) {
+    var cur: String? = start
+    var steps = 0
+    while (cur != null && cur !in seen && cur !in stopAt && steps++ < 40) {
+        val id: String = cur
+        seen += id
+        FlowBox(d, id)
+        val outs = d.edges.filter { it.first == id }
+        cur = when {
+            outs.size >= 2 -> {
+                // where the branches meet again: the first node every branch can reach
+                val reaches = outs.map { reach(d, it.second) }
+                val merge = reaches.first().firstOrNull { n -> reaches.all { n in it } }
+                Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    outs.forEach { e ->
+                        Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                            FlowArrow(e.third)
+                            if (e.second != merge) FlowChain(d, e.second, stopAt + setOfNotNull(merge), seen)
                         }
                     }
                 }
+                if (merge != null) { FlowArrow(""); merge } else null
             }
+            outs.size == 1 -> { FlowArrow(outs[0].third); outs[0].second }
+            else -> null
+        }
+    }
+}
+
+@Composable
+private fun FlowBlock(d: FlowData) {
+    Card(null) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+            val seen = remember(d) { mutableSetOf<String>() }.also { it.clear() }
+            val incoming = d.edges.map { it.second }.toSet()
+            d.names.keys.filter { it !in incoming }.ifEmpty { listOf(d.order.first()) }.forEach { FlowChain(d, it, emptySet(), seen) }
+            d.order.filter { it !in seen }.forEach { FlowChain(d, it, emptySet(), seen) }
         }
     }
 }
