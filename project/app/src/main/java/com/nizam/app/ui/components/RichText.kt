@@ -84,7 +84,7 @@ private fun stepsOf(blocks: List<Block>): List<NextSteps.Step> {
     val h = blocks.indexOfLast { it is Block.Heading && Regex("(?i)next steps?|what you can do|action items|your move|to do next|what to do now").containsMatchIn(it.text) }
     if (h < 0) return emptyList()
     val items = blocks.drop(h + 1).takeWhile { it !is Block.Heading }.filterIsInstance<Block.Item>().filter { it.depth == 0 }.map { it.text }
-    return if (items.size >= 2) NextSteps.clean(NextSteps.fromList(items)) else emptyList()
+    return if (items.isNotEmpty()) NextSteps.clean(NextSteps.fromList(items)) else emptyList()
 }
 
 private sealed class Block {

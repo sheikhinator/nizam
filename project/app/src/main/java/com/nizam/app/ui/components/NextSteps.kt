@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -53,7 +54,7 @@ object NextSteps {
     data class Step(val label: String, val kind: Kind, val detail: String)
 
     /** Added to every chat's instructions (inside [RichFormat.GUIDE]). */
-    const val GUIDE = " When your answer leads to things the user could do next, end it with a ```next block: a JSON array of 2–4 steps " +
+    const val GUIDE = " When your answer leads to things the user could do next, end it with a ```next block: a JSON array with exactly the steps this particular answer calls for (one for a single obvious action, more for a plan with several actions, none when nothing follows) " +
         "[{\"label\":\"Save the budget\",\"kind\":\"do\",\"detail\":\"Create a budget 'Gold launch' of PKR 340,000 for November\"}]. " +
         "label: a short button text (2–6 words, starts with a verb). kind: \"do\" = Atlas performs it with its tools (add a task, reminder, event or alarm; " +
         "log an expense, income, meal, water, workout or prayer; set a budget or goal; save a note; start a timer; create a tracker) and detail must hold every " +
@@ -95,13 +96,13 @@ object NextSteps {
         }
     }
 
-    /** Makes the list sensible before it is shown: real screens only, no duplicates, no vault, at most four. */
+    /** Makes the list sensible before it is shown: real screens only, no duplicates, no vault (a runaway list stops at ten). */
     fun clean(steps: List<Step>): List<Step> = steps.asSequence()
         .filterNot { Regex("\\b(vault|hidden)\\b", RegexOption.IGNORE_CASE).containsMatchIn(it.label + " " + it.detail) }
         .map { s -> s.copy(label = s.label.trim().trimEnd('.', ':').let { if (it.length > 48) it.take(46).trimEnd() + "…" else it }) }
         .map { s -> if (s.kind == Kind.OPEN && screen(s.detail) == null && screen(s.label) == null) s.copy(kind = Kind.ASK, detail = s.label) else s }
         .distinctBy { it.label.lowercase() }
-        .take(4).toList()
+        .take(10).toList()
 
     /** The route of an Atlas screen or tool with this name, if there is one. */
     fun screen(name: String): String? {
@@ -217,7 +218,8 @@ internal fun NextStepsCard(steps: List<NextSteps.Step>, context: String) {
     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(cs.primary.copy(alpha = 0.06f))
         .border(1.dp, cs.primary.copy(alpha = 0.25f), RoundedCornerShape(20.dp)).padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text("NEXT STEPS", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = cs.primary, modifier = Modifier.padding(start = 4.dp))
-        steps.forEach { s ->
+        var all by androidx.compose.runtime.remember(context) { androidx.compose.runtime.mutableStateOf(false) }
+        (if (all || steps.size <= 5) steps else steps.take(4)).forEach { s ->
             val k = NextSteps.key(context, s)
             val st = NextSteps.status[k]
             val done = st?.ok == true
@@ -249,5 +251,6 @@ internal fun NextStepsCard(steps: List<NextSteps.Step>, context: String) {
                 if (done && st?.undo != null) TextButton(onClick = { NextSteps.undo(c, k) }, modifier = Modifier.padding(start = 34.dp)) { Text("Undo") }
             }
         }
+        if (steps.size > 5) TextButton(onClick = { all = !all }) { Text(if (all) "Show fewer" else "Show ${steps.size - 4} more steps") }
     }
 }
