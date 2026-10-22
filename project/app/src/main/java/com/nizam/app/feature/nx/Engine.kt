@@ -179,7 +179,8 @@ private fun rememberSpeaker(): com.nizam.app.feature.voice.Speaker {
 }
 
 @Composable
-fun ResultActions(title: String, text: String) {
+fun ResultActions(title: String, raw: String) {
+    val text = com.nizam.app.ui.components.RichFormat.plain(raw)
     val ctx = LocalContext.current
     val speaker = rememberSpeaker()
     Row(Modifier.padding(horizontal = Space.page, vertical = Space.s), horizontalArrangement = Arrangement.spacedBy(Space.s)) {
@@ -439,6 +440,7 @@ fun ChatToolScreen(spec: ChatSpec, container: AppContainer) {
         }
     }
 
+    androidx.compose.runtime.CompositionLocalProvider(com.nizam.app.ui.components.LocalChatAsk provides { t: String -> send(t) }) {
     AtlasScreen(title = spec.title + (spec.setup.firstOrNull()?.let { setup[it.key]?.takeIf { v -> started && v.isNotBlank() }?.let { v -> " · $v" } } ?: ""),
         subtitle = spec.blurb, hub = spec.hub, actions = {
             if (spec.persistent && started && !busy) Text("Stories", Modifier.padding(Space.s).pressable { leaveStory() },
@@ -525,6 +527,7 @@ fun ChatToolScreen(spec: ChatSpec, container: AppContainer) {
             },
             dismissButton = { TextButton(onClick = { deleteStoryId = null }) { Text("Keep story") } }
         )
+    }
     }
 }
 

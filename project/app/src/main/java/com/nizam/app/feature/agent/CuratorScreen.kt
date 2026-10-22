@@ -200,7 +200,7 @@ fun CuratorScreen(container: AppContainer) {
                 com.nizam.app.feature.jarvis.BrainFiles.remember(context, includedFiles, outcome.reply)
             }
             media = com.nizam.app.feature.mcp.Mcp.lastParts.filter { it.kind != "text" }
-            if (speakBack) speaker.speak(outcome.reply)
+            if (speakBack) speaker.speak(com.nizam.app.ui.components.RichFormat.plain(outcome.reply))
             busy = false
         }
     }
@@ -223,6 +223,8 @@ fun CuratorScreen(container: AppContainer) {
     // A question handed over from Search ("Ask Atlas") is reviewed before its first network request.
     androidx.compose.runtime.LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { AskAtlas.take()?.let { send(it) } } }
 
+    // next-step buttons under an answer send their follow-up right here
+    androidx.compose.runtime.CompositionLocalProvider(com.nizam.app.ui.components.LocalChatAsk provides { t: String -> send(t) }) {
     Column(Modifier.fillMaxSize().imePadding().padding(horizontal = 18.dp)) {
         Row(Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("Atlas", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.weight(1f))
@@ -394,6 +396,7 @@ fun CuratorScreen(container: AppContainer) {
             performSend(message, files, parts)
         }
     )
+    }
 }
 
 
@@ -418,12 +421,12 @@ private fun AtlasReply(text: String, live: Boolean = false, onRetry: (() -> Unit
         if (!live && text.isNotBlank()) Row(Modifier.padding(top = 6.dp), horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(4.dp)) {
             ReplyAction(androidx.compose.material.icons.Icons.Outlined.ContentCopy, "Copy") {
                 val cm = ctx.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                cm.setPrimaryClip(android.content.ClipData.newPlainText("Atlas", text))
+                cm.setPrimaryClip(android.content.ClipData.newPlainText("Atlas", com.nizam.app.ui.components.RichFormat.plain(text)))
                 com.nizam.app.ui.components.Feedback.show("Copied")
             }
             ReplyAction(androidx.compose.material.icons.Icons.Outlined.Share, "Share") {
                 ctx.startActivity(android.content.Intent.createChooser(android.content.Intent(android.content.Intent.ACTION_SEND)
-                    .setType("text/plain").putExtra(android.content.Intent.EXTRA_TEXT, text), "Share"))
+                    .setType("text/plain").putExtra(android.content.Intent.EXTRA_TEXT, com.nizam.app.ui.components.RichFormat.plain(text)), "Share"))
             }
             ReplyAction(androidx.compose.material.icons.Icons.Outlined.VolumeUp, "Read aloud") { ReadAloud.say(ctx, text) }
             if (onRetry != null) ReplyAction(androidx.compose.material.icons.Icons.Outlined.Refresh, "Ask again", onRetry)
@@ -442,7 +445,7 @@ private fun ReplyAction(icon: androidx.compose.ui.graphics.vector.ImageVector, l
 private object ReadAloud {
     private var tts: android.speech.tts.TextToSpeech? = null
     fun say(c: android.content.Context, text: String) {
-        val clean = text.replace(Regex("[*#`>_\\[\\]]"), "").take(3900)
+        val clean = com.nizam.app.ui.components.RichFormat.plain(text).replace(Regex("[*#`>_\\[\\]]"), "").take(3900)
         tts?.let { if (it.isSpeaking) { it.stop(); return }; it.speak(clean, android.speech.tts.TextToSpeech.QUEUE_FLUSH, null, "atlas") ; return }
         tts = android.speech.tts.TextToSpeech(c.applicationContext) { ok ->
             if (ok == android.speech.tts.TextToSpeech.SUCCESS) tts?.speak(clean, android.speech.tts.TextToSpeech.QUEUE_FLUSH, null, "atlas")

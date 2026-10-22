@@ -38,7 +38,7 @@ class Shots(private val route: String, private val dark: Boolean) {
         @JvmStatic
         @ParameterizedRobolectricTestRunner.Parameters(name = "{0}-{1}")
         fun params(): List<Array<Any>> {
-            val routes = (System.getenv("SHOT_ROUTES") ?: "nx/updates,nx/inbox,nx/whatsnew,rich")
+            val routes = (System.getenv("SHOT_ROUTES") ?: "nx/updates,nx/inbox,nx/whatsnew,rich2")
                 .split(',').map { it.trim() }.filter { it.isNotEmpty() }
             return routes.map { arrayOf<Any>(it, true) } + listOf("today", "modules", "rich").filter { it in routes }.map { arrayOf<Any>(it, false) }
         }
@@ -110,4 +110,8 @@ C --> E((Deliver))
 ```
 
 - [x] Register domain
-- [ ] Open bank account"""
+- [ ] Open bank account
+
+```next
+[{"label":"Add pitch task for Monday","kind":"do","detail":"Add a task: pitch 10 clients, due next Monday"},{"label":"Open Tasks","kind":"open","detail":"Tasks"},{"label":"Search freelance rates","kind":"search","detail":"freelance writing rates Pakistan 2026"},{"label":"Draft my pitch email","kind":"ask","detail":"Draft a short pitch email for my writing services"}]
+```"""

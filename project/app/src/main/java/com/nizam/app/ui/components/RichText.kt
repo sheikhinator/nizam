@@ -69,7 +69,22 @@ object RichFormat {
         "(several series: \"series\":[{\"name\":\"...\",\"values\":[...]}]). For a process or decision path: ```mermaid\nflowchart TD\nA[Start] --> B[Next]\n``` " +
         "For key figures: ```stats\n[{\"label\":\"...\",\"value\":\"...\",\"note\":\"...\"}]\n``` For plans and steps over time: " +
         "```timeline\n[{\"when\":\"...\",\"title\":\"...\",\"detail\":\"...\"}]\n``` For progress toward targets: ```progress\n[{\"label\":\"...\",\"value\":40,\"max\":100}]\n``` " +
-        "Only include an image as ![alt](https://…) when you have a real image URL. Use these only when they genuinely help; keep short answers short."
+        "Only include an image as ![alt](https://…) when you have a real image URL. Use these only when they genuinely help; keep short answers short." +
+        NextSteps.GUIDE
+
+    /** The answer without its ```next block (for copying, sharing and reading aloud). */
+    fun plain(text: String): String = text.replace(Regex("```(next|actions|steps|nextsteps)\\s*\\n[\\s\\S]*?(```|$)", RegexOption.IGNORE_CASE), "").trimEnd()
+}
+
+/** Buttons for an answer: the ```next block if the model wrote one, otherwise its "Next steps" list. */
+private fun stepsOf(blocks: List<Block>): List<NextSteps.Step> {
+    blocks.filterIsInstance<Block.Fence>().lastOrNull { NextSteps.isNextFence(it.lang) && it.closed }?.let { f ->
+        return NextSteps.clean(NextSteps.fromFence(f.body).orEmpty())
+    }
+    val h = blocks.indexOfLast { it is Block.Heading && Regex("(?i)next steps?|what you can do|action items|your move|to do next|what to do now").containsMatchIn(it.text) }
+    if (h < 0) return emptyList()
+    val items = blocks.drop(h + 1).takeWhile { it !is Block.Heading }.filterIsInstance<Block.Item>().filter { it.depth == 0 }.map { it.text }
+    return if (items.size >= 2) NextSteps.clean(NextSteps.fromList(items)) else emptyList()
 }
 
 private sealed class Block {
@@ -179,6 +194,7 @@ fun RichText(text: String, modifier: Modifier = Modifier, onUrl: ((String) -> Un
     val cs = MaterialTheme.colorScheme
     val codeBg = cs.onSurface.copy(alpha = 0.07f)
     val blocks = remember(text) { parse(text) }
+    val steps = remember(text) { runCatching { stepsOf(blocks) }.getOrDefault(emptyList()) }
     val open: (String) -> Unit = onUrl ?: { u -> runCatching { com.nizam.app.feature.nx.Share.open(ctx, u) } }
     // every piece of text follows the theme's reading colour, whatever surface the answer sits on (dark or light)
     androidx.compose.runtime.CompositionLocalProvider(androidx.compose.material3.LocalContentColor provides cs.onSurface) {
@@ -208,9 +224,10 @@ fun RichText(text: String, modifier: Modifier = Modifier, onUrl: ((String) -> Un
                 is Block.Image -> coil.compose.AsyncImage(b.url, b.alt, Modifier.fillMaxWidth().heightIn(max = 280.dp).clip(RoundedCornerShape(16.dp)).clickable { open(b.url) },
                     contentScale = ContentScale.Fit)
                 Block.Rule -> Box(Modifier.fillMaxWidth().padding(vertical = 6.dp).height(1.dp).background(cs.outlineVariant))
-                is Block.Fence -> Fence(b, codeBg)
+                is Block.Fence -> if (!NextSteps.isNextFence(b.lang)) Fence(b, codeBg)
             }
         }
+        if (steps.isNotEmpty()) NextStepsCard(steps, RichFormat.plain(text))
     }
     }
 }

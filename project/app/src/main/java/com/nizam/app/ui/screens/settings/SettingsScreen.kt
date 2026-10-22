@@ -1,5 +1,6 @@
 package com.nizam.app.ui.screens.settings
 
+import androidx.compose.material.icons.outlined.SystemUpdate
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
