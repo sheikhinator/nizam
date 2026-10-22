@@ -40,30 +40,33 @@ object Ai {
         maxOutputTokens: Int = 1200,
         useWeb: Boolean = false
     ): String {
+        // Atlas Code's agent: code must reach the model exactly (no whitespace squeezing) and without personal context
+        val codeAgent = system?.contains("[[code-agent]]") == true
         val bg = Engine.isBackground()
-        val prompt = com.nizam.app.feature.agentic.Compact.prompt(Router.appContext, prompt)
+        val lean = bg || codeAgent
+        val prompt = if (codeAgent) prompt else com.nizam.app.feature.agentic.Compact.prompt(Router.appContext, prompt)
         // the chosen language (Urdu, Roman Urdu) and the privacy shield apply to every request
         // what Atlas knows about you (and has learned), for things you asked for directly
-        val model = if (bg) "" else runCatching { Router.appContext?.let { com.nizam.app.feature.brain2.PersonalModel.promptBlock(it) + com.nizam.app.feature.nx.Specials.soul(it).let { soul -> if (soul.isBlank()) "" else "\n\nHow the user wants you to be:\n$soul" } } ?: "" }.getOrDefault("")
+        val model = if (lean) "" else runCatching { Router.appContext?.let { com.nizam.app.feature.brain2.PersonalModel.promptBlock(it) + com.nizam.app.feature.nx.Specials.soul(it).let { soul -> if (soul.isBlank()) "" else "\n\nHow the user wants you to be:\n$soul" } } ?: "" }.getOrDefault("")
         // if the user allowed it, the part of their own recorded life that matches this question
-        val dataBlock = if (bg || prompt.contains("recorded data, shared by them")) "" else runCatching {
+        val dataBlock = if (lean || prompt.contains("recorded data, shared by them")) "" else runCatching {
             Router.appContext?.let { com.nizam.app.feature.nx.Roads.chatContext(it, prompt) }
         }.getOrNull().orEmpty()
         // one mind: when a question needs an expert, Atlas thinks with that expertise (still Atlas, same memory and voice)
-        val expertise = if (bg) "" else runCatching { com.nizam.app.feature.expertise.Expertise.autoBlock(Router.appContext, prompt, system) }.getOrDefault("")
-        val laws = if (bg) "" else runCatching { com.nizam.app.feature.expertise.Laws.block(Router.appContext) }.getOrDefault("")
+        val expertise = if (lean) "" else runCatching { com.nizam.app.feature.expertise.Expertise.autoBlock(Router.appContext, prompt, system) }.getOrDefault("")
+        val laws = if (lean) "" else runCatching { com.nizam.app.feature.expertise.Laws.block(Router.appContext) }.getOrDefault("")
         // answers people read get the rich answer view's formats (tables, charts, diagrams…); structured JSON requests don't
-        val rich = if (bg || (system?.contains("JSON") == true) || prompt.contains("JSON") || (system?.contains("Output only") == true)) ""
+        val rich = if (lean || (system?.contains("JSON") == true) || prompt.contains("JSON") || (system?.contains("Output only") == true)) ""
             else com.nizam.app.ui.components.RichFormat.GUIDE
         // inside a chat project: the project's instructions and notes
-        val projectBlock = if (bg || !com.nizam.app.feature.chats.ChatHistory.atlasOpen) "" else com.nizam.app.feature.chats.ChatHistory.activeProjectBlock
-        val system = listOfNotNull(system, projectBlock.ifBlank { null }, rich.ifBlank { null }, expertise.ifBlank { null }, laws.ifBlank { null }, model.ifBlank { null }, dataBlock.ifBlank { null }, com.nizam.app.feature.future.Lang.instruction().ifBlank { null }).joinToString("\n\n").ifBlank { null }
+        val projectBlock = if (lean || !com.nizam.app.feature.chats.ChatHistory.atlasOpen) "" else com.nizam.app.feature.chats.ChatHistory.activeProjectBlock
+        val system = listOfNotNull(system, projectBlock.ifBlank { null }, rich.ifBlank { null }, expertise.ifBlank { null }, laws.ifBlank { null }, model.ifBlank { null }, dataBlock.ifBlank { null }, (if (codeAgent) "" else com.nizam.app.feature.future.Lang.instruction()).ifBlank { null }).joinToString("\n\n").ifBlank { null }
         val tag = kotlin.coroutines.coroutineContext[com.nizam.app.feature.wild.AgentMeter.Tag]?.name
         val expert = if (expertise.isBlank()) null else com.nizam.app.feature.expertise.Expertise.current.value
-        val heavy = !bg && com.nizam.app.feature.expertise.Tiers.isHeavy(prompt, expert?.heavy == true)
+        val heavy = !bg && (codeAgent || com.nizam.app.feature.expertise.Tiers.isHeavy(prompt, expert?.heavy == true))
         com.nizam.app.feature.agentic.AgentHalo.begin(tag?.let { "$it is working" } ?: if (bg) "Working in the background"
             else expert?.let { "Atlas is thinking as ${it.name}" } ?: "Atlas is thinking")
-        if (!bg) com.nizam.app.feature.agentic.MemorySources.record(Router.appContext, prompt)
+        if (!lean) com.nizam.app.feature.agentic.MemorySources.record(Router.appContext, prompt)
         try { return AnswerCache.get(AnswerCache.key(prompt, system, maxOutputTokens, useWeb), if (bg) 30 * 60_000L else if (useWeb) 60_000L else 3 * 60_000L) {
             com.nizam.app.feature.agentic.AgentHalo.check()
             if (bg && !Budget.allowBackground()) throw IllegalStateException("Atlas has used today's background AI allowance — it resets at midnight.")

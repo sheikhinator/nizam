@@ -27,7 +27,7 @@ class AgentLoop(private val container: () -> AppContainer) {
         "delete_module", "clear_module_entries", "set_pin", "disable_module", "set_home_order",
         "call", "send_sms", "reply_notification", "tap", "type_text",
         "delete_mission", "delete_goal", "delete_task", "delete_transaction", "delete_entry",
-        "delete_event", "email"
+        "delete_event", "email", "run_command"
     )
 
     // One call per message unless the model explicitly asks to continue. The previous default of
@@ -244,7 +244,7 @@ class AgentLoop(private val container: () -> AppContainer) {
                     results.appendLine("$name: BLOCKED — this agent is read-only")
                     continue
                 }
-                if (changesOutside(name, args) && !autoApprove && !com.nizam.app.feature.agentic.AgentTrust.mayActAlone(c.appContext, name, args)) {
+                if (changesOutside(name, args) && (name == "run_command" || (!autoApprove && !com.nizam.app.feature.agentic.AgentTrust.mayActAlone(c.appContext, name, args)))) {
                     pending.add(name to args)
                     results.appendLine("$name: waiting for the user to approve")
                     continue

@@ -59,7 +59,7 @@ object AgentTrust {
     fun readOnly(c: Context, agent: String) = ap(c).getBoolean("ro_$agent", false)
     fun setReadOnly(c: Context, agent: String, v: Boolean) = ap(c).edit().putBoolean("ro_$agent", v).apply()
 
-    private val HIGH_RISK = setOf("call", "send_sms", "email", "reply_notification", "set_pin", "disable_module", "delete_module", "clear_module_entries")
+    private val HIGH_RISK = setOf("call", "send_sms", "email", "reply_notification", "set_pin", "disable_module", "delete_module", "clear_module_entries", "run_command")
     /** In trusted mode, may this action run without asking? Never for anything that speaks for you, spends or destroys. */
     fun mayActAlone(c: Context, name: String, args: JSONObject): Boolean =
         level(c) == "trusted" && name !in HIGH_RISK && !name.startsWith("delete_") &&

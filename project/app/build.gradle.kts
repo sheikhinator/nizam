@@ -164,6 +164,8 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.google.android.gms:play-services-nearby:19.3.0")
     implementation("org.nanohttpd:nanohttpd:2.3.1")
+    // Atlas Terminal: the terminal emulator and view Termux is built on (Apache 2.0)
+    implementation("com.github.termux.termux-app:terminal-view:v0.118.0")
     implementation("dev.rikka.shizuku:provider:13.1.5")
     implementation("com.sun.mail:android-mail:1.6.7")
     implementation("com.sun.mail:android-activation:1.6.7")

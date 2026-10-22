@@ -87,6 +87,7 @@ fun ChatsDrawer(container: AppContainer, onNewChat: (projectId: String?) -> Unit
 
     fun open(o: JSONObject) {
         if (o.optString("source") == "atlas") scope.launch { ChatHistory.openAtlas(container, o.optString("id")); onOpened() }
+        else if (o.optString("source").startsWith("code:")) { com.nizam.app.feature.code.AtlasCode.pending = o.optString("source").removePrefix("code:"); onOpened(); com.nizam.app.ui.screens.search.AtlasNav.go?.invoke(com.nizam.app.feature.nx.Nx.route("atlascode")) }
         else ChatHistory.openTool(c, o.optString("id"))?.let { r -> onOpened(); com.nizam.app.ui.screens.search.AtlasNav.go?.invoke(r) }
     }
 
@@ -226,12 +227,12 @@ fun ChatsDrawer(container: AppContainer, onNewChat: (projectId: String?) -> Unit
                 "code" -> {
                     item("codehead") {
                         Column(Modifier.fillMaxWidth().padding(vertical = 6.dp).clip(RoundedCornerShape(18.dp)).background(cs.primary.copy(alpha = 0.10f)).padding(14.dp)) {
-                            Text("💻 Atlas Code", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                            Text("Your coding chats live here. The full coding agent (any repo, terminal, git, builds) is being built next; until then Chief edits and builds Atlas itself.",
+                            Text("✳ Atlas Code", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Text("Your coding agent: any GitHub repo, edits with diffs, a real Linux terminal, commits, pull requests and CI. Coding sessions and code chats gather here.",
                                 style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant)
                             androidx.compose.foundation.layout.Row {
-                                TextButton(onClick = { onOpened(); com.nizam.app.ui.screens.search.AtlasNav.go?.invoke(com.nizam.app.feature.nx.Nx.route("chief")) }) { Text("Open Chief") }
-                                TextButton(onClick = { onNewChat(null) }) { Text("New code chat") }
+                                TextButton(onClick = { onOpened(); com.nizam.app.ui.screens.search.AtlasNav.go?.invoke(com.nizam.app.feature.nx.Nx.route("atlascode")) }) { Text("Open Atlas Code") }
+                                TextButton(onClick = { onOpened(); com.nizam.app.ui.screens.search.AtlasNav.go?.invoke(com.nizam.app.feature.nx.Nx.route("terminal")) }) { Text("Terminal") }
                             }
                         }
                     }

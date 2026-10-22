@@ -132,6 +132,20 @@ object ChatHistory {
         maybeTitle(c, id)
     }
 
+    /** An Atlas Code session is kept in history too (label Code), and reopens in Atlas Code. */
+    fun syncCode(c: Context, sessionId: String, project: String, msgs: List<Pair<Boolean, String>>) {
+        if (msgs.none { it.first }) return
+        val id = "code_$sessionId"
+        val st = store(c); val now = System.currentTimeMillis()
+        val arr = JSONArray().apply { msgs.takeLast(200).forEach { (u, t) -> put(JSONObject().put("u", u).put("t", t.take(8000))) } }
+        val existing = st.all().firstOrNull { it.optString("id") == id }
+        if (existing == null) st.add(JSONObject().put("id", id).put("source", "code:$sessionId").put("agent", "Atlas Code · $project").put("title", quickTitle(msgs.first { it.first }.second))
+            .put("label", "Code").put("labelSet", true).put("created", now).put("updated", now).put("msgs", arr).put("titled", false))
+        else st.update(id) { it.put("msgs", arr).put("updated", now) }
+        changed()
+        maybeTitle(c, id)
+    }
+
     private val restore = HashMap<String, List<Pair<Boolean, String>>>()
     /** Hands a saved tool chat to the tool screen that is about to open. */
     fun takeRestore(toolId: String): Pair<String, List<Pair<Boolean, String>>>? = synchronized(restore) {

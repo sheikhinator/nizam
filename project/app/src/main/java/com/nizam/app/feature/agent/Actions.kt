@@ -184,6 +184,7 @@ object Actions {
         plan_day           {note}        builds today's plan around prayers and tasks
         shield_on          {minutes}     shield_off {}   focus shield that holds distracting apps
         search_web         {query}       read_link {url}
+        run_command        {command, cwd, timeout}   runs in Atlas Terminal's Linux (user approves first); files in /root/projects
         read_notifications {limit}       reply_notification {match, message}
     """.trimIndent()
 
@@ -868,6 +869,13 @@ object Actions {
                 Result(true, "Your company is making it now. It will be on the Deliverables shelf when ready (you'll get a notification).")
             }
             "list_screens" -> Result(true, com.nizam.app.ui.screens.search.DESTINATIONS.joinToString { it.name })
+            "run_command" -> {
+                // a shell command in Atlas Terminal's Linux (always asked for first, see AgentLoop)
+                val cmd = args.optString("command").ifBlank { args.optString("cmd") }
+                if (cmd.isBlank()) return Result(false, "Which command?")
+                val r = com.nizam.app.feature.linux.LinuxEnv.run(container.appContext, cmd, args.optString("cwd").ifBlank { "/root/projects" }, args.optLong("timeout", 120).coerceIn(5, 900))
+                return Result(r.code == 0, "\$ $cmd → exit ${r.code}" + (if (r.timedOut) " (timed out)" else "") + "\n" + r.out.takeLast(3000))
+            }
             "open_screen" -> {
                 val want = args.optString("screen").ifBlank { args.optString("name") }.trim()
                 if (want.isBlank()) return Result(false, "Which screen?")
