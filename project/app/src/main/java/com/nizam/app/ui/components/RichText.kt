@@ -275,7 +275,7 @@ private fun TableView(t: Block.Table, codeBg: Color) {
 
 private fun align(a: Char?) = when (a) { 'r' -> TextAlign.End; 'c' -> TextAlign.Center; else -> TextAlign.Start }
 
-private class ChartData(val type: String, val title: String, val unit: String, val labels: List<String>, val series: List<Pair<String, List<Double>>>)
+internal class ChartData(val type: String, val title: String, val unit: String, val labels: List<String>, val series: List<Pair<String, List<Double>>>)
 private class FlowData(val names: Map<String, String>, val shapes: Map<String, Char>, val edges: List<Triple<String, String, String>>, val order: List<String>)
 
 /** Turns a closed fenced block into something drawable, or null (then it shows as code). Never throws. */
@@ -328,115 +328,6 @@ private fun CodeBox(lang: String, body: String, bg: Color) {
         }
         Text(body, fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.horizontalScroll(rememberScrollState()).padding(12.dp))
-    }
-}
-
-@Composable
-private fun Card(title: String?, content: @Composable () -> Unit) {
-    val cs = MaterialTheme.colorScheme
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(cs.onSurface.copy(alpha = 0.045f))
-        .border(1.dp, cs.outlineVariant.copy(alpha = 0.6f), RoundedCornerShape(16.dp)).padding(14.dp)) {
-        if (!title.isNullOrBlank()) Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 10.dp))
-        content()
-    }
-}
-
-private fun fmt(v: Double, unit: String): String {
-    val n = if (kotlin.math.abs(v) >= 1000) "%,.0f".format(v) else if (v % 1.0 == 0.0) "%.0f".format(v) else "%.1f".format(v)
-    return when { unit.isBlank() -> n; unit.length <= 3 && !unit.endsWith("%") && unit.first().isLetter() && unit.lowercase() in setOf("rs", "pkr", "$", "usd") -> "$unit $n"; else -> "$n$unit" }
-}
-
-/** ```chart {"type":"bar|line|pie|donut","title","unit","labels","values"|"series"} */
-@Composable
-private fun ChartBlock(d: ChartData) {
-    val type = d.type; val unit = d.unit; val labels = d.labels; val series = d.series
-    val colors = palette()
-    val ink = MaterialTheme.colorScheme.onSurfaceVariant
-    val grid = MaterialTheme.colorScheme.outlineVariant
-    Card(d.title.ifBlank { null }) {
-        when (type) {
-            "pie", "donut", "doughnut" -> {
-                val values = series.first().second
-                val total = values.sum().coerceAtLeast(1e-9)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Canvas(Modifier.size(140.dp)) {
-                        var start = -90f
-                        values.forEachIndexed { i, v ->
-                            val sweep = (v / total * 360).toFloat()
-                            if (type == "pie") drawArc(colors[i % colors.size], start, sweep, true)
-                            else drawArc(colors[i % colors.size], start, sweep - 1.5f, false, topLeft = Offset(14f, 14f),
-                                size = Size(size.width - 28f, size.height - 28f), style = Stroke(26f))
-                            start += sweep
-                        }
-                    }
-                    Column(Modifier.padding(start = 14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        values.forEachIndexed { i, v ->
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(Modifier.size(10.dp).clip(CircleShape).background(colors[i % colors.size]))
-                                Text(" ${labels.getOrNull(i) ?: "#${i + 1}"}", style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f, fill = false))
-                                Text("  ${(v / total * 100).let { "%.0f".format(it) }}%", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                    }
-                }
-            }
-            "line", "area" -> {
-                val all = series.flatMap { it.second }
-                val max = (all.maxOrNull() ?: 1.0).coerceAtLeast(1e-9); val min = minOf(0.0, all.minOrNull() ?: 0.0)
-                Canvas(Modifier.fillMaxWidth().height(160.dp)) {
-                    for (g in 0..3) { val y = size.height * g / 3f; drawLine(grid.copy(alpha = 0.5f), Offset(0f, y), Offset(size.width, y), 1f) }
-                    series.forEachIndexed { si, (_, v) ->
-                        if (v.size < 2) return@forEachIndexed
-                        fun x(i: Int) = size.width * i / (v.size - 1).toFloat()
-                        fun y(d: Double) = (size.height - (d - min) / (max - min) * size.height * 0.92).toFloat()
-                        val p = Path().apply { v.forEachIndexed { i, d -> if (i == 0) moveTo(x(i), y(d)) else lineTo(x(i), y(d)) } }
-                        if (type == "area" || series.size == 1) {
-                            val fill = Path().apply { addPath(p); lineTo(x(v.lastIndex), size.height); lineTo(0f, size.height); close() }
-                            drawPath(fill, colors[si % colors.size].copy(alpha = 0.14f))
-                        }
-                        drawPath(p, colors[si % colors.size], style = Stroke(5f))
-                        drawCircle(colors[si % colors.size], 7f, Offset(x(v.lastIndex), y(v.last())))
-                    }
-                }
-                Row(Modifier.fillMaxWidth().padding(top = 6.dp)) {
-                    labels.firstOrNull()?.let { Text(it, style = MaterialTheme.typography.labelSmall, color = ink) }
-                    Spacer(Modifier.weight(1f))
-                    labels.lastOrNull()?.let { Text(it, style = MaterialTheme.typography.labelSmall, color = ink) }
-                }
-                Text("Latest: " + series.joinToString(" · ") { (n, v) -> (if (n.isNotBlank()) "$n " else "") + fmt(v.last(), unit) },
-                    style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 2.dp))
-            }
-            else -> {
-                // horizontal bars: labels stay readable however long they are
-                val max = series.flatMap { it.second }.maxOrNull()?.coerceAtLeast(1e-9) ?: 1.0
-                val n = series.first().second.size
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    (0 until n).forEach { i ->
-                        Column {
-                            Text(labels.getOrNull(i) ?: "#${i + 1}", style = MaterialTheme.typography.labelMedium, color = ink)
-                            series.forEachIndexed { si, (_, v) ->
-                                val value = v.getOrNull(i) ?: 0.0
-                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 2.dp)) {
-                                    Box(Modifier.weight(1f).height(14.dp)) {
-                                        Box(Modifier.fillMaxWidth((value / max).toFloat().coerceIn(0.02f, 1f)).height(14.dp).clip(RoundedCornerShape(7.dp))
-                                            .background(colors[si % colors.size]))
-                                    }
-                                    Text(fmt(value, unit), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold,
-                                        modifier = Modifier.widthIn(min = 64.dp).padding(start = 8.dp), textAlign = TextAlign.End)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if (series.size > 1) Row(Modifier.padding(top = 10.dp).horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            series.forEachIndexed { i, (name, _) ->
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.size(10.dp).clip(CircleShape).background(colors[i % colors.size])); Text(" $name", style = MaterialTheme.typography.labelMedium)
-                }
-            }
-        }
     }
 }
 
@@ -545,7 +436,7 @@ private fun FlowChain(d: FlowData, start: String, stopAt: Set<String>, seen: Mut
 
 @Composable
 private fun FlowBlock(d: FlowData) {
-    Card(null) {
+    VisualCard(null, "🧭") {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
             val seen = remember(d) { mutableSetOf<String>() }.also { it.clear() }
             val incoming = d.edges.map { it.second }.toSet()
@@ -555,65 +446,3 @@ private fun FlowBlock(d: FlowData) {
     }
 }
 
-/** ```stats [{"label","value","note"}] as key-figure tiles. */
-@Composable
-private fun StatsBlock(items: List<JSONObject>) {
-    val colors = palette()
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        items.chunked(2).forEachIndexed { r, row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                row.forEachIndexed { c, o ->
-                    val col = colors[(r * 2 + c) % colors.size]
-                    Column(Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(col.copy(alpha = 0.11f)).border(1.dp, col.copy(alpha = 0.35f), RoundedCornerShape(16.dp)).padding(14.dp)) {
-                        Text(o.optString("value"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Black, color = col)
-                        Text(o.optString("label"), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
-                        o.optString("note").takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
-                    }
-                }
-                if (row.size == 1) Spacer(Modifier.weight(1f))
-            }
-        }
-    }
-}
-
-/** ```timeline [{"when","title","detail"}] */
-@Composable
-private fun TimelineBlock(items: List<JSONObject>) {
-    val cs = MaterialTheme.colorScheme
-    Card(null) {
-        items.forEachIndexed { i, o ->
-            Row(Modifier.height(IntrinsicSize.Min)) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(22.dp)) {
-                    Box(Modifier.padding(top = 4.dp).size(12.dp).clip(CircleShape).background(cs.primary))
-                    if (i < items.lastIndex) Box(Modifier.width(2.dp).weight(1f).background(cs.primary.copy(alpha = 0.3f)))
-                }
-                Column(Modifier.padding(start = 10.dp, bottom = if (i < items.lastIndex) 14.dp else 0.dp)) {
-                    o.optString("when").takeIf { it.isNotBlank() }?.let { Text(it.uppercase(), style = MaterialTheme.typography.labelSmall, color = cs.primary, fontWeight = FontWeight.Bold) }
-                    Text(o.optString("title"), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                    o.optString("detail").takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant) }
-                }
-            }
-        }
-    }
-}
-
-/** ```progress [{"label","value","max"}] */
-@Composable
-private fun ProgressBlock(items: List<JSONObject>) {
-    val colors = palette()
-    Card(null) {
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            items.forEachIndexed { i, o ->
-                val v = o.optDouble("value", 0.0); val max = o.optDouble("max", 100.0).coerceAtLeast(1e-9)
-                val f = (v / max).toFloat().coerceIn(0f, 1f)
-                Column {
-                    Row { Text(o.optString("label"), style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
-                        Text("${(f * 100).toInt()}%", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = colors[i % colors.size]) }
-                    Box(Modifier.padding(top = 4.dp).fillMaxWidth().height(10.dp).clip(CircleShape).background(colors[i % colors.size].copy(alpha = 0.15f))) {
-                        Box(Modifier.fillMaxWidth(f).height(10.dp).clip(CircleShape).background(colors[i % colors.size]))
-                    }
-                }
-            }
-        }
-    }
-}
