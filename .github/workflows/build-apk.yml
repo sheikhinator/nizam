@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 80
 
       - name: List repo contents
         run: |
@@ -111,6 +113,15 @@ jobs:
           done
           ls -la "$D"
           du -sh "$D"
+
+      # The in-app "What's new" reads this: the recent changes, newest first, written from the commit history
+      - name: Write the What's new list
+        working-directory: ${{ steps.proj.outputs.dir }}
+        run: |
+          mkdir -p app/src/main/assets
+          git -C "$GITHUB_WORKSPACE" log -80 --no-merges --format='%ct|%h|%s' \
+            | sed -E 's/\[[a-z]+\]//g; s/ +$//' | grep -viE '\|(wip|tmp|test|merge)' > app/src/main/assets/changelog.txt || true
+          wc -l app/src/main/assets/changelog.txt
 
       - name: Build debug APK
         working-directory: ${{ steps.proj.outputs.dir }}

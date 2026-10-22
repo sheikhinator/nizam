@@ -1,7 +1,13 @@
 package com.nizam.app.feature.notify
 
 import android.content.Context
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -70,44 +76,69 @@ object Inbox {
 @Composable
 fun InboxScreen(open: (String) -> Unit = {}) {
     val c = LocalContext.current
+    val cs = MaterialTheme.colorScheme
     var tick by remember { mutableStateOf(0) }
     var digest by remember { mutableStateOf(Inbox.digestOn(c)) }
     val list = remember(tick) { Inbox.all(c) }
+    val unread = list.count { !it.optBoolean("read") }
     val fmt = DateTimeFormatter.ofPattern("d MMM, h:mm a")
-    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    val card = androidx.compose.foundation.shape.RoundedCornerShape(18.dp)
+    fun Modifier.box() = this.fillMaxWidth().clip(card).background(cs.surfaceVariant.copy(alpha = 0.45f)).padding(14.dp)
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp).padding(top = 4.dp, bottom = 40.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.weight(1f)) {
+                Text("Notifications", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                Text(if (unread > 0) "$unread unread" else "You're all caught up", style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant)
+            }
+            if (list.isNotEmpty()) {
+                TextButton(onClick = { val s = JsonStore(c, "nx_inbox"); s.all().forEach { o -> s.update(o.optString("id")) { it.put("read", true) } }; tick++ }) { Text("Mark read") }
+                TextButton(onClick = { JsonStore(c, "nx_inbox").save(emptyList()); tick++ }) { Text("Clear") }
+            }
+        }
         // things that need an OK from you: changes Chief has prepared, and finished updates
         val pending = com.nizam.app.feature.chief.ChiefStore.pendingSummary(c)
         val chiefPhase = com.nizam.app.feature.chief.ChiefStore.phase(c)
-        if (pending != null) Column(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+        if (pending != null) Column(Modifier.box()) {
             Text("Needs your OK", fontWeight = FontWeight.SemiBold)
             Text(pending.take(280), style = MaterialTheme.typography.bodySmall)
             Row {
-                TextButton(onClick = { open("nx/chief") }) { Text("See what changes") }
-                TextButton(onClick = { com.nizam.app.feature.chief.ChiefRunner.approve(c, pending); tick++ }) { Text("Approve and build") }
+                TextButton(onClick = { open("nx/chief") }) { Text("See changes") }
+                TextButton(onClick = { com.nizam.app.feature.chief.ChiefRunner.approve(c, pending); tick++ }) { Text("Approve") }
                 TextButton(onClick = { com.nizam.app.feature.chief.ChiefStore.clearPending(c); tick++ }) { Text("Discard") }
             }
         }
-        if (chiefPhase == "ready") Column(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+        if (chiefPhase == "ready") Column(Modifier.box()) {
             Text("An update is ready", fontWeight = FontWeight.SemiBold)
             TextButton(onClick = { open("nx/chief") }) { Text("Open Chief to install it") }
         }
         if (chiefPhase == "building") Text("Chief is building an update…", style = MaterialTheme.typography.bodySmall)
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f)) {
+        Row(Modifier.box(), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f).padding(end = 12.dp)) {
                 Text("Daily digests", fontWeight = FontWeight.SemiBold)
-                Text("Hold routine reminders and send one summary at 8am, 2pm and 8pm. Prayer and urgent alerts still arrive at once.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Hold routine reminders and send one summary at 8am, 2pm and 8pm. Prayer and urgent alerts still arrive at once.",
+                    style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant)
             }
             Switch(digest, { digest = it; Inbox.setDigest(c, it) })
         }
-        Row {
-            TextButton(onClick = { val s = JsonStore(c, "nx_inbox"); s.all().forEach { o -> s.update(o.optString("id")) { it.put("read", true) } }; tick++ }) { Text("Mark all read") }
-            TextButton(onClick = { JsonStore(c, "nx_inbox").save(emptyList()); tick++ }) { Text("Clear") }
+        if (list.isEmpty()) Column(Modifier.fillMaxWidth().padding(vertical = 36.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("🔔", style = MaterialTheme.typography.displaySmall)
+            Text("Nothing yet", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 8.dp))
+            Text("Reminders, approvals and updates will gather here.", style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center)
         }
-        if (list.isEmpty()) Text("Nothing yet. Reminders, approvals and updates will gather here.", style = MaterialTheme.typography.bodyMedium)
-        list.forEach { o -> Column(Modifier.padding(vertical = 5.dp)) {
-            Text((if (!o.optBoolean("read")) "● " else "") + o.optString("title") + if (o.optBoolean("held")) "  (held for digest)" else "", fontWeight = if (o.optBoolean("read")) FontWeight.Normal else FontWeight.SemiBold)
-            Text(o.optString("body"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 3)
-            Text(Instant.ofEpochMilli(o.optLong("t")).atZone(ZoneId.systemDefault()).format(fmt), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        } }
+        list.forEach { o ->
+            val read = o.optBoolean("read")
+            Row(Modifier.box(), verticalAlignment = Alignment.Top) {
+                androidx.compose.foundation.layout.Box(Modifier.padding(top = 6.dp, end = 10.dp).size(8.dp).clip(androidx.compose.foundation.shape.CircleShape)
+                    .background(if (read) androidx.compose.ui.graphics.Color.Transparent else cs.primary))
+                Column(Modifier.weight(1f)) {
+                    Text(o.optString("title") + if (o.optBoolean("held")) "  · held for digest" else "", fontWeight = if (read) FontWeight.Normal else FontWeight.SemiBold)
+                    if (o.optString("body").isNotBlank()) Text(o.optString("body"), style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant, maxLines = 3)
+                    Text(Instant.ofEpochMilli(o.optLong("t")).atZone(ZoneId.systemDefault()).format(fmt), style = MaterialTheme.typography.labelSmall,
+                        color = cs.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp))
+                }
+            }
+        }
     }
 }

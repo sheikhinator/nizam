@@ -248,7 +248,7 @@ fun TodayScreen(container: AppContainer, onOpen: (String) -> Unit) {
 
         if (!com.nizam.app.feature.modes.Wizard.done(modeContext) && !zen) com.nizam.app.ui.design.ListRow("Set up Atlas in a minute", Modifier.padding(top = 8.dp),
             supporting = "Pick who it's for, language, modes and backup", icon = androidx.compose.material.icons.Icons.Outlined.AutoFixHigh) { onOpen("nx/setupwizard") }
-        if (com.nizam.app.feature.platform2.whatsNewUnseen(modeContext) && !zen) com.nizam.app.ui.design.ListRow("What's new in Atlas", Modifier.padding(top = 8.dp), supporting = "A short tour of this version",
+        if (com.nizam.app.feature.platform2.whatsNewUnseen(modeContext) && !zen) com.nizam.app.ui.design.ListRow("What's new in Atlas", Modifier.padding(top = 8.dp), supporting = (com.nizam.app.BuildConfig.BUILD_NUMBER.takeIf { it > 0 }?.let { "build-$it · " } ?: "") + "see what changed",
             icon = androidx.compose.material.icons.Icons.Outlined.NewReleases) { onOpen("nx/whatsnew") }
         // ── which mode you're in (switches by itself from prayer times, calendar and charger) and one-tap actions for it ──
         com.nizam.app.feature.modes.ModeBar(container, onOpen, Modifier.padding(top = 8.dp))

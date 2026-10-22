@@ -335,15 +335,51 @@ private val WHATS_NEW = listOf(
     "New: goals, time ledger, forecasts, cause & effect, no-spend challenge, bank statement import, parcel tracker, wardrobe, insurance and many more logs.",
     "Safety: notification inbox with digests, weekly encrypted backup, safe mode after crashes, profiles, hide-amounts and guest mode.")
 
+/** The recent changes, written into the app at build time from the commit history (newest first). */
+object Changelog {
+    data class Entry(val at: Long, val sha: String, val text: String)
+    fun read(c: Context): List<Entry> = runCatching {
+        c.assets.open("changelog.txt").bufferedReader().readLines().mapNotNull { l ->
+            val p = l.split('|', limit = 3); if (p.size < 3 || p[2].isBlank()) null else Entry((p[0].toLongOrNull() ?: 0L) * 1000, p[1], p[2].trim())
+        }
+    }.getOrDefault(emptyList())
+}
+
 @Composable
 private fun WhatsNew() {
     val c = LocalContext.current
-    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { c.getSharedPreferences("whatsnew", 0).edit().putLong("seen", Updater.installedAt(c)).apply() } }
+    val cs = MaterialTheme.colorScheme
+    val prefs = remember { c.getSharedPreferences("whatsnew", 0) }
+    val lastSeen = remember { prefs.getLong("seenChange", 0L) }
+    val log = remember { Changelog.read(c) }
+    LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
+        prefs.edit().putLong("seen", Updater.installedAt(c)).putLong("seenChange", log.firstOrNull()?.at ?: 0L).apply() } }
+    val day = remember { java.time.format.DateTimeFormatter.ofPattern("EEEE d MMMM").withZone(java.time.ZoneId.systemDefault()) }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("What's new in this version", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-        WHATS_NEW.forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
-        Text("How each suite works", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 6.dp))
-        listOf("Overview shows live figures and your most used tools; All tools lists everything, grouped. Tap 📍 on a tool to pin it to Today.", "Ask › Do understands lines like “spent 800 on lunch” and always shows what it will do before doing it.",
+        androidx.compose.material3.Surface(shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp), color = cs.primaryContainer, modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(16.dp)) {
+                Text("You're on " + (Updater.myBuild.takeIf { it > 0 }?.let { "build-$it" } ?: "this build"), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text("Built ${java.time.format.DateTimeFormatter.ofPattern("d MMM yyyy, h:mm a").withZone(java.time.ZoneId.systemDefault()).format(Instant.ofEpochMilli(com.nizam.app.BuildConfig.BUILD_TIME))}",
+                    style = MaterialTheme.typography.bodySmall, color = cs.onPrimaryContainer.copy(alpha = 0.8f))
+                val fresh = log.count { it.at > lastSeen }
+                if (lastSeen > 0 && fresh > 0) Text("$fresh new change${if (fresh == 1) "" else "s"} since you last looked", style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold, color = cs.primary, modifier = Modifier.padding(top = 6.dp))
+            }
+        }
+        if (log.isEmpty()) WHATS_NEW.forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
+        log.groupBy { day.format(Instant.ofEpochMilli(it.at)) }.entries.take(14).forEach { (d, items) ->
+            Text(d.uppercase(), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = cs.onSurfaceVariant, modifier = Modifier.padding(top = 8.dp))
+            items.forEach { e ->
+                val isNew = lastSeen > 0 && e.at > lastSeen
+                Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
+                    Text(if (isNew) "✨" else "•", color = cs.primary, modifier = Modifier.padding(end = 10.dp))
+                    Text(e.text, style = MaterialTheme.typography.bodyMedium, fontWeight = if (isNew) FontWeight.SemiBold else FontWeight.Normal, modifier = Modifier.weight(1f))
+                }
+            }
+        }
+        Text("How each suite works", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 12.dp))
+        listOf("Tap the refresh button on any screen to tidy Atlas up and check for a new build — Update now installs it.",
+            "Overview shows live figures and your most used tools; All tools lists everything, grouped. Tap 📍 on a tool to pin it to Today.",
             "Hide a tool you never use from You › Tidy my tools; search still finds it.", "If Atlas ever crashes twice, it opens in Safe mode with a one-tap check.").forEach { Text("• $it", style = MaterialTheme.typography.bodySmall) }
     }
 }
