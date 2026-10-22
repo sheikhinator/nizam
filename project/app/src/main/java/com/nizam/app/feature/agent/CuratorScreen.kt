@@ -109,7 +109,11 @@ fun CuratorScreen(container: AppContainer) {
 
     // an expert's desk can hand over a first question; the expertise stays pinned while it's open
     val pinnedExpert by com.nizam.app.feature.expertise.Expertise.pinned.collectAsState()
-    androidx.compose.runtime.LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { com.nizam.app.feature.expertise.Expertise.takeAsk()?.let { draft = it } } }
+    var autoAsk by remember { mutableStateOf<String?>(null) }
+    androidx.compose.runtime.LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
+        val send = com.nizam.app.feature.expertise.Expertise.sendQueued
+        com.nizam.app.feature.expertise.Expertise.takeAsk()?.let { if (send) autoAsk = it else draft = it }
+    } }
 
     // Open the connection to the AI and build the app snapshot before the first message is typed
     androidx.compose.runtime.LaunchedEffect(Unit) { com.nizam.app.ui.design.guard {
@@ -214,6 +218,8 @@ fun CuratorScreen(container: AppContainer) {
         }
     }
 
+    // a question typed in the command screen's Ask box goes straight out
+    androidx.compose.runtime.LaunchedEffect(autoAsk) { com.nizam.app.ui.design.guard { autoAsk?.let { autoAsk = null; send(it) } } }
     // A question handed over from Search ("Ask Atlas") is reviewed before its first network request.
     androidx.compose.runtime.LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { AskAtlas.take()?.let { send(it) } } }
 

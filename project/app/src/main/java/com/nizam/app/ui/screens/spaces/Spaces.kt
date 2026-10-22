@@ -178,7 +178,7 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
         Dock(Modifier.align(Alignment.BottomCenter).parallax(0.3f), accent,
             onAsk = { openOrPeek(com.nizam.app.feature.nx.Nx.route("atlastalk")) }, onTalk = { open(Routes.VOICE) }, onAll = { open(Routes.MODULES) },
             onSearch = { openOrPeek(com.nizam.app.feature.nx.Nx.route("find")) },
-            onLycho = { open(com.nizam.app.feature.nx.Nx.route("expertise")) }, onLychoHold = { open(com.nizam.app.feature.nx.Nx.route("pulse")) })
+            onLycho = { open(com.nizam.app.feature.nx.Nx.route("command")) }, onLychoHold = { open(com.nizam.app.feature.nx.Nx.route("pulse")) })
         QuickCaptureFab(container, Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 92.dp))
         com.nizam.app.feature.next.ShakeToUndo()
         val peek = sheetRoute

@@ -36,7 +36,9 @@ object Expertise {
 
     /** A first message waiting for the chat box (from an expert's starter prompts). */
     @Volatile private var pendingAsk: String? = null
-    fun queueAsk(text: String) { pendingAsk = text }
+    @Volatile var sendQueued = false
+        private set
+    fun queueAsk(text: String, send: Boolean = false) { pendingAsk = text; sendQueued = send }
     fun takeAsk(): String? = pendingAsk.also { pendingAsk = null }
 
     /** An expert's desk to open next (from Society, World, Forge or Marketplace). */
