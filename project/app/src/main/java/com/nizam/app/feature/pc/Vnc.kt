@@ -27,17 +27,26 @@ object Vnc {
     private var buttons = 0
     @Volatile private var dirty = false
 
+    @Volatile private var wanted = false
+    @Volatile private var looping = false
+
+    /** Connects, and keeps reconnecting by itself if the link drops, until [disconnect]. */
     fun connect(port: Int = PcEnv.PORT) {
-        if (connected) return
+        wanted = true
+        if (looping) return
+        looping = true
         Thread {
-            var tries = 0
-            while (tries < 40 && !connected) {
-                try { session(port); return@Thread } catch (e: Exception) { error = e.message ?: "Can't reach the screen"; tries++; Thread.sleep(1500) }
-            }
+            var fails = 0
+            try {
+                while (wanted && fails < 60) {
+                    try { session(port); fails = 0 } catch (e: Throwable) { if (wanted) error = e.message ?: "Can't reach the screen"; fails++ }
+                    if (wanted) try { Thread.sleep(1200) } catch (_: InterruptedException) { }
+                }
+            } finally { looping = false }
         }.apply { isDaemon = true; start() }
     }
 
-    fun disconnect() { runCatching { socket?.close() }; socket = null; connected = false }
+    fun disconnect() { wanted = false; runCatching { socket?.close() }; socket = null; connected = false }
 
     private fun session(port: Int) {
         val s = Socket(); s.connect(InetSocketAddress("127.0.0.1", port), 3000); s.tcpNoDelay = true
@@ -66,7 +75,8 @@ object Vnc {
         }
         connected = true; error = ""
         request(false)
-        val ticker = Thread { while (connected) { if (dirty) { dirty = false; publish() }; Thread.sleep(33) } }.apply { isDaemon = true; start() }
+        // redraws at most ~30 times a second; never lets an interruption escape (that would crash Atlas)
+        val ticker = Thread { try { while (connected) { if (dirty) { dirty = false; runCatching { publish() } }; Thread.sleep(33) } } catch (_: Throwable) { } }.apply { isDaemon = true; start() }
         try {
             while (true) {
                 when (inp.readUnsignedByte()) {
@@ -103,10 +113,12 @@ object Vnc {
                     1 -> { inp.readByte(); inp.readUnsignedShort(); val k = inp.readUnsignedShort(); inp.skipBytes(k * 6) }
                     2 -> {}
                     3 -> { inp.skipBytes(3); val l = inp.readInt(); inp.skipBytes(l) }
+                    150 -> {}                                   // end of continuous updates
+                    248 -> { inp.skipBytes(3); inp.readInt(); val l = inp.readUnsignedByte(); inp.skipBytes(l) } // fence
                     else -> throw IllegalStateException("Unknown message from the screen server")
                 }
             }
-        } finally { connected = false; ticker.interrupt() }
+        } finally { connected = false; runCatching { s.close() } }
     }
 
     @Volatile var extended = false
