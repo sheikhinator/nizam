@@ -71,7 +71,7 @@ word ACT and nothing else. Never pretend you did an action."""
         var released = false
         val full = Streaming.reply(
             c.settingsRepository, prompt, SYSTEM + ChatModes.personaPrompt(),
-            maxTokens = if (ChatModes.think) 3000 else if (attachments.isEmpty()) 1200 else 2400,
+            maxTokens = if (ChatModes.think) 3000 else if (attachments.isEmpty()) 2000 else 2400,
             attachments = attachments, context = c.appContext, lane = Router.Lane.CHAT
         ) { piece ->
             if (released) onDelta(piece)

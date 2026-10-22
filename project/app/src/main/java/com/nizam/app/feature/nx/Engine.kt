@@ -196,7 +196,7 @@ fun ResultActions(title: String, text: String) {
 @Composable
 fun Md(text: String) {
     val ctx = LocalContext.current
-    SelectionContainer { Column { MarkdownView(text, onLink = {}, onTag = {}, onUrl = { Share.open(ctx, it) }, onToggleTask = {}, embed = { null }) } }
+    SelectionContainer { com.nizam.app.ui.components.RichText(text, onUrl = { Share.open(ctx, it) }) }
 }
 
 @Composable
@@ -493,10 +493,10 @@ fun ChatToolScreen(spec: ChatSpec, container: AppContainer) {
             msgs.forEachIndexed { i, (me, t) ->
                 item("m$i") {
                     Box(Modifier.fillMaxWidth().padding(horizontal = Space.page, vertical = 4.dp), contentAlignment = if (me) Alignment.CenterEnd else Alignment.CenterStart) {
-                        Box(Modifier.widthIn(max = 320.dp).background(if (me) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(18.dp))
-                            .padding(horizontal = 14.dp, vertical = 10.dp)) {
-                            if (me) Text(t, style = MaterialTheme.typography.bodyMedium) else Md(t)
-                        }
+                        // your words in a bubble; Atlas's answer full width, so tables, charts and diagrams have room
+                        if (me) Box(Modifier.widthIn(max = 320.dp).background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(18.dp))
+                            .padding(horizontal = 14.dp, vertical = 10.dp)) { Text(t, style = MaterialTheme.typography.bodyMedium) }
+                        else Box(Modifier.fillMaxWidth().padding(vertical = 4.dp)) { Md(t) }
                     }
                 }
             }

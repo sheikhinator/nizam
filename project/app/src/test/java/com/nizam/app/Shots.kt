@@ -6,6 +6,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -36,9 +38,9 @@ class Shots(private val route: String, private val dark: Boolean) {
         @JvmStatic
         @ParameterizedRobolectricTestRunner.Parameters(name = "{0}-{1}")
         fun params(): List<Array<Any>> {
-            val routes = (System.getenv("SHOT_ROUTES") ?: "today,nx/oracle")
+            val routes = (System.getenv("SHOT_ROUTES") ?: "rich,rich2,nx/atlastalk")
                 .split(',').map { it.trim() }.filter { it.isNotEmpty() }
-            return routes.map { arrayOf<Any>(it, true) } + listOf("today", "modules").filter { it in routes }.map { arrayOf<Any>(it, false) }
+            return routes.map { arrayOf<Any>(it, true) } + listOf("today", "modules", "rich").filter { it in routes }.map { arrayOf<Any>(it, false) }
         }
     }
 
@@ -51,7 +53,9 @@ class Shots(private val route: String, private val dark: Boolean) {
         rule.setContent {
             NizamTheme(darkTheme = dark) {
                 androidx.compose.foundation.layout.Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-                    NizamApp(container, startRoute = route)
+                    if (route.startsWith("rich")) androidx.compose.foundation.layout.Box(Modifier.padding(18.dp)) {
+                        com.nizam.app.ui.components.ChatText(if (route == "rich") RICH_A else RICH_B)
+                    } else NizamApp(container, startRoute = route)
                 }
             }
         }
@@ -66,3 +70,44 @@ class Shots(private val route: String, private val dark: Boolean) {
         File(dir, "${route.replace('/', '_')}-${if (dark) "dark" else "light"}.png").outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 }
+
+private const val RICH_A = """## Freelance writing start-up
+You can start for about **Rs 9,200** and break even in the *second* month.
+
+| Item | Cost (Rs) | Note |
+|---|---|---|
+| Domain & hosting | 2,500 | .pk domain |
+| Branding | 3,500 | Fiverr designer |
+| Accounting app | 1,200 | Monthly |
+| Total | 7,200 | |
+
+> [!TIP]
+> Start with three sample articles in your niche before pitching.
+
+```chart
+{"type":"bar","title":"Monthly income plan","unit":"Rs","labels":["Month 1","Month 2","Month 3"],"values":[15000,32000,55000]}
+```
+
+```stats
+[{"label":"Start-up cost","value":"Rs 9.2k"},{"label":"Break-even","value":"Month 2","note":"at 4 clients"}]
+```"""
+
+private const val RICH_B = """### How a client order flows
+```mermaid
+flowchart TD
+A[Client brief] --> B{Clear?}
+B -->|yes| C[Write draft]
+B -->|no| D[Ask questions]
+C --> E((Deliver))
+```
+
+```chart
+{"type":"donut","title":"Where your time goes","labels":["Writing","Research","Admin"],"values":[60,25,15]}
+```
+
+```timeline
+[{"when":"Week 1","title":"Portfolio","detail":"Three samples"},{"when":"Week 2","title":"Pitch 10 clients"},{"when":"Month 2","title":"Raise rates"}]
+```
+
+- [x] Register domain
+- [ ] Open bank account"""

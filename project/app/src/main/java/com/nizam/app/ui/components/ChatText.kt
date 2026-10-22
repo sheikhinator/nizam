@@ -37,29 +37,8 @@ import androidx.compose.ui.unit.dp
  */
 @Composable
 fun ChatText(text: String, modifier: Modifier = Modifier) {
-    val codeBg = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.07f)
-    val blocks = remember(text) { split(text) }
-    SelectionContainer(modifier) {
-        Column {
-            blocks.forEachIndexed { i, b ->
-                if (i > 0) Spacer(Modifier.height(6.dp))
-                when (b) {
-                    is Md.Code -> CodeBlock(b.body, codeBg)
-                    is Md.Heading -> Text(inline(b.text, codeBg), style = when (b.level) {
-                        1 -> MaterialTheme.typography.titleLarge
-                        2 -> MaterialTheme.typography.titleMedium
-                        else -> MaterialTheme.typography.titleSmall
-                    }, modifier = Modifier.padding(top = 4.dp))
-                    is Md.Bullet -> Row(Modifier.padding(start = (b.depth * 14).dp)) {
-                        Text(b.marker, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
-                        Spacer(Modifier.width(8.dp))
-                        Text(inline(b.text, codeBg), style = MaterialTheme.typography.bodyLarge)
-                    }
-                    is Md.Para -> Text(inline(b.text, codeBg), style = MaterialTheme.typography.bodyLarge)
-                }
-            }
-        }
-    }
+    // every chat in Atlas uses the rich answer view: tables, charts, diagrams, callouts and more
+    SelectionContainer(modifier) { RichText(text) }
 }
 
 @Composable

@@ -38,7 +38,8 @@ object Streaming {
         onRouted: (Router.Endpoint) -> Unit = {},
         onDelta: (String) -> Unit
     ): String = withContext(Dispatchers.IO) {
-        val system = listOf(system, com.nizam.app.feature.future.Lang.instruction()).filter { it.isNotBlank() }.joinToString("\n\n")
+        val system = listOf(system, if (system.contains("JSON")) "" else com.nizam.app.ui.components.RichFormat.GUIDE,
+            com.nizam.app.feature.future.Lang.instruction()).filter { it.isNotBlank() }.joinToString("\n\n")
         val configured = Router.endpoints(settings, context, lane).filter {
             (allowFolax || it.kind != "FOLAX") &&
                 (provider == null || it.kind.equals(provider, true)) &&
