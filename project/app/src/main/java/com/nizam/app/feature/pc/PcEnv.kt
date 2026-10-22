@@ -119,7 +119,7 @@ object PcEnv {
                 .newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK, "atlas:pc-setup").apply { acquire(2 * 60 * 60_000L) } }.getOrNull()
         } else {
             runCatching { wake?.takeIf { it.isHeld }?.release() }; wake = null
-            if (running == null) runCatching { c.startService(Intent(c, PcService::class.java).setAction("stop")) }
+            if (running == null) runCatching { c.stopService(Intent(c, PcService::class.java)) }
         }
     }
 
@@ -238,7 +238,7 @@ object PcEnv {
         desktopProc?.destroy(); desktopProc = null
         running = null
         Vnc.disconnect()
-        if (!installing) runCatching { c.startService(Intent(c, PcService::class.java).setAction("stop")) }
+        if (!installing) runCatching { c.stopService(Intent(c, PcService::class.java)) }
     }
 
     fun alive() = desktopProc?.isAlive == true
@@ -248,13 +248,21 @@ object PcEnv {
 class PcService : Service() {
     override fun onBind(i: Intent?): IBinder? = null
     override fun onStartCommand(i: Intent?, flags: Int, startId: Int): Int {
-        if (i?.action == "stop") { stopSelf(); return START_NOT_STICKY }
-        val nm = getSystemService(NotificationManager::class.java)
-        if (Build.VERSION.SDK_INT >= 26) nm.createNotificationChannel(NotificationChannel("atlas_pc", "Atlas's PC", NotificationManager.IMPORTANCE_LOW))
-        val open = android.app.PendingIntent.getActivity(this, 0, packageManager.getLaunchIntentForPackage(packageName), android.app.PendingIntent.FLAG_IMMUTABLE)
-        val n = Notification.Builder(this, "atlas_pc").setSmallIcon(android.R.drawable.ic_menu_manage).setContentTitle(if (PcEnv.installing) "Setting up Atlas's PC…" else "Atlas's PC is running")
-            .setContentText("Open Atlas to see the desktop").setContentIntent(open).setOngoing(true).build()
-        if (Build.VERSION.SDK_INT >= 34) startForeground(5710, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE) else startForeground(5710, n)
+        // always go to the foreground first: Android requires it for every start, even one that only stops
+        runCatching {
+            val nm = getSystemService(NotificationManager::class.java)
+            if (Build.VERSION.SDK_INT >= 26) nm.createNotificationChannel(NotificationChannel("atlas_pc", "Atlas's PC", NotificationManager.IMPORTANCE_LOW))
+            val launch = packageManager.getLaunchIntentForPackage(packageName) ?: Intent()
+            val open = android.app.PendingIntent.getActivity(this, 0, launch, android.app.PendingIntent.FLAG_IMMUTABLE)
+            val n = Notification.Builder(this, "atlas_pc").setSmallIcon(android.R.drawable.ic_menu_manage)
+                .setContentTitle(if (PcEnv.installing) "Setting up Atlas's PC…" else "Atlas's PC is running")
+                .setContentText("Open Atlas to see the desktop").setContentIntent(open).setOngoing(true).build()
+            if (Build.VERSION.SDK_INT >= 34) startForeground(5710, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE) else startForeground(5710, n)
+        }
+        if (i?.action == "stop" || (PcEnv.running == null && !PcEnv.installing)) {
+            runCatching { if (Build.VERSION.SDK_INT >= 24) stopForeground(STOP_FOREGROUND_REMOVE) else @Suppress("DEPRECATION") stopForeground(true) }
+            stopSelf(startId)
+        }
         return START_NOT_STICKY
     }
     override fun onDestroy() { super.onDestroy() }
