@@ -1,3 +1,4 @@
+successfully downloaded text file (SHA: 233085a2805964ca6565a161858fdc9ed6280583)
 package com.nizam.app.ui.screens.spaces
 
 import androidx.compose.animation.animateColorAsState
@@ -305,7 +306,7 @@ private fun Dock(modifier: Modifier, accent: Color, onAsk: () -> Unit, onTalk: (
             Icon(Icons.Outlined.Search, "Search", tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Box(Modifier.size(56.dp).pointerInput(Unit) { detectTapGestures(onTap = { onAsk() }, onLongPress = { onTalk() }) }, contentAlignment = Alignment.Center) {
-            com.nizam.app.ui.design.AtlasGem(if (halo.active) OrbState.Thinking else OrbState.Idle, Modifier.parallax(0.6f), size = 54.dp, accent = accent)
+            com.nizam.app.ui.design.LivingReactor(state = if (halo.active || expert != null) com.nizam.app.ui.design.PulseState.THINKING else com.nizam.app.feature.atlascore.PresenceManager.pulse(), modifier = Modifier.parallax(0.6f), diameter = 54.dp)
         }
         Box(Modifier.size(56.dp).pointerInput(Unit) { detectTapGestures(onTap = { onLycho() }, onLongPress = { onLychoHold() }) }, contentAlignment = Alignment.Center) {
             com.nizam.app.ui.design.LychoOrb(mindState, Modifier.parallax(0.6f), diameter = 50.dp)
