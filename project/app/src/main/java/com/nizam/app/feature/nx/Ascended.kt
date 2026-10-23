@@ -4,9 +4,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Extension
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Psychology
 import androidx.compose.material.icons.outlined.Timeline
+import androidx.compose.material.icons.outlined.Visibility
 import com.nizam.app.ui.design.Hub
 
 /**
@@ -51,5 +53,29 @@ object Ascended {
             Icons.Outlined.History, Hub.Memory,
             "time capsule letter future self sealed memory waiting"
         ) { _, _ -> com.nizam.app.feature.capsule.CapsulesScreen() },
+        ScreenSpec(
+            "attention", "Attention",
+            "Where your attention actually went, counted from your own records",
+            Icons.Outlined.Visibility, Hub.Memory,
+            "attention focus distraction where time went mirror"
+        ) { _, _ -> com.nizam.app.feature.attention.AttentionScreen() },
+        ScreenSpec(
+            "aletheia", "Aletheia",
+            "The beliefs you hold without checking, and how sure you really are",
+            Icons.Outlined.Psychology, Hub.Learn,
+            "beliefs truth assumptions confidence check aletheia unconcealment"
+        ) { _, _ -> com.nizam.app.feature.aletheia.AletheiaScreen() },
+        ScreenSpec(
+            "solitude", "Solitude",
+            "A quiet room where Atlas will not speak first",
+            Icons.Outlined.Favorite, Hub.Health,
+            "quiet silence alone rest solitude no interruptions"
+        ) { _, _ -> com.nizam.app.feature.solitude.SolitudeScreen() },
+        ScreenSpec(
+            "inheritance", "Inheritance",
+            "The values, lessons and letters someone else could carry",
+            Icons.Outlined.Lightbulb, Hub.Home,
+            "legacy values lessons inheritance what outlives memory letter"
+        ) { _, _ -> com.nizam.app.feature.inheritance.InheritanceScreen() },
     )
 }
