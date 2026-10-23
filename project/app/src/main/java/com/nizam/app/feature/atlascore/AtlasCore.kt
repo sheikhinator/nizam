@@ -1,3 +1,4 @@
+successfully downloaded text file (SHA: c42264198a067ef3946fb4d8ca2f66fd8a16f419)
 package com.nizam.app.feature.atlascore
 
 import android.content.Context
@@ -133,4 +134,15 @@ private fun moodFor(part: TimeOfDay): AtlasMood = when (part) {
     TimeOfDay.EVENING -> AtlasMood.CALM
     TimeOfDay.NIGHT -> AtlasMood.QUIET
     TimeOfDay.LATE_NIGHT -> AtlasMood.QUIET
+}
+
+
+private fun energyFor(part: TimeOfDay): AtlasEnergy = when (part) {
+    TimeOfDay.DAWN -> AtlasEnergy.RESTING
+    TimeOfDay.MORNING -> AtlasEnergy.ACTIVE
+    TimeOfDay.AFTERNOON -> AtlasEnergy.ENGAGED
+    TimeOfDay.GOLDEN -> AtlasEnergy.ACTIVE
+    TimeOfDay.EVENING -> AtlasEnergy.IDLE
+    TimeOfDay.NIGHT -> AtlasEnergy.RESTING
+    TimeOfDay.LATE_NIGHT -> AtlasEnergy.LOW
 }
