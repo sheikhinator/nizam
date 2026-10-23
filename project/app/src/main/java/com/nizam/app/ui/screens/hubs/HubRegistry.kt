@@ -121,7 +121,7 @@ object HubRegistry {
         Feature("nx/anamnesis", "Anamnesis", "The book of you", Icons.Outlined.MenuBook, Hub.Memory, words = "book of you year review"),
         Feature("nx/neurgraph", "Neurgraph", "What Atlas keeps and what it lets fade", Icons.Outlined.Psychology, Hub.Memory, words = "memory graph neurons forgetting"),
         Feature("nx/shadow", "Cognitive Shadow", "The part of you that argues back", Icons.Outlined.Psychology, Hub.Health, words = "shadow honest decide doubt mirror"),
-        Feature("nx/attention", "Attention", "Where your attention actually went", Icons.Outlined.Visibility, Hub.Memory, words = "attention focus distraction where time went mirror"),
+        Feature("nx/attentionmirror", "Attention Mirror", "Where your attention actually went", Icons.Outlined.Visibility, Hub.Memory, words = "attention focus distraction where time went mirror"),
         Feature("nx/aletheia", "Aletheia", "The beliefs you hold without checking", Icons.Outlined.Psychology, Hub.Learn, words = "beliefs truth assumptions confidence check"),
         Feature("nx/solitude", "Solitude", "A quiet room where Atlas will not speak first", Icons.Outlined.Favorite, Hub.Health, words = "quiet silence alone rest solitude"),
         Feature("nx/inheritance", "Inheritance", "What someone else could carry", Icons.Outlined.Lightbulb, Hub.Home, words = "legacy values lessons inheritance what outlives"),

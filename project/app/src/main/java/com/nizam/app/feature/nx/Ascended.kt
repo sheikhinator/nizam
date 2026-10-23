@@ -55,11 +55,11 @@ object Ascended {
             "time capsule letter future self sealed memory waiting"
         ) { _, _ -> com.nizam.app.feature.capsule.CapsulesScreen() },
         ScreenSpec(
-            "attention", "Attention",
+            "attentionmirror", "Attention Mirror",
             "Where your attention actually went, counted from your own records",
             Icons.Outlined.Visibility, Hub.Memory,
             "attention focus distraction where time went mirror"
-        ) { _, _ -> com.nizam.app.feature.attention.AttentionScreen() },
+        ) { _, _ -> com.nizam.app.feature.attention.AttentionMirrorScreen() },
         ScreenSpec(
             "aletheia", "Aletheia",
             "The beliefs you hold without checking, and how sure you really are",
