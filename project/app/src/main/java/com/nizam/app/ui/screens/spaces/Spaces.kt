@@ -1,4 +1,3 @@
-successfully downloaded text file (SHA: 233085a2805964ca6565a161858fdc9ed6280583)
 package com.nizam.app.ui.screens.spaces
 
 import androidx.compose.animation.animateColorAsState

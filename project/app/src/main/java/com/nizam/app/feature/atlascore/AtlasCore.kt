@@ -1,4 +1,3 @@
-successfully downloaded text file (SHA: c42264198a067ef3946fb4d8ca2f66fd8a16f419)
 package com.nizam.app.feature.atlascore
 
 import android.content.Context

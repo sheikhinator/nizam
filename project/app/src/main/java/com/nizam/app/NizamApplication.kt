@@ -1,4 +1,3 @@
-successfully downloaded text file (SHA: 12eda788bf58cc9864a948d10efbb4c00937f4d9)
 package com.nizam.app
 
 import android.app.Application
