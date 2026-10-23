@@ -8,7 +8,7 @@ import com.nizam.app.ui.design.Hub
 
 /** Agent teams, the connector catalogue and the approval inbox, reachable from search, hubs and the agent. */
 object AgentsHub {
-    val all: List<Spec> = listOf(
+    val all: List<Spec> = Ascended.all + listOf(
         ScreenSpec("hq", "Atlas HQ", "A 3D office where you watch your agents work, and walk around it", Icons.Outlined.Apartment, Hub.Work,
             "hq office 3d agents desk who needs me meeting table explore building tower") { c, o -> com.nizam.app.feature.hq.HqScreen(c, o) },
         ScreenSpec("crew", "Agent teams", "A lead that delegates to specialists who work in parallel", Icons.Outlined.Groups, Hub.Work,
