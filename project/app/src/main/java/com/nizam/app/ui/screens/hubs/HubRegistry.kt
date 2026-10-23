@@ -1,3 +1,4 @@
+successfully downloaded text file (SHA: 3941a1ee263424b9539521e17faca9d52cf0c454)
 package com.nizam.app.ui.screens.hubs
 
 import android.content.Context
@@ -116,6 +117,11 @@ object HubRegistry {
         Feature(Routes.REFLECT, "Reflect", "Wrapped, life in weeks, dreams", Icons.Outlined.AutoGraph, Hub.Memory),
         Feature(Routes.VOICE_JOURNAL, "Voice journal", "Talk it out; Atlas files it", Icons.Outlined.Mic, Hub.Memory),
         Feature(Routes.STORY_HUB, "Story", "The record of your days", Icons.Outlined.MenuBook, Hub.Memory),
+        Feature("nx/constellation", "Mnemonic Constellation", "Your memories as a night sky", Icons.Outlined.AutoAwesome, Hub.Memory, words = "memory constellation stars sky drift"),
+        Feature("nx/chronoverse", "Chronoverse", "Your whole life on one timeline", Icons.Outlined.Timeline, Hub.Memory, words = "timeline history past when"),
+        Feature("nx/anamnesis", "Anamnesis", "The book of you", Icons.Outlined.MenuBook, Hub.Memory, words = "book of you year review"),
+        Feature("nx/neurgraph", "Neurgraph", "What Atlas keeps and what it lets fade", Icons.Outlined.Psychology, Hub.Memory, words = "memory graph neurons forgetting"),
+        Feature("nx/shadow", "Cognitive Shadow", "The part of you that argues back", Icons.Outlined.Psychology, Hub.Health, words = "shadow honest decide doubt mirror"),
         Feature(Routes.MEETING, "Meeting notes", "Decisions and actions", Icons.Outlined.Groups, Hub.Memory),
 
         // Work & growth
