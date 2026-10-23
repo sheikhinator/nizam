@@ -3,6 +3,7 @@ package com.nizam.app.feature.nx
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Extension
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Psychology
 import androidx.compose.material.icons.outlined.Timeline
@@ -44,5 +45,11 @@ object Ascended {
             Icons.Outlined.Extension, Hub.Memory,
             "graph memory neurons synapses mind consolidation sleep forgetting"
         ) { c, _ -> com.nizam.app.feature.mind.NeurgraphScreen(c) },
+        ScreenSpec(
+            "capsule", "Time Capsules",
+            "Letters to a version of you who does not exist yet, sealed until the day",
+            Icons.Outlined.History, Hub.Memory,
+            "time capsule letter future self sealed memory waiting"
+        ) { _, _ -> com.nizam.app.feature.capsule.CapsulesScreen() },
     )
 }
