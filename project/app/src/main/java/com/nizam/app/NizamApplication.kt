@@ -1,3 +1,4 @@
+successfully downloaded text file (SHA: 12eda788bf58cc9864a948d10efbb4c00937f4d9)
 package com.nizam.app
 
 import android.app.Application
@@ -85,6 +86,9 @@ class NizamApplication : Application() {
         }
         container = AppContainer(this, startupSettings)
         runCatching { AtlasCore.initialize(this) }
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+            runCatching { com.nizam.app.feature.mind.MindBridge.sync(this@NizamApplication) }
+        }
         com.nizam.app.net.Router.appContext = applicationContext
         com.nizam.app.feature.expertise.EngineLog.context = applicationContext
         kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch { runCatching { com.nizam.app.feature.expertise.Expertise.all(applicationContext) } }

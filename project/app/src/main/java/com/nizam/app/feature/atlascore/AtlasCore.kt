@@ -1,3 +1,4 @@
+successfully downloaded text file (SHA: c42264198a067ef3946fb4d8ca2f66fd8a16f419)
 package com.nizam.app.feature.atlascore
 
 import android.content.Context
@@ -68,6 +69,21 @@ object AtlasCore {
                 )
                 delay(20000)
             }
+        }
+        runCatching {
+            androidx.core.content.ContextCompat.registerReceiver(
+                context.applicationContext,
+                object : android.content.BroadcastReceiver() {
+                    override fun onReceive(receiverContext: Context?, intent: android.content.Intent?) {
+                        val target = receiverContext ?: return
+                        scope.launch {
+                            runCatching { com.nizam.app.feature.mind.MemoryConsolidation.tidy(target) }
+                        }
+                    }
+                },
+                android.content.IntentFilter(android.content.Intent.ACTION_POWER_CONNECTED),
+                androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED
+            )
         }
     }
 

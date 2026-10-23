@@ -116,6 +116,45 @@ object Neurgraph {
         save(c)
     }
 
+    /** Batch insert: one write, one prune. Used when a whole stream of moments arrives at once. */
+    @Synchronized
+    fun addAll(c: Context, list: List<Neuron>) {
+        if (list.isEmpty()) return
+        load(c)
+        list.forEach { neurons[it.id] = it }
+        if (neurons.size > MAX_NODES) {
+            neurons.values.sortedByDescending { it.weight }
+                .drop(MAX_NODES)
+                .forEach { neurons.remove(it.id) }
+        }
+        save(c)
+    }
+
+    /** Batch edges, so importing a day does not rewrite the graph once per link. */
+    @Synchronized
+    fun connectAll(c: Context, edges: List<Triple<String, String, Float>>) {
+        if (edges.isEmpty()) return
+        load(c)
+        edges.forEach { edge ->
+            val from = edge.first
+            val to = edge.second
+            val strength = edge.third
+            if (from == to) return@forEach
+            if (!neurons.containsKey(from) || !neurons.containsKey(to)) return@forEach
+            val existing = synapses.indexOfFirst { it.from == from && it.to == to }
+            if (existing >= 0) {
+                val old = synapses[existing]
+                synapses[existing] = old.copy(
+                    strength = (old.strength + strength).coerceAtMost(1f),
+                    timestamp = System.currentTimeMillis()
+                )
+            } else {
+                synapses.add(Synapse(from, to, strength.coerceIn(0f, 1f), "sequence", System.currentTimeMillis()))
+            }
+        }
+        save(c)
+    }
+
     @Synchronized
     fun all(c: Context): List<Neuron> {
         load(c)

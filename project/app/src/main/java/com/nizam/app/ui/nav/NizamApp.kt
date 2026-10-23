@@ -790,6 +790,11 @@ fun NizamApp(container: AppContainer, startOnCurator: Boolean = false, startRout
         if (!com.nizam.app.feature.cinema.Pip.active) androidx.compose.foundation.layout.Box(Modifier.fillMaxSize().padding(bottom = 104.dp), contentAlignment = Alignment.BottomCenter) {
             com.nizam.app.ui.design.TipCard(currentRoute)
         }
+        // Atlas keeps a small presence at the edge of the screen, and stays out of video
+        com.nizam.app.feature.presence.PresenceHost(
+            enabled = currentRoute != Routes.PLAYER && currentRoute != Routes.IPTV_PLAYER &&
+                currentRoute != Routes.BEDSIDE && currentRoute != Routes.AMBIENT
+        )
         if (!com.nizam.app.feature.cinema.Pip.active) androidx.compose.foundation.layout.Box(Modifier.fillMaxWidth().padding(top = 4.dp), contentAlignment = Alignment.TopCenter) {
             com.nizam.app.ui.design.IslandPill { r -> runCatching { navController.navigate(when (r) { "prayer" -> Routes.PRAYER; "atlas" -> Routes.ATLAS_HUB; else -> r }) { launchSingleTop = true } } }
         }
