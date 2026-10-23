@@ -1,5 +1,7 @@
 package com.nizam.app.feature.attention
 
+import com.nizam.app.feature.attention.Attention
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
