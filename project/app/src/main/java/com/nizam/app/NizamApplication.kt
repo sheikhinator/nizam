@@ -1,3 +1,4 @@
+successfully downloaded text file (SHA: 12eda788bf58cc9864a948d10efbb4c00937f4d9)
 package com.nizam.app
 
 import android.app.Application
@@ -20,6 +21,7 @@ import com.nizam.app.feature.news.NewsRepository
 import com.nizam.app.feature.agent.AgentLoop
 import com.nizam.app.feature.agent.AgentMemory
 import com.nizam.app.feature.agent.CuratorRepository
+import com.nizam.app.feature.atlascore.AtlasCore
 import com.nizam.app.feature.dynamic.DynamicRepository
 import com.nizam.app.feature.dynamic.ModuleGenerator
 import com.nizam.app.feature.self.SelfRepository
@@ -83,6 +85,7 @@ class NizamApplication : Application() {
             startupSettings.protectLegacySecrets()
         }
         container = AppContainer(this, startupSettings)
+        runCatching { AtlasCore.initialize(this) }
         com.nizam.app.net.Router.appContext = applicationContext
         com.nizam.app.feature.expertise.EngineLog.context = applicationContext
         kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch { runCatching { com.nizam.app.feature.expertise.Expertise.all(applicationContext) } }
