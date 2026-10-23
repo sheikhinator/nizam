@@ -11,6 +11,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -29,7 +30,8 @@ import kotlinx.coroutines.launch
  * the rest of the sentient layer is not a black box: you can see what Atlas keeps.
  */
 @Composable
-fun NeurgraphScreen(context: Context) {
+fun NeurgraphScreen() {
+    val context = LocalContext.current
     var version by remember { mutableStateOf(0) }
     var working by remember { mutableStateOf(false) }
     var note by remember { mutableStateOf<String?>(null) }

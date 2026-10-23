@@ -47,7 +47,7 @@ object Ascended {
             "The living graph under every memory: what Atlas keeps, fades and returns to",
             Icons.Outlined.Extension, Hub.Memory,
             "graph memory neurons synapses mind consolidation sleep forgetting"
-        ) { c, _ -> com.nizam.app.feature.mind.NeurgraphScreen(c) },
+        ) { c, _ -> com.nizam.app.feature.mind.NeurgraphScreen() },
         ScreenSpec(
             "capsule", "Time Capsules",
             "Letters to a version of you who does not exist yet, sealed until the day",
