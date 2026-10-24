@@ -1,4 +1,4 @@
-﻿package com.nizam.app.ui.design.terrain
+package com.nizam.app.ui.design.terrain
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -21,7 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.nizam.app.ui.design.LocalTerrain
+import com.nizam.app.ui.design.terrain.LocalTerrain
 import kotlin.math.cos
 import kotlin.math.sin
 
