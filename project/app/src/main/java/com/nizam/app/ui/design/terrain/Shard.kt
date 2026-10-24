@@ -1,4 +1,4 @@
-﻿package com.nizam.app.ui.design.terrain
+package com.nizam.app.ui.design.terrain
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -13,9 +13,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.nizam.app.ui.design.LocalTerrain
+import com.nizam.app.ui.design.terrain.LocalTerrain
 import com.nizam.app.ui.theme.DisplayFamily
 import com.nizam.app.ui.theme.BodyFamily
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.em
 
 @Composable
 fun Shard(
