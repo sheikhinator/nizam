@@ -828,6 +828,15 @@ fun NizamApp(container: AppContainer, startOnCurator: Boolean = false, startRout
             onExit = { guidedVisible = false; guidedPaused = false }
         )
     }
+            composable("nx/chronoverse") { Ascended.all.first { it.route == "chronoverse" }.content(container) { navController.navigate(it) } }
+            composable("nx/anamnesis") { Ascended.all.first { it.route == "anamnesis" }.content(container) { navController.navigate(it) } }
+            composable("nx/shadow") { Ascended.all.first { it.route == "shadow" }.content(container) { navController.navigate(it) } }
+            composable("nx/neurgraph") { Ascended.all.first { it.route == "neurgraph" }.content(container) { navController.navigate(it) } }
+            composable("nx/capsule") { Ascended.all.first { it.route == "capsule" }.content(container) { navController.navigate(it) } }
+            composable("nx/attentionmirror") { Ascended.all.first { it.route == "attentionmirror" }.content(container) { navController.navigate(it) } }
+            composable("nx/aletheia") { Ascended.all.first { it.route == "aletheia" }.content(container) { navController.navigate(it) } }
+            composable("nx/solitude") { Ascended.all.first { it.route == "solitude" }.content(container) { navController.navigate(it) } }
+            composable("nx/inheritance") { Ascended.all.first { it.route == "inheritance" }
             // Atlas Ascended
             composable("nx/constellation") { Ascended.all.first { it.route == "constellation" }.content(container) { navController.navigate(it) } }
             composable("nx/chronoverse") { Ascended.all.first { it.route == "chronoverse" }.content(container) { navController.navigate(it) } }
@@ -839,6 +848,10 @@ fun NizamApp(container: AppContainer, startOnCurator: Boolean = false, startRout
             composable("nx/aletheia") { Ascended.all.first { it.route == "aletheia" }.content(container) { navController.navigate(it) } }
             composable("nx/solitude") { Ascended.all.first { it.route == "solitude" }.content(container) { navController.navigate(it) } }
             composable("nx/inheritance") { Ascended.all.first { it.route == "inheritance" }.content(container) { navController.navigate(it) } }
+        }
+    }
+}
+.content(container) { navController.navigate(it) } }
 
     }
 }
