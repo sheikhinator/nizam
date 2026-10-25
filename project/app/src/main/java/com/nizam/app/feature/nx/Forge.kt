@@ -159,7 +159,7 @@ fun ForgeScreen(container: AppContainer, open: (String) -> Unit) {
     var code by remember { mutableStateOf("") }
     val v = Forge.version
     val mine = remember(v) { Forge.raw(c) }
-    AtlasScreen(title = "Forge", subtitle = "Describe a tool. Atlas builds it into itself, no update needed.", hub = Hub.Tools) {
+    AtlasScreen(title = "Tool Forge", subtitle = "Describe a tool. Atlas builds it into itself, no update needed.", hub = Hub.Tools) {
         item("ask") {
             Group(Modifier.padding(horizontal = Space.page, vertical = Space.s)) {
                 OutlinedTextField(ask, { ask = it }, Modifier.fillMaxWidth().heightIn(min = 90.dp),
@@ -214,7 +214,7 @@ fun ForgeScreen(container: AppContainer, open: (String) -> Unit) {
                 item("m" + d.optString("id")) {
                     ListRow(d.optString("title"), supporting = d.optString("blurb"), icon = Icons.Outlined.Construction, trailing = {
                         Row {
-                            TextButton(onClick = { Share.text(c, "Install my Atlas tool \"${d.optString("title")}\": open Atlas → Forge → Install from code, and paste:\n\n" + Forge.shareCode(d), "Atlas tool") }) { Text("Share") }
+                            TextButton(onClick = { Share.text(c, "Install my Atlas tool \"${d.optString("title")}\": open Atlas → Tool Forge → Install from code, and paste:\n\n" + Forge.shareCode(d), "Atlas tool") }) { Text("Share") }
                             TextButton(onClick = { Forge.remove(c, d.optString("id")); Feedback.show("Removed") }) { Text("✕") }
                         }
                     }) { open("nx/" + d.optString("id")) }
@@ -237,5 +237,5 @@ fun ForgeScreen(container: AppContainer, open: (String) -> Unit) {
 }
 
 val ForgeSpecs: List<Spec> get() = listOf(
-    ScreenSpec("forge", "Forge", "Describe any tool and Atlas builds it into itself: trackers, calculators, AI helpers. Share them with a code.",
+    ScreenSpec("toolforge", "Tool Forge", "Describe any tool and Atlas builds it into itself: trackers, calculators, AI helpers. Share them with a code.",
         Icons.Outlined.AutoAwesome, Hub.Tools, "forge build make create my own tool app tracker calculator custom maker exchange share install") { container, open -> ForgeScreen(container, open) })

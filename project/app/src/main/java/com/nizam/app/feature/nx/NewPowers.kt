@@ -264,7 +264,7 @@ object Ghost {
         if (behind > ahead) {
             val worst = r.filter { !it.lowerIsBetter && it.you < it.ghost }.maxByOrNull { it.ghost - it.you }
             Notifications.post(c, Notifications.CHANNEL_NUDGE, 381, "Yesterday-you is winning $behind–$ahead",
-                worst?.let { "${it.label}: you ${short(it.you)}${it.unit}, ghost ${short(it.ghost)}${it.unit}. Still time." } ?: "Still time to catch up.", route = "nx/ghost")
+                worst?.let { "${it.label}: you ${short(it.you)}${it.unit}, ghost ${short(it.ghost)}${it.unit}. Still time." } ?: "Still time to catch up.", route = "nx/raceghost")
         }
     }
 }
@@ -574,7 +574,7 @@ fun AtlasCallsScreen() {
 val NewPowerSpecs: List<Spec> get() = listOf(
     ScreenSpec("nightshift", "Night Shift", "Queue jobs before bed; Atlas works them overnight and leaves a morning report",
         Icons.Outlined.Bedtime, Hub.Tools, "night shift overnight while i sleep queue jobs research draft morning report") { container, _ -> NightShiftScreen(container) },
-    ScreenSpec("ghost", "Race your ghost", "You today vs yesterday-you at this exact time",
+    ScreenSpec("raceghost", "Race your ghost", "You today vs yesterday-you at this exact time",
         Icons.Outlined.DirectionsRun, Hub.Tools, "ghost race yesterday compare beat myself progress") { container, _ -> GhostScreen(container) },
     ScreenSpec("aftercall", "After-call catch", "When a call ends, say what was agreed and it becomes tasks",
         Icons.Outlined.PhoneCallback, Hub.Work, "after call agreed promise phone call tasks follow up") { container, _ -> AfterCallScreen(container) },
