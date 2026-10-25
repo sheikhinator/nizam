@@ -425,6 +425,14 @@ fun IslandPill(modifier: Modifier = Modifier, onOpen: (String) -> Unit) {
     val rec = com.nizam.app.feature.nx.ScreenRecordService.running
     val subs = com.nizam.app.feature.nx.LiveSubsService.running
     val agent = Island.agentBusy
+    // the being: what it just said, or what it's been up to in the last few minutes
+    val bv = com.nizam.app.feature.being.Being.version
+    val said = com.nizam.app.feature.being.BeingStage.line?.takeIf { now - it.at < 7000 }
+    val beingPill = remember(bv, now / 15000, said) { runCatching { with(com.nizam.app.feature.being.Being) {
+        if (!born(ctx) || !roams(ctx)) null
+        else if (said != null) Triple("🤖", said.text.take(30), "nx/being")
+        else if (now - activityAt(ctx) < 10 * 60_000L) Triple(icon(ctx), "${name(ctx)} · ${activity(ctx)}".take(32), "nx/being") else null
+    } }.getOrNull() }
     val item: Triple<String, String, String>? = when {
         rec -> Triple("⏺", "Recording screen", "nx/recorder")
         agent != null -> Triple("✦", agent, "atlas")
@@ -433,6 +441,7 @@ fun IslandPill(modifier: Modifier = Modifier, onOpen: (String) -> Unit) {
         prayer != null -> Triple("🕌", "${prayer.first} in ${prayer.second} min", "prayer")
         subs -> Triple("💬", "Live subtitles", "nx/livesubs")
         track != null && com.nizam.app.feature.music.MusicPlayback.isPlaying -> Triple("♪", track.title.take(26), "music")
+        beingPill != null -> beingPill
         else -> null
     }
     AnimatedVisibility(item != null, modifier, enter = fadeIn() + scaleIn(spring(dampingRatio = 0.6f), initialScale = 0.4f), exit = fadeOut() + scaleOut(targetScale = 0.4f)) {

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.captureToImage
@@ -38,7 +39,7 @@ class Shots(private val route: String, private val dark: Boolean) {
         @JvmStatic
         @ParameterizedRobolectricTestRunner.Parameters(name = "{0}-{1}")
         fun params(): List<Array<Any>> {
-            val routes = (System.getenv("SHOT_ROUTES") ?: "nx/being,nx/earn")
+            val routes = (System.getenv("SHOT_ROUTES") ?: "robots,nx/being,today")
                 .split(',').map { it.trim() }.filter { it.isNotEmpty() }
             return routes.map { arrayOf<Any>(it, true) } + listOf("today", "modules", "rich").filter { it in routes }.map { arrayOf<Any>(it, false) }
         }
@@ -52,11 +53,26 @@ class Shots(private val route: String, private val dark: Boolean) {
         // "style:deck" etc: the home in that UI style
         val styled = route.startsWith("style:")
         com.nizam.app.ui.style.UiStyles.set(app, if (styled) com.nizam.app.ui.style.UiStyle.valueOf(route.removePrefix("style:").uppercase()) else com.nizam.app.ui.style.UiStyle.CLASSIC)
+        if (route == "nx/being" || route == "today" || route == "robots") app.getSharedPreferences("being", 0).edit().putLong("born", System.currentTimeMillis() - 5 * 86_400_000L).putLong("seed", 42L)
+            .putString("persona", org.json.JSONObject().put("name", "Bix").put("personality", "cheeky, nosy and kind").put("interests", org.json.JSONArray(listOf("black holes", "pixel art"))).toString())
+            .putString("activity", "Studying pixel art").putLong("activity_t", System.currentTimeMillis()).putBoolean("robot_body", true).putLong("seen", System.currentTimeMillis())
+            .putString("mind", org.json.JSONObject().put("icon", "📚").put("line", "Studying pixel art").put("why", "I want to get better at it.").toString()).apply()
         rule.mainClock.autoAdvance = false
         rule.setContent {
             NizamTheme(darkTheme = dark) {
                 androidx.compose.foundation.layout.Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-                    if (route.startsWith("rich")) androidx.compose.foundation.layout.Box(Modifier.padding(18.dp)) {
+                    if (route == "robots") androidx.compose.foundation.layout.Column(Modifier.fillMaxSize().background(androidx.compose.ui.graphics.Color(0xFF0B0E1A)).padding(8.dp)) {
+                        val looks = listOf(com.nizam.app.feature.being.Look(0, 0, 0, 1, 200f, 30f, 170f), com.nizam.app.feature.being.Look(1, 1, 1, 4, 120f, 300f, 45f), com.nizam.app.feature.being.Look(2, 2, 2, 3, 20f, 200f, 300f))
+                        val poses = com.nizam.app.feature.being.Pose.values().toList()
+                        val faces = com.nizam.app.feature.being.Face.values().toList()
+                        poses.chunked(6).forEachIndexed { row, chunk -> androidx.compose.foundation.layout.Row {
+                            chunk.forEachIndexed { i, p -> androidx.compose.foundation.layout.Box(Modifier.padding(4.dp).background(androidx.compose.ui.graphics.Color(0xFF1A1630)).padding(2.dp)) {
+                                com.nizam.app.feature.being.Robot(looks[(row + i) % 3], p, faces[(row * 6 + i) % faces.size], Modifier.padding(0.dp).then(Modifier.size(58.dp, 82.dp))) } }
+                        } }
+                        androidx.compose.foundation.layout.Row { faces.take(7).forEach { f -> com.nizam.app.feature.being.Robot(looks[0], com.nizam.app.feature.being.Pose.IDLE, f, Modifier.padding(2.dp).size(54.dp, 76.dp)) } }
+                        androidx.compose.foundation.layout.Row { faces.drop(7).forEach { f -> com.nizam.app.feature.being.Robot(looks[1], com.nizam.app.feature.being.Pose.IDLE, f, Modifier.padding(2.dp).size(54.dp, 76.dp)) } }
+                        com.nizam.app.feature.being.Robot(looks[2], com.nizam.app.feature.being.Pose.WAVE, com.nizam.app.feature.being.Face.HAPPY, Modifier.size(140.dp, 196.dp))
+                    } else if (route.startsWith("rich")) androidx.compose.foundation.layout.Box(Modifier.padding(18.dp)) {
                         com.nizam.app.ui.components.ChatText(if (route == "rich") RICH_A else RICH_B)
                     } else NizamApp(container, startRoute = if (styled) com.nizam.app.ui.nav.Routes.TODAY else route)
                 }

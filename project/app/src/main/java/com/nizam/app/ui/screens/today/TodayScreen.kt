@@ -266,6 +266,9 @@ fun TodayScreen(container: AppContainer, onOpen: (String) -> Unit) {
         com.nizam.app.ui.design.StatusStrip(com.nizam.app.ui.design.CurrentAmbience.value,
             upcoming?.let { it.first to ((it.second - nowHours) * 60).toInt() }, Modifier.padding(top = 10.dp))
 
+        // ── a window into the being's room: tap to talk, hold to visit ──
+        if (!zen) com.nizam.app.feature.being.BeingWindow(container, onOpen, Modifier.padding(top = 12.dp))
+
         // ── say or type a command; Atlas does it ──
         com.nizam.app.feature.agent.VoiceCommandBar(container, onOpen, Modifier.padding(top = 12.dp))
 

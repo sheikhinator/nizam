@@ -43,7 +43,9 @@ object Ai {
         // Atlas Code's agent: code must reach the model exactly (no whitespace squeezing) and without personal context
         val codeAgent = system?.contains("[[code-agent]]") == true
         val bg = Engine.isBackground()
-        val lean = bg || codeAgent
+        // the being lives apart: none of the user's memory, data or profile reaches its thoughts
+        val beingMind = system?.contains("[[being]]") == true
+        val lean = bg || codeAgent || beingMind
         val prompt = if (codeAgent) prompt else com.nizam.app.feature.agentic.Compact.prompt(Router.appContext, prompt)
         // the chosen language (Urdu, Roman Urdu) and the privacy shield apply to every request
         // what Atlas knows about you (and has learned), for things you asked for directly
