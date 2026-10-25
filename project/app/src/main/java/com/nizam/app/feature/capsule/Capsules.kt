@@ -86,6 +86,8 @@ fun sealCapsule(c: Context, text: String, days: Int): Capsule {
     return cap
 }
 
+fun deleteCapsule(c: Context, id: String) { save(c, loadCapsules(c).filter { it.id != id }) }
+
 fun openCapsule(c: Context, id: String) {
     save(c, loadCapsules(c).map { if (it.id == id) it.copy(opened = true) else it })
 }
@@ -212,6 +214,8 @@ fun CapsulesScreen() {
                         fontSize = 14.sp,
                         lineHeight = 22.sp
                     )
+                    if (isRevealed || !isReady) TextButton(onClick = { deleteCapsule(context, cap.id); if (revealed == cap.id) revealed = null; version++ }) {
+                        Text(if (isReady) "Delete" else "Break the seal and delete", fontSize = 12.sp, color = MaterialTheme.colorScheme.error) }
                 }
             }
 

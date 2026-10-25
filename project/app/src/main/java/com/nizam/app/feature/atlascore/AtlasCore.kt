@@ -43,7 +43,7 @@ data class AtlasState(
  * a network call. Everything here is local and dies with the process.
  */
 object AtlasCore {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default + com.nizam.app.feature.safe.CoroutineSafetyNet.inScope)
     private val _state = MutableStateFlow(AtlasState(timeOfDay = dayPart()))
     val state: StateFlow<AtlasState> = _state.asStateFlow()
 
@@ -55,7 +55,8 @@ object AtlasCore {
         started = true
         val p = context.applicationContext.getSharedPreferences("atlas_core", Context.MODE_PRIVATE)
         prefs = p
-        _state.value = _state.value.copy(trust = p.getFloat("trust", 0.3f).coerceIn(0f, 1f))
+        _state.value = _state.value.copy(trust = p.getFloat("trust", 0.3f).coerceIn(0f, 1f), solitude = p.getBoolean("solitude", false))
+        if (!p.contains("first_seen")) p.edit().putLong("first_seen", System.currentTimeMillis()).apply()
         scope.launch {
             while (isActive) {
                 val part = dayPart()
@@ -114,9 +115,15 @@ object AtlasCore {
         }
     }
 
+    /** Solitude is remembered, so a closed door stays closed after Atlas restarts. */
     fun toggleSolitude() {
-        _state.value = _state.value.copy(solitude = !_state.value.solitude)
+        val next = !_state.value.solitude
+        _state.value = _state.value.copy(solitude = next)
+        prefs?.edit()?.putBoolean("solitude", next)?.apply()
     }
+
+    /** The day Atlas first woke on this phone. */
+    fun firstSeen(): Long = prefs?.getLong("first_seen", System.currentTimeMillis()) ?: System.currentTimeMillis()
 
     /** Called when you actually engage. Trust is local, invisible, and never a score you see. */
     fun noteInteraction() {

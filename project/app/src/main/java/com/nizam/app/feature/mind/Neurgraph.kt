@@ -121,7 +121,8 @@ object Neurgraph {
     fun addAll(c: Context, list: List<Neuron>) {
         if (list.isEmpty()) return
         load(c)
-        list.forEach { neurons[it.id] = it }
+        // a memory seen again keeps what it has earned (weight, last visit) instead of starting over
+        list.forEach { n -> val old = neurons[n.id]; neurons[n.id] = if (old == null) n else n.copy(weight = old.weight, accessed = old.accessed) }
         if (neurons.size > MAX_NODES) {
             neurons.values.sortedByDescending { it.weight }
                 .drop(MAX_NODES)

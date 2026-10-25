@@ -86,6 +86,8 @@ private fun addBelief(c: Context, text: String, confidence: Int) {
     saveBeliefs(c, loadBeliefs(c) + Belief(now.toString(), text.trim(), confidence, "HOLDING"))
 }
 
+private fun deleteBelief(c: Context, id: String) = saveBeliefs(c, loadBeliefs(c).filter { it.id != id })
+
 private fun setStatus(c: Context, id: String, status: String) {
     saveBeliefs(c, loadBeliefs(c).map { if (it.id == id) it.copy(status = status) else it })
 }
@@ -175,7 +177,7 @@ fun AletheiaScreen() {
                 Text("STILL HOLDING", color = Ascend.reactorAmber, fontSize = 9.sp, fontWeight = FontWeight.SemiBold)
                 holding.forEach { belief ->
                     BeliefCard(belief) { status ->
-                        setStatus(context, belief.id, status)
+                        if (status == "DELETE") deleteBelief(context, belief.id) else setStatus(context, belief.id, status)
                         version++
                     }
                 }
@@ -203,6 +205,7 @@ fun AletheiaScreen() {
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Medium
                         )
+                        TextButton(onClick = { deleteBelief(context, belief.id); version++ }) { Text("Delete", fontSize = 12.sp, color = MaterialTheme.colorScheme.error) }
                     }
                 }
             }
@@ -272,6 +275,7 @@ private fun BeliefCard(belief: Belief, onStatus: (String) -> Unit) {
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             TextButton(onClick = { onStatus("TESTED") }) { Text("I tested it", fontSize = 12.sp) }
             TextButton(onClick = { onStatus("CHANGED") }) { Text("I was wrong", fontSize = 12.sp) }
+            TextButton(onClick = { onStatus("DELETE") }) { Text("Delete", fontSize = 12.sp, color = MaterialTheme.colorScheme.error) }
         }
     }
 }

@@ -18,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,7 +48,7 @@ import java.time.temporal.ChronoUnit
 @Composable
 fun AttentionMirrorScreen() {
     val context = LocalContext.current
-    val sources = remember { runCatching { Roads.sources(context) }.getOrElse { emptyList() } }
+    val sources by androidx.compose.runtime.produceState(emptyList<Roads.Source>()) { value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { runCatching { Roads.sources(context) }.getOrElse { emptyList() } } }
     val kept = remember { runCatching { Neurgraph.stats(context).first }.getOrDefault(0) }
     val total = remember(sources) { sources.sumOf { it.count }.coerceAtLeast(1) }
     val top = remember(sources) { sources.sortedByDescending { it.count }.take(6) }

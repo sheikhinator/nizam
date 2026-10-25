@@ -10,6 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -71,7 +72,13 @@ private val mirrors = listOf(
 @Composable
 fun CognitiveShadowScreen() {
     var index by remember { mutableStateOf(0) }
-    val mirror = mirrors[index]
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
+    var impulse by remember { mutableStateOf("") }
+    var mine by remember { mutableStateOf<Mirror?>(null) }
+    var thinking by remember { mutableStateOf(false) }
+    var problem by remember { mutableStateOf("") }
+    val mirror = mine ?: mirrors[index]
 
     AtmosphereBackdrop {
         Column(
@@ -96,12 +103,47 @@ fun CognitiveShadowScreen() {
                 }
             }
 
+            // your own decision, argued both ways
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(22.dp))
+                    .luminex(RoundedCornerShape(22.dp), Ascend.reactorIce, 0.7f)
+                    .padding(16.dp)
+            ) {
+                androidx.compose.material3.OutlinedTextField(
+                    value = impulse, onValueChange = { impulse = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("What are you about to decide or do?") },
+                    placeholder = { Text("e.g. quit my job to start the gold business") },
+                    minLines = 2
+                )
+                Spacer(Modifier.height(10.dp))
+                androidx.compose.material3.Button(enabled = impulse.isNotBlank() && !thinking, onClick = {
+                    thinking = true; problem = ""
+                    scope.launch {
+                        val r = runCatching {
+                            val container = (context.applicationContext as com.nizam.app.NizamApplication).container
+                            val raw = com.nizam.app.net.Ai.generate(container.settingsRepository,
+                                "The user is about to: " + impulse.trim() + "\n\nGive two fair voices and one question. Reply as JSON " +
+                                "{\"against\":\"the honest case against the impulse, 2-3 sentences, never insulting\",\"for\":\"the honest case for them, 2-3 sentences, never flattering\",\"question\":\"one question that cuts to what they really want\"}",
+                                system = "You are the user's cognitive shadow: fair, direct, kind. Output only JSON.", maxOutputTokens = 400)
+                            val o = org.json.JSONObject(raw.substring(raw.indexOf('{'), raw.lastIndexOf('}') + 1))
+                            Mirror("Yours", o.getString("against"), o.optString("for"), o.optString("question"))
+                        }
+                        r.onSuccess { mine = it }.onFailure { problem = "Couldn't hear the shadow right now. Check your AI key and try again." }
+                        thinking = false
+                    }
+                }) { Text(if (thinking) "Listening…" else "Hear both sides") }
+                if (problem.isNotBlank()) Text(problem, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+            }
+
             Row(
                 Modifier.horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 mirrors.forEachIndexed { i, m ->
-                    val on = i == index
+                    val on = mine == null && i == index
                     Text(
                         m.realm,
                         color = if (on) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -110,7 +152,7 @@ fun CognitiveShadowScreen() {
                         modifier = Modifier
                             .clip(RoundedCornerShape(50))
                             .background(if (on) Ascend.reactorIce else MaterialTheme.colorScheme.surface)
-                            .clickable { index = i }
+                            .clickable { index = i; mine = null }
                             .padding(horizontal = 14.dp, vertical = 8.dp)
                     )
                 }

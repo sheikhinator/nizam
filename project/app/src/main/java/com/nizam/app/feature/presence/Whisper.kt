@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.time.LocalTime
 
-data class Whisper(val id: String, val text: String)
+data class Whisper(val id: String, val text: String, val route: String? = null)
 
 /**
  * The whisper layer.
@@ -59,22 +59,25 @@ object WhisperEngine {
 
         val now = System.currentTimeMillis()
         if (now - prefs.getLong("last", 0L) < THREE_HOURS) return
+        val today = java.time.LocalDate.now().toString()
+        val count = if (prefs.getString("day", "") == today) prefs.getInt("count", 0) else 0
+        if (count >= 2) return
 
         val line = pick(context) ?: return
-        prefs.edit().putLong("last", now).apply()
+        prefs.edit().putLong("last", now).putString("day", today).putInt("count", count + 1).apply()
         AtlasCore.whisper()
-        _current.value = Whisper(now.toString(), line)
+        _current.value = Whisper(now.toString(), line, if (line.contains("letter")) "nx/capsule" else null)
     }
 
     private fun pick(context: Context): String? {
         val ready = runCatching {
-            loadCapsules(context).count { it.sealedUntil <= System.currentTimeMillis() }
+            loadCapsules(context).count { !it.opened && it.sealedUntil <= System.currentTimeMillis() }
         }.getOrDefault(0)
         if (ready == 1) return "A letter you wrote to yourself is ready to open."
         if (ready > 1) return ready.toString() + " letters to yourself are ready."
 
-        val core = runCatching { Neurgraph.core(context, 3) }.getOrElse { emptyList() }
-        val subject = core.firstOrNull()?.label
+        // only something you have genuinely come back to, never a random log line
+        val subject = runCatching { Neurgraph.core(context, 3) }.getOrElse { emptyList() }.firstOrNull { it.weight >= 1.6f }?.label
         if (!subject.isNullOrBlank()) {
             val hour = LocalTime.now().hour
             return when {
@@ -84,10 +87,8 @@ object WhisperEngine {
                 else -> "Before you sleep: " + subject + " is still here. It can wait until morning."
             }
         }
-
-        val count = runCatching { Neurgraph.stats(context).first }.getOrDefault(0)
-        return if (count == 0) "I am here. Nothing needs you right now."
-        else count.toString() + " things kept so far. All of it stays on this phone."
+        // nothing real to say: say nothing
+        return null
     }
 }
 
@@ -104,7 +105,7 @@ fun PresenceHost(enabled: Boolean = true) {
         if (!enabled) return@LaunchedEffect
         delay(9000)
         while (true) {
-            runCatching { WhisperEngine.consider(context) }
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { runCatching { WhisperEngine.consider(context) } }
             delay(600000)
         }
     }
@@ -116,7 +117,7 @@ fun PresenceHost(enabled: Boolean = true) {
                 MicroPresence.WhisperBubble(
                     message = current.text,
                     onDismiss = { WhisperEngine.dismiss() },
-                    onTap = { WhisperEngine.dismiss() }
+                    onTap = { WhisperEngine.dismiss(); current.route?.let { r -> com.nizam.app.ui.screens.search.AtlasNav.go?.invoke(r) } }
                 )
             }
         }

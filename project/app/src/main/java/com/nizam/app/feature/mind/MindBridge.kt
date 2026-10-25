@@ -16,7 +16,11 @@ import java.util.Locale
  */
 object MindBridge {
 
-    suspend fun sync(context: Context, limit: Int = 240): Int = withContext(Dispatchers.IO) {
+    suspend fun sync(context: Context, limit: Int = 240, force: Boolean = false): Int = withContext(Dispatchers.IO) {
+        // reading every log is not free: at most every few hours unless asked
+        val p = context.getSharedPreferences("mindbridge", Context.MODE_PRIVATE)
+        if (!force && System.currentTimeMillis() - p.getLong("last", 0L) < 4 * 3_600_000L) return@withContext 0
+        p.edit().putLong("last", System.currentTimeMillis()).apply()
         val items = runCatching { Roads.items(context, 12) }.getOrElse { return@withContext 0 }
         if (items.isEmpty()) return@withContext 0
 

@@ -16,6 +16,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -70,6 +71,8 @@ private fun saveBequests(c: Context, list: List<Bequest>) {
     }
     prefs(c).edit().putString(KEY, arr.toString()).apply()
 }
+
+private fun deleteBequest(c: Context, id: String) = saveBequests(c, loadBequests(c).filter { it.id != id })
 
 private fun addBequest(c: Context, kind: String, text: String) {
     if (text.isBlank()) return
@@ -191,6 +194,7 @@ fun InheritanceScreen() {
                         fontSize = 14.sp,
                         lineHeight = 22.sp
                     )
+                    TextButton(onClick = { deleteBequest(context, item.id); version++ }) { Text("Delete", fontSize = 12.sp, color = MaterialTheme.colorScheme.error) }
                 }
             }
 

@@ -46,7 +46,9 @@ private data class Star(
     val z: Float,
     val radius: Float,
     val brightness: Float,
-    val color: Color
+    val color: Color,
+    val detail: String = "",
+    val ts: Long = 0L
 )
 
 /**
@@ -59,7 +61,7 @@ private data class Star(
 @Composable
 fun MnemonicConstellationScreen() {
     val context = LocalContext.current
-    val neurons = remember { runCatching { Neurgraph.all(context) }.getOrElse { emptyList() } }
+    val neurons by produceState(emptyList<Neuron>()) { value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { runCatching { Neurgraph.all(context) }.getOrElse { emptyList() } } }
     val stars = remember(neurons) { buildSky(neurons) }
     val links = remember(stars) { buildLinks(stars) }
 
@@ -226,6 +228,10 @@ fun MnemonicConstellationScreen() {
                     Text(typeLabel(star.id), color = star.color, fontSize = 11.sp, fontWeight = FontWeight.Medium)
                     Spacer(Modifier.height(4.dp))
                     Text(star.label, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    if (star.detail.isNotBlank()) Text(star.detail, color = Color.White.copy(alpha = 0.75f), fontSize = 13.sp, maxLines = 4,
+                        modifier = Modifier.padding(top = 4.dp))
+                    if (star.ts > 0) Text(java.time.Instant.ofEpochMilli(star.ts).atZone(java.time.ZoneId.systemDefault()).format(java.time.format.DateTimeFormatter.ofPattern("d MMM yyyy, HH:mm")),
+                        color = star.color.copy(alpha = 0.8f), fontSize = 11.sp, modifier = Modifier.padding(top = 4.dp))
                     Spacer(Modifier.height(2.dp))
                     Text(
                         "Tap a different star to move through the sky.",
@@ -279,7 +285,9 @@ private fun buildSky(neurons: List<Neuron>): List<Star> {
                 z = (rnd.nextFloat() - 0.5f) * 700f,
                 radius = (1.1f + n.weight.coerceIn(0.2f, 3f) * 0.7f),
                 brightness = (0.45f + rnd.nextFloat() * 0.5f).coerceAtMost(1f),
-                color = colorFor(n.id, n.type)
+                color = colorFor(n.id, n.type),
+                detail = n.content.takeIf { it != n.label }.orEmpty().take(220),
+                ts = n.timestamp
             )
         )
     }

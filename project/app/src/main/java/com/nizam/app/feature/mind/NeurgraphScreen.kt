@@ -35,10 +35,14 @@ fun NeurgraphScreen() {
     var version by remember { mutableStateOf(0) }
     var working by remember { mutableStateOf(false) }
     var note by remember { mutableStateOf<String?>(null) }
-    val scope = rememberCoroutineScope()
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
 
-    val stats = remember(version) { runCatching { Neurgraph.stats(context) }.getOrDefault(0 to 0) }
-    val core = remember(version) { runCatching { Neurgraph.core(context, 10) }.getOrElse { emptyList() } }
+    val loaded by androidx.compose.runtime.produceState((0 to 0) to emptyList<Neuron>(), version) {
+        value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            runCatching { Neurgraph.stats(context) }.getOrDefault(0 to 0) to runCatching { Neurgraph.core(context, 10) }.getOrElse { emptyList() } }
+    }
+    val stats = loaded.first
+    val core = loaded.second
     val heaviest = core.firstOrNull()?.weight?.coerceAtLeast(0.1f) ?: 1f
 
     AtmosphereBackdrop {
@@ -138,6 +142,19 @@ fun NeurgraphScreen() {
             ) {
                 Text(if (working) "Settling..." else "Consolidate now")
             }
+
+            androidx.compose.material3.OutlinedButton(
+                onClick = {
+                    if (!working) { working = true; note = null
+                        scope.launch {
+                            val n = runCatching { MindBridge.sync(context, force = true) }.getOrDefault(0)
+                            note = if (n > 0) "Brought in $n moments from your records." else "Nothing new in your records."
+                            version++; working = false
+                        } }
+                },
+                enabled = !working,
+                modifier = Modifier.fillMaxWidth()
+            ) { Text("Bring in my latest records") }
 
             note?.let {
                 Text(it, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)

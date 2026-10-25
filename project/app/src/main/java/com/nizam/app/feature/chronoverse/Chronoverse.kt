@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,7 +42,7 @@ private data class Era(val title: String, val caption: String, val neurons: List
 @Composable
 fun ChronoverseScreen() {
     val context = LocalContext.current
-    val neurons = remember { runCatching { Neurgraph.all(context) }.getOrElse { emptyList() } }
+    val neurons by androidx.compose.runtime.produceState(emptyList<Neuron>()) { value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { runCatching { Neurgraph.all(context) }.getOrElse { emptyList() } } }
     val eras = remember(neurons) { group(neurons) }
 
     AtmosphereBackdrop {
