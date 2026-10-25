@@ -61,6 +61,7 @@
     <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
 
@@ -327,6 +328,9 @@
             android:taskAffinity="com.nizam.app.circle" android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize" />
 
+        <activity android:name=".feature.nx.AtlasCallActivity" android:exported="false" android:showWhenLocked="true"
+            android:turnScreenOn="true" android:excludeFromRecents="true" android:launchMode="singleTask" />
+        <receiver android:name=".feature.nx.AtlasCallReceiver" android:exported="false" />
         <activity android:name=".feature.body.WakeActivity" android:exported="false" android:showWhenLocked="true"
             android:turnScreenOn="true" android:excludeFromRecents="true" android:launchMode="singleTask" />
 

@@ -38,7 +38,7 @@ class Shots(private val route: String, private val dark: Boolean) {
         @JvmStatic
         @ParameterizedRobolectricTestRunner.Parameters(name = "{0}-{1}")
         fun params(): List<Array<Any>> {
-            val routes = (System.getenv("SHOT_ROUTES") ?: "tasks,finance,prayer,gym,diet,diary,notes")
+            val routes = (System.getenv("SHOT_ROUTES") ?: "nx/forge,nx/nightshift,nx/ghost,nx/atlascalls,nx/stylegen,nx/constitution,nx/duels,nx/aftercall,tasks,finance,prayer,gym,diet,diary")
                 .split(',').map { it.trim() }.filter { it.isNotEmpty() }
             return routes.map { arrayOf<Any>(it, true) } + listOf("today", "modules", "rich").filter { it in routes }.map { arrayOf<Any>(it, false) }
         }

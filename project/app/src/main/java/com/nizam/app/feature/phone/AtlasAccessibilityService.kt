@@ -83,12 +83,32 @@ class AtlasAccessibilityService : AccessibilityService() {
 
     override fun onServiceConnected() { instance = this; record("service connected"); handler.post(fadeTick); runCatching { com.nizam.app.feature.wild.DrawCommand.attach(this) } }
     override fun onDestroy() { runCatching { com.nizam.app.feature.wild.DrawCommand.detach(this) }; handler.removeCallbacks(fadeTick); fadeTo(0f); instance = null; super.onDestroy() }
+    private var overtimeShownAt = 0L
+
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event != null && com.nizam.app.feature.agent.DemoRecorder.recording) runCatching { com.nizam.app.feature.agent.DemoRecorder.onEvent(this, event) }
         if (event != null) runCatching { com.nizam.app.feature.wild.WatchLearn.onEvent(this, event) }
+        // Bodyguard: the 15 minutes you allowed in a paused app ran out while you're still scrolling, so Atlas steps in mid-session
+        if (event != null && event.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) runCatching {
+            val p = event.packageName?.toString()
+            val now = System.currentTimeMillis()
+            if (p != null && p == lastPkg && p != packageName && p in com.nizam.app.feature.wellbeing.Pause.apps(this)) {
+                val until = com.nizam.app.feature.wellbeing.Pause.allowedUntil(this, p)
+                if (until > 0 && now > until && now - overtimeShownAt > 60_000L && !com.nizam.app.feature.shield.Shield.isActive(this)) {
+                    overtimeShownAt = now
+                    val label = runCatching { packageManager.getApplicationLabel(packageManager.getApplicationInfo(p, 0)).toString() }.getOrElse { p }
+                    startActivity(android.content.Intent(this, com.nizam.app.feature.wellbeing.PauseActivity::class.java)
+                        .putExtra("pkg", p).putExtra("label", label).putExtra("overtime", true)
+                        .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_NO_HISTORY or
+                            android.content.Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS))
+                    record("time's up in $label")
+                }
+            }
+        }
         if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
         val pkg = event.packageName?.toString() ?: return
         val entering = pkg != lastPkg
+        if (entering) runCatching { com.nizam.app.feature.nx.AfterCall.onWindow(this, lastPkg, pkg) }
         lastPkg = pkg
         if (entering) { enteredAt = System.currentTimeMillis(); fadeTo(0f) }
         if (entering && pkg != packageName && !pkg.startsWith("com.android.systemui") && !pkg.contains("inputmethod") &&

@@ -288,7 +288,7 @@ object AutoRuns {
             val spec = Nx.find(id) as? LogSpec ?: return@forEach
             val logged = JsonStore(c, "nxlog_$id", spec.sealed).all().any { EngineX.dayOf(it, spec) == today }
             sp.edit().putString(key, today.toString()).apply()
-            if (!logged) Notifications.post(c, Notifications.CHANNEL_NUDGE, 330 + (id.hashCode() and 31), spec.title, "Nothing logged today yet. Takes ten seconds.")
+            if (!logged) Notifications.post(c, Notifications.CHANNEL_NUDGE, 330 + (id.hashCode() and 31), spec.title, "Nothing logged today yet. Takes ten seconds.", route = "nx/$id")
         }
         if (now !in 7.0..10.0) return
         var ran = 0
@@ -311,7 +311,7 @@ object AutoRuns {
                 store.add(JSONObject().put("in", "Scheduled · " + map.values.filter { it.isNotBlank() }.joinToString(" · ").take(100)).put("out", r).put("t", System.currentTimeMillis()))
                 store.all().let { all -> if (all.size > 25) store.save(all.takeLast(25)) }
                 Notifications.post(c, Notifications.CHANNEL_NUDGE, 360 + (id.hashCode() and 31), spec.title,
-                    com.nizam.app.ui.components.RichFormat.plain(r).replace(Regex("\\s+"), " ").take(220))
+                    com.nizam.app.ui.components.RichFormat.plain(r).replace(Regex("\\s+"), " ").take(220), route = "nx/$id")
             }
         }
     }

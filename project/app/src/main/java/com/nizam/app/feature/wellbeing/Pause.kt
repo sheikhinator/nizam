@@ -63,6 +63,7 @@ class PauseActivity : ComponentActivity() {
         })
         val pkg = intent.getStringExtra("pkg").orEmpty()
         val label = intent.getStringExtra("label").orEmpty().ifBlank { "this app" }
+        val overtime = intent.getBooleanExtra("overtime", false)
         Pause.opened(this)
         setContent {
             NizamTheme(darkTheme = true) {
@@ -77,7 +78,7 @@ class PauseActivity : ComponentActivity() {
                     Modifier.fillMaxSize().background(Color(0xFF0B0F1A)).padding(28.dp),
                     horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
                 ) {
-                    Text(if (ready) "Still want to open $label?" else if (scale.value < 0.99f && !ready) "Breathe in…" else "…and out",
+                    Text(if (ready) (if (overtime) "Your time on $label is up. Another 15 minutes?" else "Still want to open $label?") else if (scale.value < 0.99f && !ready) "Breathe in…" else "…and out",
                         color = Color(0xFFEDEFF5), fontSize = 24.sp, textAlign = TextAlign.Center)
                     Spacer(Modifier.height(40.dp))
                     Box(Modifier.size(220.dp), contentAlignment = Alignment.Center) {

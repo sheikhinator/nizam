@@ -39,7 +39,7 @@ object Notifications {
         )
     }
 
-    fun post(context: Context, channel: String, id: Int, title: String, body: String) {
+    fun post(context: Context, channel: String, id: Int, title: String, body: String, route: String? = null) {
         // everything is also kept in the in-app inbox; routine reminders can be held for a digest
         val held = runCatching { Inbox.record(context, channel, title, body) }.getOrDefault(false)
         if (held) return
@@ -48,7 +48,7 @@ object Notifications {
         val intent = PendingIntent.getActivity(
             context, id,
             Intent(context, MainActivity::class.java)
-                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP),
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP).apply { if (route != null) putExtra("route", route) },
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
         val notification = NotificationCompat.Builder(context, channel)
@@ -240,6 +240,10 @@ class AtlasWorker(context: Context, params: WorkerParameters) : CoroutineWorker(
         runCatching { com.nizam.app.feature.agent.Schedules.runDue(applicationContext, container, now) }
         runCatching { com.nizam.app.feature.nx.AutoRuns.tick(applicationContext, container, now) }
         runCatching { com.nizam.app.feature.prayer.PrayerPlus.tick(applicationContext, now) }
+        runCatching { com.nizam.app.feature.nx.NightShift.tick(applicationContext, container, now) }
+        runCatching { com.nizam.app.feature.nx.Ghost.tick(applicationContext, container, now) }
+        runCatching { com.nizam.app.feature.nx.AtlasCalls.ensure(applicationContext) }
+        runCatching { com.nizam.app.feature.nx.Constitution.tick(applicationContext, container, now) }
         runCatching { com.nizam.app.feature.agent.AutoRules.tick(applicationContext, container) }
         runCatching { com.nizam.app.feature.nx.Allowances.tick(applicationContext) }
         runCatching { Inbox.digestTick(applicationContext, now) }
