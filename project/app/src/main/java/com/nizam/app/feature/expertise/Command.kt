@@ -150,7 +150,7 @@ private fun CommandHome(container: AppContainer, open: (String) -> Unit, go: (St
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).statusBarsPadding().padding(horizontal = 20.dp)) {
         Row(Modifier.fillMaxWidth().padding(top = 18.dp, bottom = 22.dp), verticalAlignment = Alignment.CenterVertically) {
-            com.nizam.app.ui.design.LivingReactor(state = if (halo.active) com.nizam.app.ui.design.PulseState.THINKING else com.nizam.app.feature.atlascore.PresenceManager.pulse(), diameter = 58.dp)
+            com.nizam.app.ui.style.AtlasLogo(if (halo.active) com.nizam.app.ui.design.PulseState.THINKING else com.nizam.app.feature.atlascore.PresenceManager.pulse(), diameter = 58.dp)
             Column(Modifier.weight(1f).padding(start = 16.dp)) {
                 Text(greeting, style = Cmd.label, color = Cmd.muted)
                 Text(name.ifBlank { "Atlas" }.uppercase(), color = Cmd.ink, fontSize = 30.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp,

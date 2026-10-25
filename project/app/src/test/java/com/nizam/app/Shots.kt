@@ -38,7 +38,7 @@ class Shots(private val route: String, private val dark: Boolean) {
         @JvmStatic
         @ParameterizedRobolectricTestRunner.Parameters(name = "{0}-{1}")
         fun params(): List<Array<Any>> {
-            val routes = (System.getenv("SHOT_ROUTES") ?: "nx/constellation,nx/anamnesis,nx/shadow,nx/chronoverse")
+            val routes = (System.getenv("SHOT_ROUTES") ?: "style:deck,style:bridge,style:magazine,style:layers,nx/logostudio,nx/styles")
                 .split(',').map { it.trim() }.filter { it.isNotEmpty() }
             return routes.map { arrayOf<Any>(it, true) } + listOf("today", "modules", "rich").filter { it in routes }.map { arrayOf<Any>(it, false) }
         }
@@ -49,13 +49,16 @@ class Shots(private val route: String, private val dark: Boolean) {
     @Test fun shot() {
         val app = ApplicationProvider.getApplicationContext<Application>()
         val container = AppContainer(app)
+        // "style:deck" etc: the home in that UI style
+        val styled = route.startsWith("style:")
+        com.nizam.app.ui.style.UiStyles.set(app, if (styled) com.nizam.app.ui.style.UiStyle.valueOf(route.removePrefix("style:").uppercase()) else com.nizam.app.ui.style.UiStyle.CLASSIC)
         rule.mainClock.autoAdvance = false
         rule.setContent {
             NizamTheme(darkTheme = dark) {
                 androidx.compose.foundation.layout.Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
                     if (route.startsWith("rich")) androidx.compose.foundation.layout.Box(Modifier.padding(18.dp)) {
                         com.nizam.app.ui.components.ChatText(if (route == "rich") RICH_A else RICH_B)
-                    } else NizamApp(container, startRoute = route)
+                    } else NizamApp(container, startRoute = if (styled) com.nizam.app.ui.nav.Routes.TODAY else route)
                 }
             }
         }
@@ -67,7 +70,7 @@ class Shots(private val route: String, private val dark: Boolean) {
         android.view.PixelCopy.request(rule.activity.window, bmp, { done = true }, android.os.Handler(android.os.Looper.getMainLooper()))
         repeat(50) { if (!done) { org.robolectric.shadows.ShadowLooper.idleMainLooper(); rule.mainClock.advanceTimeBy(16) } }
         val dir = File(System.getProperty("user.dir"), "build/shots").apply { mkdirs() }
-        File(dir, "${route.replace('/', '_')}-${if (dark) "dark" else "light"}.png").outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        File(dir, "${route.replace('/', '_').replace(':', '_')}-${if (dark) "dark" else "light"}.png").outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 }
 

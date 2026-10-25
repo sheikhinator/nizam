@@ -1,6 +1,8 @@
 package com.nizam.app.ui.screens.settings
 
 import androidx.compose.material.icons.outlined.SystemUpdate
+import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -225,6 +227,10 @@ fun SettingsScreen(container: AppContainer, onOpen: (String) -> Unit = {}) {
             }
             Spacer(Modifier.height(8.dp))
         }
+        com.nizam.app.ui.design.ListRow("Atlas style", supporting = "Now: " + com.nizam.app.ui.style.UiStyles.now().title + " · Classic, Deck, Bridge, Magazine or Layers",
+            icon = androidx.compose.material.icons.Icons.Outlined.Palette) { onOpen("nx/styles") }
+        com.nizam.app.ui.design.ListRow("Logo Studio", supporting = "Shape, surface, colour and moods of the Atlas mark · app icon",
+            icon = androidx.compose.material.icons.Icons.Outlined.AutoAwesome) { onOpen("nx/logostudio") }
         com.nizam.app.ui.design.ListRow("Look & comfort", supporting = "Text size, true black, colours from wallpaper, reduce motion",
             icon = androidx.compose.material.icons.Icons.Outlined.FormatSize) { onOpen(com.nizam.app.ui.nav.Routes.APPEARANCE) }
         // ── Theme studio: any colour, any combination ──

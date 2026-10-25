@@ -195,6 +195,29 @@ fun TodayScreen(container: AppContainer, onOpen: (String) -> Unit) {
     val comfort = com.nizam.app.ui.design.Comfort.state(androidx.compose.ui.platform.LocalContext.current)
     if (comfort.elder) { com.nizam.app.ui.design.ElderHome(greeting, onOpen); return }
     val zen = comfort.zen
+    // the chosen look: the same day, drawn as a deck, a bridge, a magazine or living layers
+    val uiStyle = com.nizam.app.ui.style.UiStyles.now()
+    if (uiStyle != com.nizam.app.ui.style.UiStyle.CLASSIC) {
+        val currency by container.settingsRepository.currency.collectAsState(initial = "PKR")
+        val startOfDay = java.time.LocalDate.now().atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val names = listOf("Fajr", "Dhuhr", "Asr", "Maghrib", "Isha")
+        val q = quoteOfTheDay(quotes)
+        val data = com.nizam.app.ui.style.TodayData(
+            greeting = greeting,
+            dateLine = localizeNumerals(date.format(DateTimeFormatter.ofPattern("EEEE d MMMM", dateLocale))) + if (hijri.isBlank()) "" else "  ·  ${localizeNumerals(hijri)}",
+            nextPrayer = upcoming?.let { it.first to ((it.second - nowHours) * 60).toInt() },
+            prayers = names.mapIndexed { i, n -> n to (prayerStatuses.getOrNull(i) != "NOT_PRAYED") },
+            openTasks = openTasks.map { it.title }, openCount = openTasks.size,
+            doneToday = tasks.count { it.completedAt != null && it.completedAt >= startOfDay },
+            spentToday = spentToday, spentMonth = month.filter { it.kind == "EXPENSE" }.sumOf { it.amount }, currency = currency,
+            kcal = kcal, kcalTarget = kcalTarget, waterMl = ml, waterTarget = waterTarget, sets = todaySets.size,
+            quote = q?.text, quoteBy = q?.source,
+            insights = insights.map { it.headline to it.body },
+            unread = remember { com.nizam.app.feature.notify.Inbox.unread(modeContext) })
+        androidx.compose.runtime.SideEffect { com.nizam.app.ui.design.Island.nextPrayer = data.nextPrayer }
+        com.nizam.app.ui.style.StyledToday(uiStyle, data, container, onOpen)
+        return
+    }
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 18.dp)
     ) {

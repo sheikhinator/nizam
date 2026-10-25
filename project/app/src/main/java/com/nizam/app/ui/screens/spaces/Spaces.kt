@@ -2,6 +2,7 @@ package com.nizam.app.ui.screens.spaces
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -93,10 +94,24 @@ private fun adaptiveOrder(c: android.content.Context): List<Hub> {
  * The home of Atlas: every part of your life is a space you swipe to. A strip of chips on top shows
  * where you are, a search box reaches everything, and one orb at the bottom asks Atlas (hold to talk).
  */
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
+    // the Command Bridge is a dark cockpit whatever the theme; every other style follows your theme
+    if (com.nizam.app.ui.style.UiStyles.now() == com.nizam.app.ui.style.UiStyle.BRIDGE) {
+        val K = com.nizam.app.ui.style.StyleKit
+        MaterialTheme(colorScheme = androidx.compose.material3.darkColorScheme(primary = K.bridgeCyan, onPrimary = Color.Black, background = K.bridgeInk,
+            surface = K.bridgePanel, surfaceVariant = K.bridgePanel, onSurface = K.bridgeText, onBackground = K.bridgeText, onSurfaceVariant = K.bridgeDim,
+            outlineVariant = K.bridgeLine), typography = MaterialTheme.typography) {
+            Box(Modifier.fillMaxSize().background(K.bridgeInk)) { SpacesHomeBody(container, open) }
+        }
+    } else SpacesHomeBody(container, open)
+}
+
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+private fun SpacesHomeBody(container: AppContainer, open: (String) -> Unit) {
     val c = LocalContext.current
+    val uiStyle = com.nizam.app.ui.style.UiStyles.now()
     val scope = com.nizam.app.ui.design.rememberSafeScope()
     // a light tool (an nx/ screen) peeks open in a sheet over the home; anything else leaves the home as before
     var sheetRoute by rememberSaveable { mutableStateOf<String?>(null) }
@@ -134,7 +149,13 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
                     }
                 }
                 Column(Modifier.weight(1f).padding(start = if (pager.currentPage != 0) 4.dp else 0.dp)) {
-                    Text(here.name, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = accent)
+                    when (uiStyle) {
+                        com.nizam.app.ui.style.UiStyle.BRIDGE -> Text(here.name.uppercase(), fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                            style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = accent, letterSpacing = androidx.compose.ui.unit.TextUnit(2f, androidx.compose.ui.unit.TextUnitType.Sp))
+                        com.nizam.app.ui.style.UiStyle.MAGAZINE -> Text(here.name, fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
+                            style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
+                        else -> Text(here.name, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = accent)
+                    }
                     Text(subtitle(here), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Box(Modifier.size(44.dp).clip(RoundedCornerShape(22.dp)).background(wash(accent, 0.16f)).pressable { searching = !searching; if (!searching) q = "" },
@@ -170,7 +191,8 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
                     when (val s = spaces[page]) {
                         Space.Today -> Box(Modifier.fillMaxSize().padding(bottom = 88.dp)) { TodayScreen(container) { openOrPeek(it) } }
                         Space.You -> Box(Modifier.fillMaxSize().padding(bottom = 88.dp)) { MeScreen(container) { openOrPeek(it) } }
-                        is Space.Life -> SpacePage(s.hub, ::openOrPeek)
+                        is Space.Life -> if (uiStyle == com.nizam.app.ui.style.UiStyle.CLASSIC) SpacePage(s.hub, ::openOrPeek)
+                            else com.nizam.app.ui.style.StyledSpacePage(uiStyle, s.hub, ::openOrPeek)
                     }
                 }
             }
@@ -297,15 +319,23 @@ private fun Dock(modifier: Modifier, accent: Color, onAsk: () -> Unit, onTalk: (
     val halo by com.nizam.app.feature.agentic.AgentHalo.state.collectAsState()
     val expert by com.nizam.app.feature.expertise.Expertise.current.collectAsState()
     val mindState = when { halo.active -> OrbState.Working; expert != null -> OrbState.Thinking; else -> OrbState.Idle }
-    Row(modifier.windowInsetsPadding(WindowInsets.navigationBars).padding(bottom = 12.dp).height(64.dp)
-        .shadow(16.dp, RoundedCornerShape(32.dp)).liquidGlass(RoundedCornerShape(32.dp)).padding(horizontal = 14.dp),
+    val st = com.nizam.app.ui.style.UiStyles.now()
+    val shape = when (st) { com.nizam.app.ui.style.UiStyle.BRIDGE -> RoundedCornerShape(10.dp); com.nizam.app.ui.style.UiStyle.MAGAZINE -> RoundedCornerShape(4.dp); else -> RoundedCornerShape(32.dp) }
+    val dockHeight = when (st) { com.nizam.app.ui.style.UiStyle.DECK -> 72.dp; com.nizam.app.ui.style.UiStyle.MAGAZINE -> 58.dp; else -> 64.dp }
+    val skin = when (st) {
+        com.nizam.app.ui.style.UiStyle.BRIDGE -> Modifier.background(com.nizam.app.ui.style.StyleKit.bridgePanel, shape).border(1.dp, com.nizam.app.ui.style.StyleKit.bridgeCyan.copy(alpha = 0.5f), shape)
+        com.nizam.app.ui.style.UiStyle.MAGAZINE -> Modifier.background(MaterialTheme.colorScheme.surface, shape).border(1.dp, MaterialTheme.colorScheme.onSurface, shape)
+        else -> Modifier.liquidGlass(shape)
+    }
+    Row(modifier.windowInsetsPadding(WindowInsets.navigationBars).padding(bottom = 12.dp).height(dockHeight)
+        .shadow(if (st == com.nizam.app.ui.style.UiStyle.LAYERS) 30.dp else 16.dp, shape).then(skin).padding(horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         if (container != null) com.nizam.app.feature.safe.RefreshButton(container, null, size = 40.dp)
         Box(Modifier.size(44.dp).clip(RoundedCornerShape(22.dp)).pressable { onSearch() }, contentAlignment = Alignment.Center) {
             Icon(Icons.Outlined.Search, "Search", tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Box(Modifier.size(56.dp).pointerInput(Unit) { detectTapGestures(onTap = { onAsk() }, onLongPress = { onTalk() }) }, contentAlignment = Alignment.Center) {
-            com.nizam.app.ui.design.LivingReactor(state = if (halo.active || expert != null) com.nizam.app.ui.design.PulseState.THINKING else com.nizam.app.feature.atlascore.PresenceManager.pulse(), modifier = Modifier.parallax(0.6f), diameter = 54.dp)
+            com.nizam.app.ui.style.AtlasLogo(if (halo.active || expert != null) com.nizam.app.ui.design.PulseState.THINKING else com.nizam.app.feature.atlascore.PresenceManager.pulse(), Modifier.parallax(0.6f), diameter = 54.dp)
         }
         Box(Modifier.size(56.dp).pointerInput(Unit) { detectTapGestures(onTap = { onLycho() }, onLongPress = { onLychoHold() }) }, contentAlignment = Alignment.Center) {
             com.nizam.app.ui.design.LychoOrb(mindState, Modifier.parallax(0.6f), diameter = 50.dp)
