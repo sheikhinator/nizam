@@ -448,6 +448,7 @@ fun NizamApp(container: AppContainer, startOnCurator: Boolean = false, startRout
     val backdrop = com.nizam.app.ui.design.rememberBackdrop()
     androidx.compose.runtime.CompositionLocalProvider(com.nizam.app.ui.design.LocalBackdrop provides backdrop) {
     Scaffold(
+        modifier = Modifier.padding(top = if (com.nizam.app.ui.design.Feel.oneHand) (androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp * 0.38f).dp else 0.dp),
         snackbarHost = {
             // a frosted pill instead of a flat bar; actions (Undo) sit on the right in the accent colour
             androidx.compose.material3.SnackbarHost(snackbarHost) { data ->
@@ -786,6 +787,7 @@ fun NizamApp(container: AppContainer, startOnCurator: Boolean = false, startRout
         com.nizam.app.ui.design.EdgeGlowOverlay()
         com.nizam.app.ui.design.PeekOverlay()
         com.nizam.app.feature.wild.FocusLensOverlay()
+        com.nizam.app.ui.design.FeelOverlay(currentRoute)
         // tips sit just above the tab bar, never over a screen's title
         if (!com.nizam.app.feature.cinema.Pip.active) androidx.compose.foundation.layout.Box(Modifier.fillMaxSize().padding(bottom = 104.dp), contentAlignment = Alignment.BottomCenter) {
             com.nizam.app.ui.design.TipCard(currentRoute)

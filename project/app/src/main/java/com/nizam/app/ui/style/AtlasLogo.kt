@@ -206,7 +206,7 @@ fun LogoStudioScreen() {
     var demo by androidx.compose.runtime.remember { mutableStateOf(PulseState.IDLE) }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Box(Modifier.fillMaxWidth().height(200.dp).clip(RoundedCornerShape(28.dp)).background(Brush.radialGradient(listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), MaterialTheme.colorScheme.surface))),
-            contentAlignment = Alignment.Center) { AtlasLogo(demo, diameter = 130.dp) }
+            contentAlignment = Alignment.Center) { AtlasLogo(demo, Modifier.clickable { com.nizam.app.ui.design.EasterEggs.logoTap(c) }, diameter = 130.dp) }
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             listOf(PulseState.IDLE to "Idle", PulseState.THINKING to "Thinking", PulseState.LISTENING to "Listening", PulseState.UNPROMPTED to "Prayer near", PulseState.PROTECTIVE to "Protective").forEach { (s, n) ->
                 Pill(n, demo == s) { demo = s } }
