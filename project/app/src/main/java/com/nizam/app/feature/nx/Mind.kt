@@ -1,5 +1,11 @@
 package com.nizam.app.feature.nx
 
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.Row
+import kotlinx.coroutines.launch
+import com.nizam.app.net.Ai
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -186,8 +192,83 @@ internal fun MindDock(spec: Spec, open: (String) -> Unit, modifier: Modifier = M
                 next.forEach { s -> TextButton(onClick = { shown = false; open("nx/${s.id}") }) { Text(s.title) } }
                 if (related.isNotEmpty()) Text("Related", fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 6.dp))
                 related.forEach { s -> TextButton(onClick = { shown = false; open("nx/${s.id}") }) { Text(s.title) } }
+                ScreenPowers(spec, open) { shown = false }
                 TextButton(onClick = { shown = false }) { Text("Close") }
             }
+        }
+    }
+}
+
+/**
+ * Powers every screen gets from the ✦ button: ask Atlas about this screen with your own data,
+ * pin it to Today, put it on the phone's home screen, get a daily reminder to use it, share it.
+ */
+@Composable
+internal fun ScreenPowers(spec: Spec, open: (String) -> Unit, close: () -> Unit) {
+    val c = LocalContext.current
+    val scope = com.nizam.app.ui.design.rememberSafeScope()
+    val route = "nx/${spec.id}"
+    var pinned by remember(spec.id) { mutableStateOf(com.nizam.app.feature.modes.Pins.isPinned(c, route)) }
+    var q by remember(spec.id) { mutableStateOf("") }
+    var answer by remember(spec.id) { mutableStateOf<String?>(null) }
+    var busy by remember(spec.id) { mutableStateOf(false) }
+    val remindPrefs = remember { c.getSharedPreferences("screen_remind", 0) }
+    var remind by remember(spec.id) { mutableStateOf(remindPrefs.getInt(spec.id, -1)) }
+    Text("Do more here", fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 6.dp))
+    Row(Modifier.fillMaxWidth().horizontalScroll(androidx.compose.foundation.rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        TextButton(onClick = { com.nizam.app.feature.modes.Pins.togglePin(c, route); pinned = !pinned
+            com.nizam.app.ui.components.Feedback.show(if (pinned) "Pinned to Today" else "Unpinned") }) { Text(if (pinned) "📌 Unpin" else "📌 Pin to Today") }
+        TextButton(onClick = {
+            runCatching {
+                val sm = c.getSystemService(android.content.pm.ShortcutManager::class.java)
+                val info = android.content.pm.ShortcutInfo.Builder(c, "nx_" + spec.id).setShortLabel(spec.title.take(24)).setLongLabel(spec.title)
+                    .setIcon(android.graphics.drawable.Icon.createWithResource(c, com.nizam.app.R.mipmap.ic_launcher))
+                    .setIntent(android.content.Intent(c, com.nizam.app.MainActivity::class.java).setAction(android.content.Intent.ACTION_VIEW).putExtra("route", route)).build()
+                if (sm?.isRequestPinShortcutSupported == true) sm.requestPinShortcut(info, null) else com.nizam.app.ui.components.Feedback.show("Your launcher doesn't allow shortcuts")
+            }.onFailure { com.nizam.app.ui.components.Feedback.show("Couldn't add the shortcut") }
+        }) { Text("📱 Home screen") }
+        TextButton(onClick = {
+            val next = when (remind) { -1 -> 9; 9 -> 13; 13 -> 20; else -> -1 }
+            remind = next
+            if (next < 0) remindPrefs.edit().remove(spec.id).apply() else remindPrefs.edit().putInt(spec.id, next).apply()
+            com.nizam.app.ui.components.Feedback.show(if (next < 0) "Reminder off" else "I'll remind you daily at ${if (next > 12) next - 12 else next}${if (next >= 12) "pm" else "am"}")
+        }) { Text(if (remind < 0) "⏰ Remind me" else "⏰ ${if (remind > 12) remind - 12 else remind}${if (remind >= 12) "pm" else "am"}") }
+        TextButton(onClick = { Share.text(c, "${spec.title}: ${spec.blurb}\nIn Atlas: search \"${spec.title}\".", spec.title) }) { Text("↗ Share") }
+    }
+    val container = remember { (c.applicationContext as? com.nizam.app.NizamApplication)?.container }
+    if (container != null) Row(verticalAlignment = Alignment.CenterVertically) {
+        androidx.compose.material3.OutlinedTextField(q, { q = it }, Modifier.weight(1f), singleLine = true, placeholder = { Text("Ask about ${spec.title}") },
+            trailingIcon = { MicButton({ heard -> q = heard }) })
+        TextButton(onClick = {
+            busy = true; answer = null
+            scope.launch {
+                runCatching {
+                    val known = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { Roads.relevant(c, q + " " + spec.title + " " + spec.words, 3000) }
+                    Ai.generate(container.settingsRepository, "The user is on the \"${spec.title}\" screen of their Atlas app (${spec.blurb}).\n" +
+                        (if (known.isNotBlank()) "The user's own recorded data, shared by them for this question (private, use only to answer):\n$known\n\n" else "") +
+                        "Question: $q\nAnswer briefly and practically, using their data where it helps.",
+                        system = "You are Atlas, a practical personal assistant inside the user's own app.", maxOutputTokens = 700)
+                }.onSuccess { answer = it }.onFailure { com.nizam.app.ui.components.Feedback.show(it.message ?: "Couldn't answer") }
+                busy = false
+            }
+        }, enabled = q.isNotBlank() && !busy) { Text(if (busy) "…" else "Ask") }
+    }
+    answer?.let { Box(Modifier.heightIn(max = 260.dp).verticalScroll(androidx.compose.foundation.rememberScrollState())) { Md(it) } }
+}
+
+/** Daily reminders set from any screen's ✦ panel. Runs from the background loop. */
+object ScreenReminders {
+    fun tick(c: android.content.Context, now: Double) {
+        val p = c.getSharedPreferences("screen_remind", 0)
+        val sent = c.getSharedPreferences("screen_remind_sent", 0)
+        val today = java.time.LocalDate.now().toString()
+        p.all.forEach { (id, v) ->
+            val h = (v as? Int) ?: return@forEach
+            if (now < h || now > h + 0.5 || sent.getString(id, "") == today) return@forEach
+            sent.edit().putString(id, today).apply()
+            val spec = Nx.find(id) ?: return@forEach
+            com.nizam.app.feature.notify.Notifications.post(c, com.nizam.app.feature.notify.Notifications.CHANNEL_NUDGE, 400 + (id.hashCode() and 63),
+                spec.title, "Your daily reminder: ${spec.blurb}", route = "nx/$id")
         }
     }
 }

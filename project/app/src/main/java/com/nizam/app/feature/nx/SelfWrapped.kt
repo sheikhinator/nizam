@@ -9,6 +9,7 @@ internal val SELF_WRAPPED: Set<String> = setOf(
     "nightshift",
     "constitution",
     "duels",
+    "aircontrol",
     "expertise",
     "command",
     "atlascode",
