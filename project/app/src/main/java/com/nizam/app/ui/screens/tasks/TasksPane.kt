@@ -69,7 +69,16 @@ fun TasksSmartPane(container: AppContainer, vm: TasksViewModel, tasks: List<Task
     var plan by remember { mutableStateOf<String?>(null) }
     var planning by remember { mutableStateOf(false) }
     var dump by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf("") }
+    val found = remember(tasks, query) { if (query.isBlank()) emptyList() else tasks.filter { it.title.contains(query.trim(), true) || it.notes.contains(query.trim(), true) } }
 
+    OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth().padding(bottom = 6.dp), singleLine = true, placeholder = { Text("Search tasks") })
+    if (query.isNotBlank()) {
+        if (found.isEmpty()) Text("No matching tasks", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        found.take(30).forEach { t -> TaskRow(t, today, { vm.toggleTask(t) }, { open = t }) }
+        open?.let { t -> TaskSheet(container, vm, tasks.firstOrNull { it.id == t.id } ?: t) { open = null } }
+        return
+    }
     Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         TaskSmart.View.values().forEach { v ->
             val n = counts[v] ?: 0
@@ -119,7 +128,7 @@ fun TasksSmartPane(container: AppContainer, vm: TasksViewModel, tasks: List<Task
 }
 
 @Composable
-private fun TaskRow(task: Task, today: LocalDate, toggle: () -> Unit, open: () -> Unit) {
+internal fun TaskRow(task: Task, today: LocalDate, toggle: () -> Unit, open: () -> Unit) {
     val done = task.completedAt != null
     val cs = MaterialTheme.colorScheme
     Row(Modifier.fillMaxWidth().clickable(onClick = open), verticalAlignment = Alignment.CenterVertically) {
@@ -145,7 +154,7 @@ private fun TaskRow(task: Task, today: LocalDate, toggle: () -> Unit, open: () -
 
 /** Everything about one task: edit, date, priority, repeat, estimate, steps, break it down, delete. */
 @Composable
-private fun TaskSheet(container: AppContainer, vm: TasksViewModel, task: Task, close: () -> Unit) {
+internal fun TaskSheet(container: AppContainer, vm: TasksViewModel, task: Task, close: () -> Unit) {
     val scope = com.nizam.app.ui.design.rememberSafeScope()
     var title by remember(task.id) { mutableStateOf(task.title) }
     var body by remember(task.id) { mutableStateOf(TaskSmart.notesBody(task.notes)) }
@@ -154,10 +163,11 @@ private fun TaskSheet(container: AppContainer, vm: TasksViewModel, task: Task, c
     var prio by remember(task.id) { mutableStateOf(task.priority) }
     var rule by remember(task.id) { mutableStateOf(task.recurrenceRule) }
     var est by remember(task.id) { mutableStateOf(task.estimateMin) }
+    var time by remember(task.id) { mutableStateOf(TaskSmart.timeOf(task)) }
     var newStep by remember(task.id) { mutableStateOf("") }
     var breaking by remember(task.id) { mutableStateOf(false) }
     val today = LocalDate.now()
-    fun build(): Task = TaskSmart.withDate(task, date).copy(title = title.trim().ifBlank { task.title }, notes = TaskSmart.compose(body, steps.toList()),
+    fun build(): Task = TaskSmart.withDateTime(task, date, time).copy(title = title.trim().ifBlank { task.title }, notes = TaskSmart.compose(body, steps.toList()),
         priority = prio, recurrenceRule = rule, estimateMin = est)
     AlertDialog(onDismissRequest = { vm.save(build()); close() },
         title = { Text("Task") },
@@ -169,7 +179,27 @@ private fun TaskSheet(container: AppContainer, vm: TasksViewModel, task: Task, c
                     listOf("Today" to today, "Tomorrow" to today.plusDays(1), "Next week" to today.plusWeeks(1).with(java.time.DayOfWeek.MONDAY), "No date" to null)
                         .forEach { (l, d) -> TaskChip(l, date == d) { date = d } }
                 }
-                date?.let { Text(TaskSmart.dayLabel(it, today), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                date?.let { Text(TaskSmart.dayLabel(it, today) + (time?.let { t -> " at " + TaskSmart.clock(t) } ?: ""), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                if (date != null) {
+                    Label("Remind me at")
+                    Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        listOf(null, java.time.LocalTime.of(8, 0), java.time.LocalTime.of(10, 0), java.time.LocalTime.of(13, 0), java.time.LocalTime.of(16, 0),
+                            java.time.LocalTime.of(18, 0), java.time.LocalTime.of(20, 0), java.time.LocalTime.of(22, 0))
+                            .forEach { t -> TaskChip(t?.let { TaskSmart.clock(it) } ?: "No time", time == t) { time = t } }
+                    }
+                    var custom by remember(task.id) { mutableStateOf("") }
+                    OutlinedTextField(custom, { v -> custom = v; Regex("^(\\d{1,2}):(\\d{2})$").find(v.trim())?.let { m ->
+                        val h = m.groupValues[1].toInt(); val mi = m.groupValues[2].toInt(); if (h in 0..23 && mi in 0..59) time = java.time.LocalTime.of(h, mi) } },
+                        Modifier.fillMaxWidth(), singleLine = true, placeholder = { Text("Or type a time, e.g. 17:45") })
+                }
+                Label("Postpone")
+                Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    TaskSmart.POSTPONE.forEach { (l, f) -> TaskChip(l, false) {
+                        val at = f(java.time.LocalDateTime.now())
+                        vm.save(TaskSmart.withDateTime(build(), at.toLocalDate(), at.toLocalTime().withSecond(0).withNano(0)))
+                        Feedback.show("Postponed to ${TaskSmart.dayLabel(at.toLocalDate())} ${TaskSmart.clock(at.toLocalTime())}"); close()
+                    } }
+                }
                 Label("Priority")
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) { listOf(2 to "High", 1 to "Normal", 0 to "Low").forEach { (p, l) -> TaskChip(l, prio == p) { prio = p } } }
                 Label("Repeat")
@@ -212,7 +242,7 @@ private fun TaskSheet(container: AppContainer, vm: TasksViewModel, task: Task, c
         dismissButton = {
             Row {
                 TextButton(onClick = { vm.deleteTask(task); close() }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
-                TextButton(onClick = { vm.save(TaskSmart.withDate(build(), (date ?: today).plusDays(1))); Feedback.show("Snoozed a day"); close() }) { Text("Snooze") }
+                TextButton(onClick = { vm.save(TaskSmart.withDate(build(), (date ?: today).plusDays(1))); Feedback.show("Moved to the next day"); close() }) { Text("+1 day") }
             }
         })
 }

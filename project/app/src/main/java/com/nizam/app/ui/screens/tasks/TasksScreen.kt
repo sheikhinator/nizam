@@ -35,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -72,6 +73,11 @@ fun TasksScreen(container: AppContainer) {
     val completedRecently = completionActivity.sum().toInt()
 
     var tab by remember { mutableStateOf(0) }
+    val tctx = androidx.compose.ui.platform.LocalContext.current
+    var simple by remember { mutableStateOf(TaskAlarms.simple(tctx)) }
+    var autoPost by remember { mutableStateOf(TaskAlarms.autoPostpone(tctx)) }
+    var checkIn by remember { mutableStateOf(TaskAlarms.checkIn(tctx)) }
+    androidx.compose.runtime.LaunchedEffect(tasks) { com.nizam.app.ui.design.guard { kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) { TaskAlarms.sync(tctx, tasks) } } }
     var draft by remember { mutableStateOf("") }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 18.dp)) {
@@ -93,13 +99,13 @@ fun TasksScreen(container: AppContainer) {
                 trailingIcon = { com.nizam.app.feature.nx.MicButton({ heard -> draft = (draft.trimEnd() + " " + heard).trim() }) },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = {
-                    if (tab == 0) vm.addTask(draft) else vm.addHabit(draft)
+                    if (tab == 0) vm.addTask(draft, if (simple) SimpleDay.day else null) else vm.addHabit(draft)
                     draft = ""
                 })
             )
             Spacer(Modifier.width(8.dp))
             IconButton(onClick = {
-                if (tab == 0) vm.addTask(draft) else vm.addHabit(draft)
+                if (tab == 0) vm.addTask(draft, if (simple) SimpleDay.day else null) else vm.addHabit(draft)
                 draft = ""
             }) {
                 Icon(Icons.Filled.Add, contentDescription = if (tab == 0) "Add task" else "Add habit")
@@ -113,7 +119,15 @@ fun TasksScreen(container: AppContainer) {
         }
 
         Spacer(Modifier.height(10.dp))
-        if (tasks.isNotEmpty() || habits.isNotEmpty()) {
+        if (tab == 0) Row(Modifier.horizontalScroll(rememberScrollState()).padding(bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            TaskChip(if (simple) "✓ Simple mode" else "Simple mode", simple) { simple = !simple; TaskAlarms.setSimple(tctx, simple) }
+            TaskChip(if (autoPost) "✓ Auto-postpone" else "Auto-postpone", autoPost) {
+                autoPost = !autoPost; TaskAlarms.setAutoPostpone(tctx, autoPost)
+                com.nizam.app.ui.components.Feedback.show(if (autoPost) "Unfinished tasks move to the next day on their own" else "Auto-postpone off") }
+            TaskChip(if (checkIn < 0) "Daily check-in" else "Check-in ${if (checkIn > 12) checkIn - 12 else checkIn}${if (checkIn >= 12) "pm" else "am"}", checkIn >= 0) {
+                checkIn = when (checkIn) { -1 -> 8; 8 -> 9; 9 -> 21; else -> -1 }; TaskAlarms.setCheckIn(tctx, checkIn) }
+        }
+        if (!simple && (tasks.isNotEmpty() || habits.isNotEmpty())) {
             Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surface) {
                 Column(Modifier.fillMaxWidth().padding(14.dp)) {
                     StatRow(
@@ -133,7 +147,7 @@ fun TasksScreen(container: AppContainer) {
         }
 
         if (tab == 0) {
-            TasksSmartPane(container, vm, tasks)
+            if (simple) SimpleAgenda(container, vm, tasks) else TasksSmartPane(container, vm, tasks)
         } else {
             HabitsPane(container, vm, habits)
         }

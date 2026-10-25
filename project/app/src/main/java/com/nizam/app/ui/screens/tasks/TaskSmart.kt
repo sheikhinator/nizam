@@ -133,6 +133,16 @@ object TaskSmart {
             updatedAt = System.currentTimeMillis(), deletedAt = null)
     }
 
+    fun withDateTime(t: Task, d: LocalDate?, time: LocalTime?): Task =
+        t.copy(due = d?.let { LocalDateTime.of(it, time ?: LocalTime.of(9, 0)).atZone(zone).toInstant().toEpochMilli() }, updatedAt = System.currentTimeMillis())
+
+    val POSTPONE: List<Pair<String, (LocalDateTime) -> LocalDateTime>> = listOf(
+        "In 30 min" to { n -> n.plusMinutes(30) }, "In 1 hour" to { n -> n.plusHours(1) }, "In 3 hours" to { n -> n.plusHours(3) },
+        "Tonight" to { n -> n.toLocalDate().atTime(20, 0).let { if (it.isAfter(n)) it else n.plusHours(1) } },
+        "Tomorrow morning" to { n -> n.toLocalDate().plusDays(1).atTime(9, 0) },
+        "Next weekend" to { n -> n.toLocalDate().with(TemporalAdjusters.next(DayOfWeek.SATURDAY)).atTime(10, 0) },
+        "Next week" to { n -> n.toLocalDate().with(TemporalAdjusters.next(DayOfWeek.MONDAY)).atTime(9, 0) })
+
     fun withDate(t: Task, d: LocalDate?): Task {
         val time = timeOf(t) ?: LocalTime.of(9, 0)
         return t.copy(due = d?.let { LocalDateTime.of(it, time).atZone(zone).toInstant().toEpochMilli() }, updatedAt = System.currentTimeMillis())

@@ -30,9 +30,9 @@ class TasksViewModel(
     val todayEntries: StateFlow<List<HabitEntry>> = habitRepository.entriesFor(today)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    fun addTask(title: String) {
+    fun addTask(title: String, defaultDay: LocalDate? = null) {
         if (title.isBlank()) return
-        val p = TaskParse.parse(title)
+        val p = TaskParse.parse(title).let { if (it.date == null && defaultDay != null) it.copy(date = defaultDay) else it }
         viewModelScope.launch {
             taskRepository.insert(Task(title = p.title, due = p.due(), priority = p.priority, recurrenceRule = p.rule, estimateMin = p.estimate))
         }
