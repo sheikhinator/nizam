@@ -89,7 +89,8 @@ fun TasksScreen(container: AppContainer) {
                 onValueChange = { draft = it },
                 modifier = Modifier.weight(1f),
                 singleLine = true,
-                label = { Text(if (tab == 0) "New task" else "New habit") },
+                label = { Text(if (tab == 0) "New task: try \"call Ali tomorrow 5pm !!\"" else "New habit") },
+                trailingIcon = { com.nizam.app.feature.nx.MicButton({ heard -> draft = (draft.trimEnd() + " " + heard).trim() }) },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = {
                     if (tab == 0) vm.addTask(draft) else vm.addHabit(draft)
@@ -102,6 +103,12 @@ fun TasksScreen(container: AppContainer) {
                 draft = ""
             }) {
                 Icon(Icons.Filled.Add, contentDescription = if (tab == 0) "Add task" else "Add habit")
+            }
+        }
+        if (tab == 0 && draft.isNotBlank()) {
+            val parsed = remember(draft) { TaskParse.parse(draft) }
+            if (parsed.chips().isNotEmpty()) Row(Modifier.padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                parsed.chips().forEach { c -> TaskChip(c, true) {} }
             }
         }
 
@@ -126,92 +133,9 @@ fun TasksScreen(container: AppContainer) {
         }
 
         if (tab == 0) {
-            if (tasks.isEmpty()) {
-                EmptyState("No tasks yet — add your first above.")
-            } else {
-                // open first, soonest due first (undated after); finished at the bottom
-                var showAllDone by remember { mutableStateOf(false) }
-                val all = remember(tasks) { tasks.sortedWith(compareBy<com.nizam.app.data.db.Task>({ it.completedAt != null },
-                    { it.due ?: Long.MAX_VALUE }, { -it.createdAt })) }
-                // long histories stay smooth: open tasks plus the 25 most recent finished ones unless asked
-                val doneCount = all.count { it.completedAt != null }
-                val sorted = if (showAllDone || doneCount <= 25) all
-                    else all.filter { it.completedAt == null } + all.filter { it.completedAt != null }.sortedByDescending { it.completedAt }.take(25)
-                val zone = java.time.ZoneId.systemDefault()
-                com.nizam.app.ui.design.Group(padding = androidx.compose.foundation.layout.PaddingValues(start = 4.dp, end = 4.dp)) {
-                    sorted.forEachIndexed { i, task ->
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Checkbox(
-                                checked = task.completedAt != null,
-                                onCheckedChange = { vm.toggleTask(task) }
-                            )
-                            Column(Modifier.weight(1f).padding(vertical = 10.dp)) {
-                                Text(
-                                    text = task.title,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    textDecoration = if (task.completedAt != null) TextDecoration.LineThrough else null,
-                                    color = if (task.completedAt != null)
-                                        MaterialTheme.colorScheme.onSurfaceVariant
-                                    else MaterialTheme.colorScheme.onSurface
-                                )
-                                task.due?.takeIf { task.completedAt == null }?.let { due ->
-                                    val d = java.time.Instant.ofEpochMilli(due).atZone(zone).toLocalDate()
-                                    val today = java.time.LocalDate.now()
-                                    val overdue = d.isBefore(today)
-                                    Text(when {
-                                        d == today -> "Today"
-                                        d == today.plusDays(1) -> "Tomorrow"
-                                        overdue -> "Overdue · " + d.format(java.time.format.DateTimeFormatter.ofPattern("d MMM"))
-                                        else -> d.format(java.time.format.DateTimeFormatter.ofPattern("EEE d MMM"))
-                                    }, style = MaterialTheme.typography.labelMedium,
-                                        color = if (overdue) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
-                                }
-                            }
-                            IconButton(onClick = { vm.deleteTask(task) }) {
-                                Icon(Icons.Filled.Delete, contentDescription = "Delete task",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f))
-                            }
-                        }
-                        if (i < sorted.lastIndex) Divider(Modifier.padding(start = 48.dp), thickness = 0.5.dp,
-                            color = MaterialTheme.colorScheme.outlineVariant)
-                    }
-                }
-                if (doneCount > 25) androidx.compose.material3.TextButton(onClick = { showAllDone = !showAllDone }) {
-                    Text(if (showAllDone) "Hide older finished tasks" else "Show ${doneCount - 25} older finished tasks")
-                }
-            }
+            TasksSmartPane(container, vm, tasks)
         } else {
-            if (habits.isEmpty()) {
-                EmptyState("No habits yet — add one above and tap the dot each day you do it.")
-            } else {
-                Column(Modifier.fillMaxWidth()) {
-                    habits.forEach { habit ->
-                        val done = entries.any { it.habitId == habit.id }
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Column(Modifier.weight(1f)) {
-                                Text(
-                                    habit.name,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontWeight = if (done) FontWeight.SemiBold else FontWeight.Normal
-                                )
-                                Text(
-                                    if (done) "Done today" else "Not yet today",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            IconButton(onClick = { vm.toggleHabit(habit.id, done) }) {
-                                StreakDot(filled = done, color = Spine.Tasks)
-                            }
-                        }
-                        Divider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
-                    }
-                }
-            }
+            HabitsPane(container, vm, habits)
         }
         Spacer(Modifier.height(80.dp))
     }

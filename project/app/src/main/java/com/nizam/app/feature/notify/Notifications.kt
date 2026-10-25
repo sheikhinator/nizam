@@ -239,6 +239,7 @@ class AtlasWorker(context: Context, params: WorkerParameters) : CoroutineWorker(
         runCatching { legacyAndNudges(applicationContext, now, container) }
         runCatching { com.nizam.app.feature.agent.Schedules.runDue(applicationContext, container, now) }
         runCatching { com.nizam.app.feature.nx.AutoRuns.tick(applicationContext, container, now) }
+        runCatching { com.nizam.app.feature.prayer.PrayerPlus.tick(applicationContext, now) }
         runCatching { com.nizam.app.feature.agent.AutoRules.tick(applicationContext, container) }
         runCatching { com.nizam.app.feature.nx.Allowances.tick(applicationContext) }
         runCatching { Inbox.digestTick(applicationContext, now) }

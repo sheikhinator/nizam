@@ -103,6 +103,9 @@ interface DietDao {
     @Query("SELECT DISTINCT localDate FROM meal_item WHERE localDate >= :from")
     fun observeLoggedDays(from: String): Flow<List<String>>
 
+    @Query("SELECT * FROM meal_item ORDER BY id DESC LIMIT 300")
+    fun observeRecent(): Flow<List<MealItem>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(item: MealItem)
 
@@ -177,6 +180,7 @@ interface DietDao {
 
 class DietRepository(private val dao: DietDao) {
     fun day(date: String) = dao.observeDay(date)
+    fun recentMeals() = dao.observeRecent()
     fun loggedDaysSince(from: String) = dao.observeLoggedDays(from)
     fun water(date: String) = dao.observeWater(date)
     fun weights() = dao.observeWeights()
@@ -328,6 +332,7 @@ fun DietScreen(container: AppContainer) {
             } else mealError = "Enter a food name and valid non-negative calories and protein."
         }) { Text("Log food") }
         mealError?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
+        DietBoost(container, slot, items, weights, kcalTarget) { vm.addWater(it) }
 
         Spacer(Modifier.height(12.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {

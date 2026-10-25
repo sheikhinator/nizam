@@ -245,16 +245,7 @@ fun GymScreen(container: AppContainer) {
         }
 
         Spacer(Modifier.height(12.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            COMMON_EXERCISES.take(3).forEach { e ->
-                FilterChip(selected = exercise == e, onClick = { exercise = e }, label = { Text(e) })
-            }
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            COMMON_EXERCISES.drop(3).take(3).forEach { e ->
-                FilterChip(selected = exercise == e, onClick = { exercise = e }, label = { Text(e) })
-            }
-        }
+        ExercisePicker(sets, exercise) { exercise = it }
         OutlinedTextField(
             value = exercise,
             onValueChange = { exercise = it },
@@ -290,9 +281,20 @@ fun GymScreen(container: AppContainer) {
                 label = { Text("Reps") }, singleLine = true, modifier = Modifier.weight(1f)
             )
         }
+        GymCoach(sets, exercise, weight, reps, { weight = it }, { reps = it })
+        val gymCtx = androidx.compose.ui.platform.LocalContext.current
         Spacer(Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             Button(onClick = {
+                val w = weight.toDoubleOrNull(); val r = reps.toIntOrNull()
+                if (w != null && r != null && exercise.isNotBlank()) {
+                    val prevBest = sets.filter { it.exercise.equals(exercise, true) }.maxOfOrNull { oneRepMax(it.weight, it.reps) }
+                    if (prevBest != null && oneRepMax(w, r) > prevBest + 0.01) {
+                        com.nizam.app.ui.design.Celebrate.now()
+                        com.nizam.app.ui.components.Feedback.show("New personal record on $exercise! e1RM ${oneRepMax(w, r).roundToInt()} kg")
+                    }
+                    GymPlus.startRest(gymCtx)
+                }
                 vm.addSet(exercise, weight, reps)
                 reps = ""
             }) { Text("Log set") }
@@ -332,6 +334,8 @@ fun GymScreen(container: AppContainer) {
                 "specific problems, and give concrete programming changes. Flag anything that looks " +
                 "like an injury risk."
         )
+        GymWeek(sets)
+        CardioCard(container)
         Spacer(Modifier.height(12.dp))
         Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.surfaceVariant)
 

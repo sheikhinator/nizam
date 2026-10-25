@@ -236,6 +236,7 @@ fun PrayerScreen(container: AppContainer) {
 
         Text("Sunrise ${hourToClock(times.sunrise)}", style = MonoNumber, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(14.dp))
+        PrayerNow(times, PrayerPlus.statuses(day))
 
         com.nizam.app.ui.design.Group {
             rows.forEachIndexed { i, (key, label, time) ->
@@ -260,6 +261,7 @@ fun PrayerScreen(container: AppContainer) {
             }
         }
 
+        PrayerDepth(month)
         Spacer(Modifier.height(28.dp))
 
         Text("Last 30 days", style = MaterialTheme.typography.titleMedium)

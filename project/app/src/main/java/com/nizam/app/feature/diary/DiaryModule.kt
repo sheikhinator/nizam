@@ -139,7 +139,8 @@ fun DiaryScreen(container: AppContainer) {
     var body by remember { mutableStateOf("") }
     var mood by remember { mutableStateOf(3) }
     var picked by remember { mutableStateOf(setOf<String>()) }
-    val prompt = remember { PROMPTS.random() }
+    var prompt by remember { mutableStateOf(MORE_PROMPTS.random()) }
+    var diaryQuery by remember { mutableStateOf("") }
 
     val weekMoods = checkIns.take(14).map { it.mood }
     val avg = if (weekMoods.isEmpty()) 0.0 else weekMoods.average()
@@ -197,8 +198,10 @@ fun DiaryScreen(container: AppContainer) {
             value = body,
             onValueChange = { body = it },
             label = { Text(prompt) },
-            modifier = Modifier.fillMaxWidth().height(160.dp)
+            modifier = Modifier.fillMaxWidth().height(160.dp),
+            trailingIcon = { com.nizam.app.feature.nx.MicButton({ heard -> body = (body.trimEnd() + " " + heard).trim() }) }
         )
+        androidx.compose.material3.TextButton(onClick = { prompt = (MORE_PROMPTS - prompt).random() }) { Text("Another prompt") }
         Spacer(Modifier.height(8.dp))
         Button(onClick = {
             vm.addEntry(body, mood, picked.toList())
@@ -206,6 +209,7 @@ fun DiaryScreen(container: AppContainer) {
             picked = emptySet()
         }) { Text("Save entry") }
 
+        DiaryBoost(container, entries, checkIns)
         if (entries.size >= 2 || checkIns.size >= 2) {
             Spacer(Modifier.height(14.dp))
             Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surface) {
@@ -263,10 +267,12 @@ fun DiaryScreen(container: AppContainer) {
         )
         Spacer(Modifier.height(14.dp))
         Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.surfaceVariant)
+        if (entries.size > 5) OutlinedTextField(value = diaryQuery, onValueChange = { diaryQuery = it }, singleLine = true,
+            placeholder = { Text("Search ${entries.size} entries") }, modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp))
             }
         }
 
-            items(entries, key = { it.id }) { entry ->
+            items(entries.filter { diaryQuery.isBlank() || it.body.contains(diaryQuery.trim(), true) || it.emotions.contains(diaryQuery.trim(), true) }, key = { it.id }) { entry ->
                 Column(Modifier.fillMaxWidth().padding(vertical = 10.dp)) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text(prettyDate(entry.localDate), style = MaterialTheme.typography.labelMedium,

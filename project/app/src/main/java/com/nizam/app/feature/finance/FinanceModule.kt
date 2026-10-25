@@ -1,6 +1,7 @@
 package com.nizam.app.feature.finance
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -233,6 +234,10 @@ fun FinanceScreen(container: AppContainer) {
     var backdate by remember { mutableStateOf("") }
     var entryError by remember { mutableStateOf<String?>(null) }
     val usedCategories by vm.categories.collectAsState()
+    var txnQuery by remember { mutableStateOf("") }
+    var txnCat by remember { mutableStateOf<String?>(null) }
+    var editingTxn by remember { mutableStateOf<Txn?>(null) }
+    editingTxn?.let { t -> TxnEditor(container, t, usedCategories) { editingTxn = null } }
     val allCategories = remember(usedCategories) {
         (DEFAULT_CATEGORIES + usedCategories).distinct()
     }
@@ -440,10 +445,13 @@ fun FinanceScreen(container: AppContainer) {
         }
             }
         }
+            item("quick") { QuickMoney(container, allCategories) }
+            item("brain") { MoneyInsights(container, month, allCategories) }
+            item("filter") { TxnFilter(txnQuery, { txnQuery = it }, txnCat, { txnCat = it }, allCategories) }
 
-            items(recent, key = { it.id }) { txn ->
+            items(filterTxns(recent, txnQuery, txnCat), key = { it.id }) { txn ->
                 Row(
-                    Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    Modifier.fillMaxWidth().clickable { editingTxn = txn }.padding(vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(Modifier.weight(1f)) {

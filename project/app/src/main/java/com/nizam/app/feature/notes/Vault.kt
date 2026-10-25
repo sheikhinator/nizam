@@ -111,6 +111,7 @@ fun NotesScreen(container: AppContainer) {
     var view by remember { mutableStateOf("Files") }
     var tagFilter by remember { mutableStateOf<String?>(null) }
     var switcher by remember { mutableStateOf(false) }
+    var askVault by remember { mutableStateOf(false) }
 
     fun openTitle(title: String) = scope.launch { openId = vm.ensure(title) }
     fun daily() = scope.launch {
@@ -152,6 +153,7 @@ fun NotesScreen(container: AppContainer) {
                     Text("${notes.size} notes · ${notes.sumOf { Md.WIKI.findAll(it.body).count() }} links", style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
+                androidx.compose.material3.TextButton(onClick = { askVault = true }) { Text("✦ Ask") }
                 IconButton(onClick = { switcher = true }) { Icon(Icons.Outlined.Search, "Quick switcher") }
                 IconButton(onClick = { daily() }) { Icon(Icons.Outlined.CalendarToday, "Today's daily note") }
                 var menu by remember { mutableStateOf(false) }
@@ -180,6 +182,7 @@ fun NotesScreen(container: AppContainer) {
         } }, modifier = Modifier.align(Alignment.BottomEnd).padding(20.dp)) { Icon(Icons.Outlined.Add, "New note") }
     }
     if (switcher) QuickSwitcher(notes, { switcher = false }) { switcher = false; openTitle(it) }
+    if (askVault) AskVaultDialog(notes, { openTitle(it) }) { askVault = false }
 }
 
 /** {{date}}, {{time}} and {{title}} in templates. */
@@ -326,6 +329,7 @@ private fun Editor(note: Note, notes: List<Note>, vm: NotesViewModel, onBack: ()
     var local by remember { mutableStateOf(false) }
     var menu by remember { mutableStateOf(false) }
     var templates by remember { mutableStateOf(false) }
+    var atlas by remember { mutableStateOf(false) }
     BackHandler { vm.save(note.copy(body = text.text)); if (title.trim() != note.title) vm.rename(note, title); onBack() }
     // autosave shortly after you stop typing
     LaunchedEffect(text.text) { com.nizam.app.ui.design.guard { if (text.text != note.body) { delay(600); vm.save(note.copy(body = text.text)) } } }
@@ -356,6 +360,7 @@ private fun Editor(note: Note, notes: List<Note>, vm: NotesViewModel, onBack: ()
                 modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
             androidx.compose.material3.TextButton(onClick = { if (!reading) vm.save(note.copy(body = text.text)); reading = !reading }) {
                 Text(if (reading) "Edit" else "Read") }
+            androidx.compose.material3.TextButton(onClick = { atlas = true }) { Text("✦") }
             IconButton(onClick = { vm.save(note.copy(pinned = !note.pinned)) }) {
                 Icon(if (note.pinned) Icons.Outlined.Star else Icons.Outlined.StarBorder, "Star") }
             Box {
@@ -420,9 +425,14 @@ private fun Editor(note: Note, notes: List<Note>, vm: NotesViewModel, onBack: ()
                 "❝" to { linePrefix("> ") }, "</>" to { insert("`", "`") }, "==" to { insert("==", "==") }, "~~" to { insert("~~", "~~") },
                 "—" to { insert("\n---\n") }, "Callout" to { linePrefix("> [!note] ") }, "Date" to { insert(LocalDate.now().toString()) })
                 .forEach { (label, act) -> androidx.compose.material3.TextButton(onClick = act) { Text(label, fontSize = 15.sp) } }
+            com.nizam.app.feature.nx.MicButton({ heard -> insert((if (text.selection.min > 0 && !text.text.substring(0, text.selection.min).endsWith(" ") && !text.text.substring(0, text.selection.min).endsWith("\n")) " " else "") + heard) })
         }
     }
 
+    if (atlas) NoteAtlasDialog(note.title, text.text, notes,
+        onReplace = { nb -> text = TextFieldValue(nb, TextRange(nb.length)); vm.save(note.copy(body = nb)) },
+        onAppend = { add -> val nb = text.text.trimEnd() + (if (text.text.isBlank()) "" else "\n\n") + add.trimStart('\n'); text = TextFieldValue(nb, TextRange(nb.length)); vm.save(note.copy(body = nb)) },
+        close = { atlas = false })
     if (outline) androidx.compose.material3.AlertDialog(onDismissRequest = { outline = false }, confirmButton = {},
         title = { Text("Outline") },
         text = { Column(Modifier.verticalScroll(rememberScrollState())) {

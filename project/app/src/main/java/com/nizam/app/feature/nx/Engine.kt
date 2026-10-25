@@ -166,7 +166,7 @@ fun FieldInput(f: F, value: String, onChange: (String) -> Unit, modifier: Modifi
             label = { Text(f.label + if (f.optional) " (optional)" else "") },
             placeholder = if (f.hint.isBlank()) null else { { Text(f.hint) } },
             singleLine = f.kind != K.LONG,
-            trailingIcon = if (f.kind == K.TEXT || f.kind == K.LONG) { { MicButton({ heard -> onChange((value.trimEnd() + " " + heard).trim()) }) } } else null,
+            trailingIcon = if ((f.kind == K.TEXT || f.kind == K.LONG) && !Regex("HH|YYYY|MM:|#").containsMatchIn(f.label + f.hint)) { { MicButton({ heard -> onChange((value.trimEnd() + " " + heard).trim()) }) } } else null,
             keyboardOptions = if (f.kind == K.NUMBER) KeyboardOptions(keyboardType = KeyboardType.Text) else KeyboardOptions.Default)
     }
 }

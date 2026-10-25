@@ -19,6 +19,9 @@ class TaskRepository(private val dao: TaskDao) {
         dao.insert(Task(title = title.trim(), due = due, priority = priority))
     }
 
+    /** Adds a fully described task (repeat rule, estimate, notes). */
+    suspend fun insert(task: Task): Long = dao.insert(task)
+
     suspend fun toggleComplete(task: Task) {
         dao.update(
             task.copy(
@@ -62,4 +65,6 @@ class HabitRepository(private val dao: HabitDao) {
     suspend fun archive(habit: Habit) {
         dao.updateHabit(habit.copy(archived = true))
     }
+
+    suspend fun update(habit: Habit) = dao.updateHabit(habit)
 }

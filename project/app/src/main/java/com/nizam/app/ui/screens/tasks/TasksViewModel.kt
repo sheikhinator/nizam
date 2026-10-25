@@ -32,13 +32,28 @@ class TasksViewModel(
 
     fun addTask(title: String) {
         if (title.isBlank()) return
-        viewModelScope.launch { taskRepository.add(title, null, 1) }
+        val p = TaskParse.parse(title)
+        viewModelScope.launch {
+            taskRepository.insert(Task(title = p.title, due = p.due(), priority = p.priority, recurrenceRule = p.rule, estimateMin = p.estimate))
+        }
     }
+
+    fun addPlain(title: String, due: Long? = null) {
+        if (title.isBlank()) return
+        viewModelScope.launch { taskRepository.add(title, due, 1) }
+    }
+
+    fun save(task: Task) { viewModelScope.launch { taskRepository.save(task.copy(updatedAt = System.currentTimeMillis())) } }
 
     fun toggleTask(task: Task) {
         val lastOpen = task.completedAt == null && tasks.value.count { it.completedAt == null } == 1
-        viewModelScope.launch { taskRepository.toggleComplete(task) }
-        if (lastOpen) com.nizam.app.ui.design.Celebrate.now()      // cleared the whole list
+        val finishing = task.completedAt == null
+        viewModelScope.launch {
+            taskRepository.toggleComplete(task)
+            // a repeating task brings its next one the moment you tick it
+            if (finishing) TaskSmart.next(task)?.let { taskRepository.insert(it) }
+        }
+        if (lastOpen && task.recurrenceRule == null) com.nizam.app.ui.design.Celebrate.now()      // cleared the whole list
     }
 
     fun deleteTask(task: Task) {
