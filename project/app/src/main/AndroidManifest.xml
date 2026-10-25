@@ -333,6 +333,7 @@
         <receiver android:name=".feature.nx.AtlasCallReceiver" android:exported="false" />
         <receiver android:name=".ui.screens.tasks.TaskAlarmReceiver" android:exported="false" />
         <receiver android:name=".ui.screens.tasks.TaskActionReceiver" android:exported="false" />
+        <receiver android:name=".feature.being.BeingReceiver" android:exported="false" />
         <activity android:name=".feature.body.WakeActivity" android:exported="false" android:showWhenLocked="true"
             android:turnScreenOn="true" android:excludeFromRecents="true" android:launchMode="singleTask" />
 

@@ -11,6 +11,7 @@ internal val SELF_WRAPPED: Set<String> = setOf(
     "duels",
     "aircontrol",
     "earn",
+    "being",
     "expertise",
     "command",
     "atlascode",
