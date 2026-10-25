@@ -235,6 +235,7 @@ fun LibraryScreen(container: AppContainer) {
                         style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 6.dp))
                 }
+                LibraryBoost(container, books) { b -> reading = b }
             }
         }
         val visible = books.filter { filter == "ALL" || it.status == filter }

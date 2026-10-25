@@ -285,6 +285,7 @@ fun LearningScreen(container: AppContainer) {
                 }
             }
 
+            LearningBoost(container, activeTrack, sessions)
             val trackMinutes = sessions.filter { it.trackId == activeTrack.id }.sumOf { it.minutes }
             Spacer(Modifier.height(8.dp))
             Text("${trackMinutes / 60}h ${trackMinutes % 60}m logged on ${activeTrack.name}", style = MonoNumber)

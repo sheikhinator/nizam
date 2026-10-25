@@ -212,6 +212,7 @@ class QuranViewModel(private val repository: QuranRepository) : ViewModel() {
 fun QuranScreen(container: AppContainer) {
     val vm: QuranViewModel = viewModel(factory = vmFactory { QuranViewModel(container.quranRepository) })
     var openSurah by remember { mutableStateOf<Int?>(null) }
+    var surahQuery by remember { mutableStateOf("") }
 
     val surah = openSurah
     if (surah != null) {
@@ -223,10 +224,13 @@ fun QuranScreen(container: AppContainer) {
         item {
             Column(Modifier.fillMaxWidth()) {
         ModuleTitle("Quran", "Text from Al Quran Cloud, cached on device after first open")
+        QuranHome { n -> openSurah = n; vm.load(n) }
+        androidx.compose.material3.OutlinedTextField(value = surahQuery, onValueChange = { surahQuery = it }, singleLine = true, modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+            placeholder = { Text("Find a surah by name or number") })
             }
         }
 
-            items(SURAHS, key = { it.number }) { s ->
+            items(SURAHS.filter { s -> surahQuery.isBlank() || s.nameEn.contains(surahQuery.trim(), true) || s.number.toString() == surahQuery.trim() || s.nameAr.contains(surahQuery.trim()) }, key = { it.number }) { s ->
                 Row(
                     Modifier.fillMaxWidth().clickable {
                         openSurah = s.number
@@ -253,8 +257,26 @@ private fun SurahReader(vm: QuranViewModel, surah: Int, onBack: () -> Unit) {
     val status by vm.status.collectAsState()
     val loading by vm.loading.collectAsState()
     val meta = SURAHS.firstOrNull { it.number == surah }
+    val qc = androidx.compose.ui.platform.LocalContext.current
+    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+    var arabicSize by remember { mutableStateOf(QuranPlus.fontSize(qc)) }
+    val continuous = true
+    val reciter = remember { Reciter { } }
+    androidx.compose.runtime.DisposableEffect(Unit) { onDispose { reciter.stop() } }
+    // remember your place as you read
+    androidx.compose.runtime.LaunchedEffect(listState, ayat.size) {
+        com.nizam.app.ui.design.guard {
+            androidx.compose.runtime.snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0 }.collect { idx ->
+                if (ayat.isNotEmpty()) QuranPlus.seen(qc, surah, (idx).coerceIn(1, ayat.size))
+            }
+        }
+    }
+    // jump back to where you stopped
+    androidx.compose.runtime.LaunchedEffect(ayat.size) {
+        com.nizam.app.ui.design.guard { if (ayat.isNotEmpty() && QuranPlus.lastSurah(qc) == surah) listState.scrollToItem(QuranPlus.lastAyah(qc).coerceIn(1, ayat.size) - 1) }
+    }
 
-    LazyColumn(Modifier.fillMaxSize().padding(horizontal = 18.dp)) {
+    LazyColumn(Modifier.fillMaxSize().padding(horizontal = 18.dp), state = listState) {
         item {
             Column(Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -263,6 +285,13 @@ private fun SurahReader(vm: QuranViewModel, surah: Int, onBack: () -> Unit) {
             }
             Text(meta?.nameEn ?: "Surah $surah", style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f))
+            androidx.compose.material3.TextButton(onClick = { arabicSize = (arabicSize - 2).coerceAtLeast(18f); QuranPlus.setFont(qc, arabicSize) }) { Text("A−") }
+            androidx.compose.material3.TextButton(onClick = { arabicSize = (arabicSize + 2).coerceAtMost(44f); QuranPlus.setFont(qc, arabicSize) }) { Text("A+") }
+        }
+        if (ayat.isNotEmpty()) Row(verticalAlignment = Alignment.CenterVertically) {
+            androidx.compose.material3.TextButton(onClick = { if (reciter.playing != null) reciter.stop() else reciter.play(surah, 1, ayat.size, true) }) {
+                Text(if (reciter.playing != null) "■ Stop recitation" else "▶ Listen (Alafasy)") }
+            Text("Tap ▶ on any ayah to start there", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
 
         if (loading && ayat.isEmpty()) {
@@ -284,9 +313,14 @@ private fun SurahReader(vm: QuranViewModel, surah: Int, onBack: () -> Unit) {
                         .clickable { vm.bookmark(surah, ayah.number) }
                         .padding(vertical = 12.dp)
                 ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(if (reciter.playing == ayah.number) "■" else "▶", color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.clickable { if (reciter.playing == ayah.number) reciter.stop() else reciter.play(surah, ayah.number, ayat.size, continuous) }.padding(end = 10.dp))
+                        if (reciter.playing == ayah.number) Text("Reciting…", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                    }
                     Text(
                         ayah.arabic,
-                        style = MaterialTheme.typography.titleLarge.copy(fontSize = 26.sp, lineHeight = 50.sp),
+                        style = MaterialTheme.typography.titleLarge.copy(fontSize = arabicSize.sp, lineHeight = (arabicSize * 1.9f).sp),
                         textAlign = TextAlign.End,
                         modifier = Modifier.fillMaxWidth()
                     )

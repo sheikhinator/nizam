@@ -787,6 +787,7 @@ fun NizamApp(container: AppContainer, startOnCurator: Boolean = false, startRout
         com.nizam.app.ui.design.EdgeGlowOverlay()
         com.nizam.app.ui.design.PeekOverlay()
         com.nizam.app.feature.wild.FocusLensOverlay()
+        com.nizam.app.ui.design.DropZone()
         com.nizam.app.ui.design.FeelOverlay(currentRoute)
         // tips sit just above the tab bar, never over a screen's title
         if (!com.nizam.app.feature.cinema.Pip.active) androidx.compose.foundation.layout.Box(Modifier.fillMaxSize().padding(bottom = 104.dp), contentAlignment = Alignment.BottomCenter) {
