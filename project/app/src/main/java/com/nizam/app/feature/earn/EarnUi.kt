@@ -87,7 +87,7 @@ fun EarnScreen(container: AppContainer, open: (String) -> Unit) {
     var tab by remember { mutableStateOf("HQ") }
     var tick by remember { mutableIntStateOf(0) }
     LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { Earn.refreshRate(c) }; tick++ } }
-    val refresh = { tick++ }
+    val refresh: () -> Unit = { tick++ }
     Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(T.ink, T.deep, T.ink)))) {
         LazyColumn(Modifier.fillMaxSize().statusBarsPadding(), contentPadding = PaddingValues(bottom = 120.dp)) {
             item("head") { Header(c, tick) }
