@@ -1,5 +1,7 @@
 package com.nizam.app.feature.next
 
+import androidx.compose.ui.unit.dp
+
 import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
@@ -78,6 +80,24 @@ fun VehicleScreen(container: AppContainer) {
                 StatTile("Spent", money(spent), Modifier.weight(1f))
             }
         }
+        item("s2") {
+            val km = if (list.size >= 2) (list.maxOf { it.optDouble("odo") } - list.minOf { it.optDouble("odo") }) else 0.0
+            val month = LocalDate.now().toString().take(7)
+            val thisMonth = list.filter { it.optString("d").startsWith(month) }.sumOf { it.optDouble("cost") }
+            // km/L for each fill: distance since the previous fill over litres put in now
+            val perFill = fuel.zipWithNext { a, b -> val l = b.optDouble("l"); if (l > 0) (b.optDouble("odo") - a.optDouble("odo")) / l else 0.0 }.filter { it > 0 }
+            Column(Modifier.padding(horizontal = Space.page, vertical = Space.s)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Space.s)) {
+                    StatTile("Cost per km", if (km > 0) "Rs %.1f".format(spent / km) else "—", Modifier.weight(1f))
+                    StatTile("This month", money(thisMonth), Modifier.weight(1f))
+                }
+                if (perFill.size >= 2) {
+                    Text("km/L by fill-up" + if (perFill.last() < perFill.dropLast(1).average() * 0.85) " · last fill-up was notably worse: check tyres or service" else "",
+                        style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = Space.s))
+                    com.nizam.app.ui.design.TrendLine(perFill, Modifier.fillMaxWidth(), height = 80.dp, format = { "%.1f km/L".format(it) })
+                }
+            }
+        }
         lastOil?.let { o ->
             item("oil") {
                 val next = o.optDouble("odo") + 3000
@@ -107,7 +127,9 @@ fun VehicleScreen(container: AppContainer) {
             item(o.optString("id")) {
                 ListRow(if (o.optString("k") == "Fuel") "Fuel · ${o.optDouble("l")} L" else o.optString("note").ifBlank { o.optString("k") },
                     supporting = "${o.optString("d")} · ${"%,d".format(o.optDouble("odo").toLong())} km · ${money(o.optDouble("cost"))}",
-                    icon = if (o.optString("k") == "Fuel") Icons.Outlined.LocalGasStation else Icons.Outlined.Build, tint = Hub.Travel.tint())
+                    icon = if (o.optString("k") == "Fuel") Icons.Outlined.LocalGasStation else Icons.Outlined.Build, tint = Hub.Travel.tint(), trailing = {
+                        Text("✕", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(Space.s).pressable { store.remove(o.optString("id")); reload() })
+                    })
             }
         }
     }

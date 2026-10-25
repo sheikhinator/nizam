@@ -67,6 +67,20 @@ object Committees {
     /** 0-based round for this month (the member at that position takes the pot). */
     fun round(o: JSONObject): Int = (java.time.temporal.ChronoUnit.MONTHS.between(start(o), YearMonth.now())).toInt()
     fun paid(o: JSONObject): Set<String> = o.optJSONObject("paid")?.optJSONArray(YearMonth.now().toString())?.let { a -> (0 until a.length()).map { a.getString(it) }.toSet() }.orEmpty()
+    /** On collection day, a nudge with who still hasn't paid. */
+    fun tick(c: Context, now: Double) {
+        if (now !in 10.0..11.0) return
+        val today = LocalDate.now()
+        val sent = c.getSharedPreferences("committee_sent", 0)
+        store(c).all().forEach { o ->
+            val day = o.optInt("day", 1).coerceIn(1, 28)
+            if (today.dayOfMonth != day || sent.getString(o.optString("id"), "") == today.toString()) return@forEach
+            sent.edit().putString(o.optString("id"), today.toString()).apply()
+            val unpaid = members(o).filter { it !in paid(o) }
+            if (unpaid.isNotEmpty()) com.nizam.app.feature.notify.Notifications.post(c, com.nizam.app.feature.notify.Notifications.CHANNEL_NUDGE, 420 + (o.optString("id").hashCode() and 15),
+                "${o.optString("name")}: collection day", "${unpaid.size} still to pay: ${unpaid.take(4).joinToString()}", route = com.nizam.app.ui.nav.Routes.COMMITTEES)
+        }
+    }
     fun setPaid(c: Context, id: String, who: String, v: Boolean) = store(c).update(id) { o ->
         val key = YearMonth.now().toString()
         val all = o.optJSONObject("paid") ?: JSONObject()
@@ -107,6 +121,24 @@ fun CommitteesScreen() {
                     StatTile("Takes it", members.getOrElse(r) { if (r >= members.size) "Finished" else "—" }, Modifier.weight(1f), caption = "Round ${r + 1} of ${members.size}")
                 }
             }
+            item("x$id") {
+                val me = o.optString("me")
+                val myTurn = members.indexOf(me)
+                Column(Modifier.padding(horizontal = Space.page, vertical = Space.s)) {
+                    Text("Collected on day ${o.optInt("day", 1)} of each month · ${paid.size}/${members.size} paid" +
+                        (if (myTurn >= 0) " · " + when { myTurn == r -> "your turn this month!"; myTurn > r -> "your turn in ${myTurn - r} month${if (myTurn - r > 1) "s" else ""} (${Committees.start(o).plusMonths(myTurn.toLong()).month.name.lowercase().replaceFirstChar { it.uppercase() }})"; else -> "you've received yours" } else ""),
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Row(horizontalArrangement = Arrangement.spacedBy(Space.s)) {
+                        androidx.compose.material3.TextButton(onClick = { members.forEach { Committees.setPaid(ctx, id, it, true) }; reload(); com.nizam.app.ui.design.Celebrate.now() }) { Text("Mark all paid") }
+                        androidx.compose.material3.TextButton(onClick = {
+                            val d = (o.optInt("day", 1) % 28) + 1
+                            Committees.store(ctx).update(id) { it.put("day", d) }; reload() }) { Text("Day: ${o.optInt("day", 1)} ↻") }
+                        if (members.isNotEmpty()) androidx.compose.material3.TextButton(onClick = {
+                            val next = members[(members.indexOf(me) + 1) % members.size]
+                            Committees.store(ctx).update(id) { it.put("me", next) }; reload() }) { Text(if (me.isBlank()) "Which one is me?" else "Me: $me ↻") }
+                    }
+                }
+            }
             members.forEachIndexed { i, m ->
                 item("m$id$i") {
                     val on = m in paid
@@ -145,6 +177,19 @@ fun CommitteesScreen() {
 
 object Debts {
     fun store(c: Context) = JsonStore(c, "debts")
+    /** On the due date, a nudge: collect what's owed to you, or pay what you owe. */
+    fun tick(c: Context, now: Double) {
+        if (now !in 10.0..11.0) return
+        val today = LocalDate.now().toString()
+        val sent = c.getSharedPreferences("debts_sent", 0)
+        store(c).all().filter { !it.optBoolean("settled") && it.optString("due") == today && sent.getString(it.optString("id"), "") != today }.forEach { d ->
+            sent.edit().putString(d.optString("id"), today).apply()
+            val inbound = d.optString("dir") == "in"
+            com.nizam.app.feature.notify.Notifications.post(c, com.nizam.app.feature.notify.Notifications.CHANNEL_NUDGE, 410 + (d.optString("id").hashCode() and 31),
+                if (inbound) "${d.optString("who")} owes you ${rs(d.optDouble("amount"))} today" else "Due today: ${rs(d.optDouble("amount"))} to ${d.optString("who")}",
+                d.optString("note").ifBlank { "Tap to open Lent & borrowed" }, route = com.nizam.app.ui.nav.Routes.DEBTS)
+        }
+    }
 }
 
 @Composable
@@ -155,6 +200,10 @@ fun DebtsScreen() {
     var amount by remember { mutableStateOf("") }
     var dir by remember { mutableStateOf("They owe me") }
     var note by remember { mutableStateOf("") }
+    var dueIn by remember { mutableStateOf("No date") }
+    var paying by remember { mutableStateOf<JSONObject?>(null) }
+    var payAmt by remember { mutableStateOf("") }
+    var showSettled by remember { mutableStateOf(false) }
     fun reload() { list = Debts.store(ctx).all() }
     val open = list.filter { !it.optBoolean("settled") }
     val owed = open.filter { it.optString("dir") == "in" }.sumOf { it.optDouble("amount") }
@@ -173,7 +222,8 @@ fun DebtsScreen() {
                 val inbound = d.optString("dir") == "in"
                 ListRow("${d.optString("who")} · ${rs(d.optDouble("amount"))}",
                     supporting = (if (inbound) "Owes you" else "You owe") + d.optString("note").takeIf { it.isNotBlank() }?.let { " · $it" }.orEmpty() +
-                        " · since ${d.optString("date")}", icon = Icons.Outlined.SwapHoriz,
+                        " · since ${d.optString("date")}" + d.optString("due").takeIf { it.isNotBlank() }?.let { due -> if (due < LocalDate.now().toString()) " · ⚠ was due $due" else " · due $due" }.orEmpty() +
+                        (d.optJSONArray("payments")?.length()?.takeIf { it > 0 }?.let { n -> " · $n part-payment${if (n > 1) "s" else ""}" } ?: ""), icon = Icons.Outlined.SwapHoriz,
                     tint = if (inbound) Hub.Deen.tint() else MaterialTheme.colorScheme.error,
                     trailing = {
                         Row {
@@ -181,6 +231,8 @@ fun DebtsScreen() {
                                 modifier = Modifier.padding(Space.s).pressable {
                                     shareText(ctx, "Hi ${d.optString("who")}, just a gentle reminder about the ${rs(d.optDouble("amount"))}" +
                                         d.optString("note").takeIf { it.isNotBlank() }?.let { " ($it)" }.orEmpty() + ". Whenever convenient, thanks!") })
+                            Text("Part", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge,
+                                modifier = Modifier.padding(Space.s).pressable { paying = d; payAmt = "" })
                             Text("Settle", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge,
                                 modifier = Modifier.padding(Space.s).pressable {
                                     Debts.store(ctx).update(d.optString("id")) { it.put("settled", true) }; reload(); com.nizam.app.ui.design.Celebrate.now()
@@ -189,18 +241,48 @@ fun DebtsScreen() {
                     })
             }
         }
+        val settled = list.filter { it.optBoolean("settled") }
+        if (settled.isNotEmpty()) item("sh") {
+            SectionHeader("Settled (${settled.size}) · ${rs(settled.sumOf { it.optDouble("original", it.optDouble("amount")) })}", action = if (showSettled) "Hide" else "Show") { showSettled = !showSettled }
+        }
+        if (showSettled) settled.forEach { d -> item("st" + d.optString("id")) {
+            ListRow("${d.optString("who")} · ${rs(d.optDouble("original", d.optDouble("amount")))}", supporting = (if (d.optString("dir") == "in") "Paid you back" else "You paid back") +
+                " · from ${d.optString("date")}", icon = Icons.Outlined.CheckCircle, tint = MaterialTheme.colorScheme.outline)
+        } }
+        paying?.let { d -> item("pay") {
+            Group(Modifier.padding(horizontal = Space.page, vertical = Space.s)) {
+                Text("Part payment: ${d.optString("who")} (${rs(d.optDouble("amount"))} left)", style = MaterialTheme.typography.titleSmall)
+                OutlinedTextField(payAmt, { payAmt = it.filter { ch -> ch.isDigit() || ch == '.' } }, Modifier.fillMaxWidth(), label = { Text("Amount paid (Rs)") }, singleLine = true)
+                Row(horizontalArrangement = Arrangement.spacedBy(Space.s), modifier = Modifier.padding(top = Space.s)) {
+                    Button(onClick = {
+                        val a = payAmt.toDoubleOrNull() ?: return@Button
+                        Debts.store(ctx).update(d.optString("id")) { o ->
+                            if (!o.has("original")) o.put("original", o.optDouble("amount"))
+                            val left = (o.optDouble("amount") - a).coerceAtLeast(0.0)
+                            o.put("amount", left).put("payments", (o.optJSONArray("payments") ?: JSONArray()).put(JSONObject().put("amt", a).put("date", LocalDate.now().toString())))
+                            if (left <= 0.0) o.put("settled", true)
+                        }
+                        paying = null; reload(); Feedback.show("Recorded ${rs(a)}")
+                    }) { Text("Record") }
+                    androidx.compose.material3.TextButton(onClick = { paying = null }) { Text("Cancel") }
+                }
+            }
+        } }
         item("add") {
             Group(Modifier.padding(horizontal = Space.page, vertical = Space.l)) {
                 Segmented(listOf("They owe me", "I owe them"), dir, { dir = it }, { it })
                 OutlinedTextField(who, { who = it }, Modifier.fillMaxWidth(), label = { Text("Who") }, singleLine = true)
                 OutlinedTextField(amount, { amount = it.filter { ch -> ch.isDigit() || ch == '.' } }, Modifier.fillMaxWidth(), label = { Text("Amount (Rs)") }, singleLine = true)
                 OutlinedTextField(note, { note = it }, Modifier.fillMaxWidth(), label = { Text("For (optional)") }, singleLine = true)
+                Text("Due", style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = Space.s))
+                Segmented(listOf("No date", "1 week", "2 weeks", "1 month"), dueIn, { dueIn = it }, { it })
                 Button(onClick = {
                     val a = amount.toDoubleOrNull()
                     if (who.isNotBlank() && a != null) {
-                        Debts.store(ctx).add(JSONObject().put("who", who.trim()).put("amount", a).put("note", note.trim())
-                            .put("dir", if (dir == "They owe me") "in" else "out").put("date", LocalDate.now().toString()))
-                        who = ""; amount = ""; note = ""; reload()
+                        val due = when (dueIn) { "1 week" -> LocalDate.now().plusWeeks(1); "2 weeks" -> LocalDate.now().plusWeeks(2); "1 month" -> LocalDate.now().plusMonths(1); else -> null }
+                        Debts.store(ctx).add(JSONObject().put("who", who.trim()).put("amount", a).put("original", a).put("note", note.trim())
+                            .put("dir", if (dir == "They owe me") "in" else "out").put("date", LocalDate.now().toString()).put("due", due?.toString() ?: ""))
+                        who = ""; amount = ""; note = ""; dueIn = "No date"; reload()
                     }
                 }, modifier = Modifier.padding(top = Space.s)) { Text("Add") }
             }
@@ -210,11 +292,39 @@ fun DebtsScreen() {
 
 // ── Subscriptions ────────────────────────────────────────────────────────────────────────────────
 
+/** Subscriptions you add yourself, with a reminder the day before each renewal. */
+object Subs {
+    fun store(c: Context) = JsonStore(c, "subs_manual")
+    fun tick(c: Context, now: Double) {
+        if (now !in 10.0..11.0) return
+        val today = LocalDate.now()
+        val s = store(c)
+        s.all().filter { !it.optBoolean("cancelled") }.forEach { m ->
+            var next = runCatching { LocalDate.parse(m.optString("next")) }.getOrNull() ?: return@forEach
+            val days = m.optInt("days", 30).toLong()
+            var moved = false
+            while (next.isBefore(today)) { next = next.plusDays(days); moved = true }
+            if (moved) s.update(m.optString("id")) { it.put("next", next.toString()) }
+            if (next == today.plusDays(1) && m.optString("warned") != next.toString()) {
+                s.update(m.optString("id")) { it.put("warned", next.toString()) }
+                com.nizam.app.feature.notify.Notifications.post(c, com.nizam.app.feature.notify.Notifications.CHANNEL_NUDGE, 430 + (m.optString("id").hashCode() and 15),
+                    "${m.optString("name")} renews tomorrow", "${rs(m.optDouble("amount"))}. Still using it?", route = com.nizam.app.ui.nav.Routes.SUBSCRIPTIONS)
+            }
+        }
+    }
+}
+
 @Composable
 fun SubscriptionsScreen(container: AppContainer) {
     var found by remember { mutableStateOf<List<com.nizam.app.feature.jarvis.Recurring>?>(null) }
     LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { found = runCatching { com.nizam.app.feature.jarvis.BillRadar.find(container) }.getOrElse { emptyList() } } }
-    val monthly = found.orEmpty().sumOf { it.amount * 30.0 / it.everyDays.coerceAtLeast(1) }
+    val ctx = LocalContext.current
+    var manual by remember { mutableStateOf(Subs.store(ctx).all()) }
+    var sName by remember { mutableStateOf("") }
+    var sAmt by remember { mutableStateOf("") }
+    var sEvery by remember { mutableStateOf("Monthly") }
+    val manualMonthly = manual.filter { !it.optBoolean("cancelled") }.sumOf { it.optDouble("amount") * 30.0 / it.optInt("days", 30).coerceAtLeast(1) }
+    val monthly = found.orEmpty().sumOf { it.amount * 30.0 / it.everyDays.coerceAtLeast(1) } + manualMonthly
     AtlasScreen(title = "Subscriptions", subtitle = "Recurring charges found in your own spending", loading = found == null) {
         item("s") {
             Row(Modifier.padding(horizontal = Space.page), horizontalArrangement = Arrangement.spacedBy(Space.s)) {
@@ -229,6 +339,35 @@ fun SubscriptionsScreen(container: AppContainer) {
             item(r.name) {
                 ListRow(r.name.replaceFirstChar { it.uppercase() }, supporting = "${rs(r.amount)} every ${r.everyDays} days · next ${r.next} · seen ${r.count}×",
                     icon = Icons.Outlined.Autorenew)
+            }
+        }
+        if (manual.isNotEmpty()) item("mh") { SectionHeader("Added by you") }
+        manual.sortedBy { it.optString("next") }.forEach { m ->
+            item("m" + m.optString("id")) {
+                val off = m.optBoolean("cancelled")
+                ListRow(m.optString("name") + if (off) " (cancelled)" else "", supporting = "${rs(m.optDouble("amount"))} every ${m.optInt("days")} days · renews ${m.optString("next")} · reminder the day before",
+                    icon = Icons.Outlined.Autorenew, trailing = {
+                        Text(if (off) "Remove" else "Cancelled", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge,
+                            modifier = Modifier.padding(Space.s).pressable {
+                                if (off) Subs.store(ctx).remove(m.optString("id")) else Subs.store(ctx).update(m.optString("id")) { it.put("cancelled", true) }
+                                manual = Subs.store(ctx).all() })
+                    })
+            }
+        }
+        item("madd") {
+            Group(Modifier.padding(horizontal = Space.page, vertical = Space.s)) {
+                Text("Add one yourself (Netflix, gym, internet…)", style = MaterialTheme.typography.titleSmall)
+                OutlinedTextField(sName, { sName = it }, Modifier.fillMaxWidth(), label = { Text("Name") }, singleLine = true)
+                OutlinedTextField(sAmt, { sAmt = it.filter { ch -> ch.isDigit() || ch == '.' } }, Modifier.fillMaxWidth(), label = { Text("Amount (Rs)") }, singleLine = true)
+                Segmented(listOf("Weekly", "Monthly", "Yearly"), sEvery, { sEvery = it }, { it })
+                Button(onClick = {
+                    val a = sAmt.toDoubleOrNull()
+                    if (sName.isNotBlank() && a != null) {
+                        val days = when (sEvery) { "Weekly" -> 7; "Yearly" -> 365; else -> 30 }
+                        Subs.store(ctx).add(JSONObject().put("name", sName.trim()).put("amount", a).put("days", days).put("next", LocalDate.now().plusDays(days.toLong()).toString()))
+                        sName = ""; sAmt = ""; manual = Subs.store(ctx).all()
+                    }
+                }, modifier = Modifier.padding(top = Space.s)) { Text("Add") }
             }
         }
         item("tip") {

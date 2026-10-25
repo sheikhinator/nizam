@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -204,16 +205,20 @@ internal fun MindDock(spec: Spec, open: (String) -> Unit, modifier: Modifier = M
  * pin it to Today, put it on the phone's home screen, get a daily reminder to use it, share it.
  */
 @Composable
-internal fun ScreenPowers(spec: Spec, open: (String) -> Unit, close: () -> Unit) {
+internal fun ScreenPowers(spec: Spec, open: (String) -> Unit, close: () -> Unit) =
+    ScreenPowersFor(spec.id, "nx/${spec.id}", spec.title, spec.blurb, spec.words, close)
+
+/** The same powers for any screen in Atlas, built-in modules included. */
+@Composable
+fun ScreenPowersFor(key: String, route: String, title: String, blurb: String, words: String, close: () -> Unit) {
     val c = LocalContext.current
     val scope = com.nizam.app.ui.design.rememberSafeScope()
-    val route = "nx/${spec.id}"
-    var pinned by remember(spec.id) { mutableStateOf(com.nizam.app.feature.modes.Pins.isPinned(c, route)) }
-    var q by remember(spec.id) { mutableStateOf("") }
-    var answer by remember(spec.id) { mutableStateOf<String?>(null) }
-    var busy by remember(spec.id) { mutableStateOf(false) }
+    var pinned by remember(key) { mutableStateOf(com.nizam.app.feature.modes.Pins.isPinned(c, route)) }
+    var q by remember(key) { mutableStateOf("") }
+    var answer by remember(key) { mutableStateOf<String?>(null) }
+    var busy by remember(key) { mutableStateOf(false) }
     val remindPrefs = remember { c.getSharedPreferences("screen_remind", 0) }
-    var remind by remember(spec.id) { mutableStateOf(remindPrefs.getInt(spec.id, -1)) }
+    var remind by remember(key) { mutableStateOf(remindPrefs.getInt(key, -1)) }
     Text("Do more here", fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 6.dp))
     Row(Modifier.fillMaxWidth().horizontalScroll(androidx.compose.foundation.rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         TextButton(onClick = { com.nizam.app.feature.modes.Pins.togglePin(c, route); pinned = !pinned
@@ -221,7 +226,7 @@ internal fun ScreenPowers(spec: Spec, open: (String) -> Unit, close: () -> Unit)
         TextButton(onClick = {
             runCatching {
                 val sm = c.getSystemService(android.content.pm.ShortcutManager::class.java)
-                val info = android.content.pm.ShortcutInfo.Builder(c, "nx_" + spec.id).setShortLabel(spec.title.take(24)).setLongLabel(spec.title)
+                val info = android.content.pm.ShortcutInfo.Builder(c, "nx_" + key).setShortLabel(title.take(24)).setLongLabel(title)
                     .setIcon(android.graphics.drawable.Icon.createWithResource(c, com.nizam.app.R.mipmap.ic_launcher))
                     .setIntent(android.content.Intent(c, com.nizam.app.MainActivity::class.java).setAction(android.content.Intent.ACTION_VIEW).putExtra("route", route)).build()
                 if (sm?.isRequestPinShortcutSupported == true) sm.requestPinShortcut(info, null) else com.nizam.app.ui.components.Feedback.show("Your launcher doesn't allow shortcuts")
@@ -230,21 +235,21 @@ internal fun ScreenPowers(spec: Spec, open: (String) -> Unit, close: () -> Unit)
         TextButton(onClick = {
             val next = when (remind) { -1 -> 9; 9 -> 13; 13 -> 20; else -> -1 }
             remind = next
-            if (next < 0) remindPrefs.edit().remove(spec.id).apply() else remindPrefs.edit().putInt(spec.id, next).apply()
+            if (next < 0) remindPrefs.edit().remove(key).apply() else remindPrefs.edit().putInt(key, next).apply()
             com.nizam.app.ui.components.Feedback.show(if (next < 0) "Reminder off" else "I'll remind you daily at ${if (next > 12) next - 12 else next}${if (next >= 12) "pm" else "am"}")
         }) { Text(if (remind < 0) "⏰ Remind me" else "⏰ ${if (remind > 12) remind - 12 else remind}${if (remind >= 12) "pm" else "am"}") }
-        TextButton(onClick = { Share.text(c, "${spec.title}: ${spec.blurb}\nIn Atlas: search \"${spec.title}\".", spec.title) }) { Text("↗ Share") }
+        TextButton(onClick = { Share.text(c, "${title}: ${blurb}\nIn Atlas: search \"${title}\".", title) }) { Text("↗ Share") }
     }
     val container = remember { (c.applicationContext as? com.nizam.app.NizamApplication)?.container }
     if (container != null) Row(verticalAlignment = Alignment.CenterVertically) {
-        androidx.compose.material3.OutlinedTextField(q, { q = it }, Modifier.weight(1f), singleLine = true, placeholder = { Text("Ask about ${spec.title}") },
+        androidx.compose.material3.OutlinedTextField(q, { q = it }, Modifier.weight(1f), singleLine = true, placeholder = { Text("Ask about ${title}") },
             trailingIcon = { MicButton({ heard -> q = heard }) })
         TextButton(onClick = {
             busy = true; answer = null
             scope.launch {
                 runCatching {
-                    val known = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { Roads.relevant(c, q + " " + spec.title + " " + spec.words, 3000) }
-                    Ai.generate(container.settingsRepository, "The user is on the \"${spec.title}\" screen of their Atlas app (${spec.blurb}).\n" +
+                    val known = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { Roads.relevant(c, q + " " + title + " " + words, 3000) }
+                    Ai.generate(container.settingsRepository, "The user is on the \"${title}\" screen of their Atlas app (${blurb}).\n" +
                         (if (known.isNotBlank()) "The user's own recorded data, shared by them for this question (private, use only to answer):\n$known\n\n" else "") +
                         "Question: $q\nAnswer briefly and practically, using their data where it helps.",
                         system = "You are Atlas, a practical personal assistant inside the user's own app.", maxOutputTokens = 700)
@@ -266,9 +271,38 @@ object ScreenReminders {
             val h = (v as? Int) ?: return@forEach
             if (now < h || now > h + 0.5 || sent.getString(id, "") == today) return@forEach
             sent.edit().putString(id, today).apply()
-            val spec = Nx.find(id) ?: return@forEach
+            val route = if (id.contains('/') || Nx.find(id) == null) id else "nx/$id"
+            val title = Nx.find(id)?.title ?: com.nizam.app.ui.design.Feel.label(route)
             com.nizam.app.feature.notify.Notifications.post(c, com.nizam.app.feature.notify.Notifications.CHANNEL_NUDGE, 400 + (id.hashCode() and 63),
-                spec.title, "Your daily reminder: ${spec.blurb}", route = "nx/$id")
+                title, "Your daily reminder to open $title", route = route)
+        }
+    }
+}
+
+/**
+ * The ✦ for every screen that isn't a catalogue tool: built-in modules (Money, Prayer, Tasks…), the
+ * everyday packs and self-drawn tools. Same powers as everywhere else.
+ */
+@Composable
+fun RouteDock(route: String?, hidden: Boolean) {
+    if (route == null || hidden) return
+    val nxId = route.removePrefix("nx/").takeIf { route.startsWith("nx/") }
+    if (nxId != null && nxId !in SELF_WRAPPED) return          // catalogue tools already have their own ✦
+    val feature = com.nizam.app.ui.screens.hubs.HubRegistry.byRoute(route)
+    val spec = nxId?.let { Nx.find(it) }
+    if (feature == null && spec == null) return
+    val title = spec?.title ?: feature!!.title
+    val blurb = spec?.blurb ?: feature!!.blurb
+    val words = spec?.words ?: feature!!.words
+    var shown by remember(route) { mutableStateOf(false) }
+    Box(Modifier.fillMaxSize().padding(end = 14.dp, bottom = 176.dp), contentAlignment = Alignment.BottomEnd) {
+        if (!shown) Box(Modifier.size(40.dp).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.88f), CircleShape).clickable { shown = true },
+            contentAlignment = Alignment.Center) { Text("✦", color = MaterialTheme.colorScheme.onPrimary) }
+        else Column(Modifier.fillMaxWidth(0.9f).background(MaterialTheme.colorScheme.surface, RoundedCornerShape(18.dp)).padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(title, fontWeight = FontWeight.SemiBold)
+            ScreenPowersFor(spec?.id ?: route, route, title, blurb, words) { shown = false }
+            TextButton(onClick = { shown = false }) { Text("Close") }
         }
     }
 }

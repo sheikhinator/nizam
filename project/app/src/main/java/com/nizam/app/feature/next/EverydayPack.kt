@@ -1,5 +1,9 @@
 package com.nizam.app.feature.next
 
+import androidx.compose.ui.unit.dp
+
+import kotlinx.coroutines.launch
+
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -54,6 +58,17 @@ private fun rs(v: Double) = "Rs " + "%,d".format(v.toLong())
 /** Medicines with their times; a reminder at each dose, a refill warning when the strip runs low. */
 object Medicines {
     fun store(c: Context) = JsonStore(c, "medicines")
+    private fun tp(c: Context) = c.getSharedPreferences("med_taken", 0)
+    fun taken(c: Context, d: LocalDate, id: String, t: LocalTime) = tp(c).getBoolean("$d|$id|$t", false)
+    fun setTaken(c: Context, d: LocalDate, id: String, t: LocalTime, v: Boolean) = tp(c).edit().putBoolean("$d|$id|$t", v).apply()
+    /** Share of doses ticked over the last 7 days, counting only days after the medicine was added. */
+    fun adherence(c: Context, o: JSONObject): Int? {
+        val added = java.time.Instant.ofEpochMilli(o.optLong("t", System.currentTimeMillis())).atZone(java.time.ZoneId.systemDefault()).toLocalDate()
+        var due = 0; var ok = 0
+        for (i in 1..7) { val d = LocalDate.now().minusDays(i.toLong()); if (d.isBefore(added)) continue
+            times(o).forEach { t -> due++; if (taken(c, d, o.optString("id"), t)) ok++ } }
+        return if (due == 0) null else ok * 100 / due
+    }
     fun times(o: JSONObject): List<LocalTime> = o.optString("times").split(",").mapNotNull { runCatching { LocalTime.parse(it.trim().padStart(5, '0')) }.getOrNull() }
 
     fun check(c: Context) {
@@ -90,11 +105,23 @@ fun MedicinesScreen() {
         list.forEach { o ->
             item(o.optString("id")) {
                 ListRow(o.optString("name"), supporting = listOf(o.optString("dose"), o.optString("times"),
-                    o.optInt("left", -1).takeIf { it >= 0 }?.let { "$it left" }.orEmpty()).filter { it.isNotBlank() }.joinToString(" · "),
+                    o.optInt("left", -1).takeIf { it >= 0 }?.let { "$it left" }.orEmpty(),
+                    Medicines.adherence(ctx, o)?.let { "$it% taken this week" }.orEmpty()).filter { it.isNotBlank() }.joinToString(" · "),
                     icon = Icons.Outlined.LocalPharmacy, tint = Hub.Health.tint(), trailing = {
                         Text("Remove", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelMedium,
                             modifier = Modifier.padding(Space.s).pressable { Medicines.store(ctx).remove(o.optString("id")); reload() })
                     })
+            }
+            item("today" + o.optString("id")) {
+                var tick by remember { mutableStateOf(0) }
+                androidx.compose.foundation.layout.Row(Modifier.padding(start = Space.page + 40.dp, end = Space.page), horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(6.dp)) {
+                    Medicines.times(o).forEach { t ->
+                        val on = remember(tick) { Medicines.taken(ctx, LocalDate.now(), o.optString("id"), t) }
+                        com.nizam.app.ui.design.Capsule((if (on) "✓ " else "") + t.toString(), on) { Medicines.setTaken(ctx, LocalDate.now(), o.optString("id"), t, !on); tick++ }
+                    }
+                    if (o.optInt("left", -1) in 0..10) com.nizam.app.ui.design.Capsule("+ Refill 10", false) {
+                        Medicines.store(ctx).update(o.optString("id")) { it.put("left", it.optInt("left", 0) + 10) }; reload() }
+                }
             }
         }
         item("add") {
@@ -105,7 +132,7 @@ fun MedicinesScreen() {
                 OutlinedTextField(left, { left = it.filter(Char::isDigit) }, Modifier.fillMaxWidth(), label = { Text("Tablets left (optional)") }, singleLine = true)
                 Button(onClick = {
                     if (name.isNotBlank()) {
-                        Medicines.store(ctx).add(JSONObject().put("name", name.trim()).put("dose", dose.trim()).put("times", times.trim()).put("left", left.toIntOrNull() ?: -1))
+                        Medicines.store(ctx).add(JSONObject().put("name", name.trim()).put("dose", dose.trim()).put("times", times.trim()).put("left", left.toIntOrNull() ?: -1).put("t", System.currentTimeMillis()))
                         name = ""; dose = ""; left = ""; reload()
                     }
                 }, modifier = Modifier.padding(top = Space.s)) { Text("Add") }
@@ -187,6 +214,30 @@ fun DocExpiryScreen() {
                         Text("Remove", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelMedium,
                             modifier = Modifier.padding(Space.s).pressable { DocExpiry.store(ctx).remove(o.optString("id")); reload() })
                     })
+            }
+            item("r" + o.optString("id")) {
+                var how by remember { mutableStateOf<String?>(null) }
+                var busy by remember { mutableStateOf(false) }
+                val scope = com.nizam.app.ui.design.rememberSafeScope()
+                androidx.compose.foundation.layout.Column(Modifier.padding(start = Space.page + 40.dp, end = Space.page)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        listOf(1, 5, 10).forEach { y -> com.nizam.app.ui.design.Capsule("Renewed +${y}y", false) {
+                            val base = runCatching { LocalDate.parse(o.optString("date")) }.getOrDefault(LocalDate.now()).let { if (it.isBefore(LocalDate.now())) LocalDate.now() else it }
+                            DocExpiry.store(ctx).update(o.optString("id")) { it.put("date", base.plusYears(y.toLong()).toString()) }; reload()
+                            Feedback.show("Next expiry ${base.plusYears(y.toLong())}") } }
+                        com.nizam.app.ui.design.Capsule(if (busy) "…" else "How to renew", how != null) {
+                            if (how != null) { how = null; return@Capsule }
+                            val ct = (ctx.applicationContext as? com.nizam.app.NizamApplication)?.container ?: return@Capsule
+                            busy = true
+                            scope.launch {
+                                how = runCatching { com.nizam.app.net.Ai.generate(ct.settingsRepository, "How do I renew my ${o.optString("name")} in Pakistan? Steps, documents to bring, current fee, where to go or which website/app, and how long it takes. Short.",
+                                    system = "You are a practical Pakistan paperwork guide. Check current details.", maxOutputTokens = 700, useWeb = true) }.getOrElse { it.message ?: "Couldn't look that up" }
+                                busy = false
+                            }
+                        }
+                    }
+                    how?.let { com.nizam.app.feature.nx.Md(it) }
+                }
             }
         }
         item("add") {

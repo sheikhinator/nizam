@@ -269,6 +269,7 @@ fun HadithScreen(container: AppContainer) {
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        HadithActions(h)
                     }
                     Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.surfaceVariant)
                 }
@@ -284,6 +285,7 @@ fun HadithScreen(container: AppContainer) {
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 18.dp)) {
         ModuleTitle("Hadith", "Sourced from hadithapi.com — add your API key in Settings")
+        HadithSavedPane()
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             OutlinedTextField(
@@ -321,6 +323,7 @@ fun HadithScreen(container: AppContainer) {
                 results.forEach { h ->
                     Column(Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
                         Text(h.textEn, style = MaterialTheme.typography.bodyLarge)
+                        HadithActions(h)
                         Spacer(Modifier.height(6.dp))
                         Text(
                             h.reference + if (h.grade.isBlank()) "" else " · ${h.grade}",

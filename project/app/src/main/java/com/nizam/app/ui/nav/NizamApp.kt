@@ -788,6 +788,9 @@ fun NizamApp(container: AppContainer, startOnCurator: Boolean = false, startRout
         com.nizam.app.ui.design.PeekOverlay()
         com.nizam.app.feature.wild.FocusLensOverlay()
         com.nizam.app.ui.design.DropZone()
+        com.nizam.app.feature.nx.RouteDock(currentRoute?.let { r -> if (r.contains("{id}")) r.replace("{id}", backStackEntry?.arguments?.getString("id").orEmpty()) else r },
+            hidden = currentRoute == null || currentRoute in tabRoutes || currentRoute == Routes.PLAYER || currentRoute == Routes.IPTV_PLAYER || currentRoute == Routes.BEDSIDE ||
+                currentRoute == Routes.AMBIENT || currentRoute == Routes.MAPS || com.nizam.app.feature.cinema.Pip.active)
         com.nizam.app.ui.design.FeelOverlay(currentRoute)
         // tips sit just above the tab bar, never over a screen's title
         if (!com.nizam.app.feature.cinema.Pip.active) androidx.compose.foundation.layout.Box(Modifier.fillMaxSize().padding(bottom = 104.dp), contentAlignment = Alignment.BottomCenter) {

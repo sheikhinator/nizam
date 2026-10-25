@@ -84,7 +84,16 @@ fun DuasScreen() {
     var fav by remember { mutableStateOf(Duas.fav(ctx)) }
     val groups = listOf("Favourites") + Duas.GROUPS
     val shown = if (group == "Favourites") Duas.ALL.filter { it.title in fav } else Duas.ALL.filter { it.group == group }
-    AtlasScreen(title = "Duas", subtitle = "Everyday supplications, with meaning", hub = Hub.Deen) {
+    val lp = remember { ctx.getSharedPreferences("duas_learned", 0) }
+    var learned by remember { mutableStateOf(lp.getStringSet("set", emptySet())!!.toSet()) }
+    var hideArabic by remember { mutableStateOf(false) }
+    var revealed by remember { mutableStateOf(setOf<String>()) }
+    AtlasScreen(title = "Duas", subtitle = "Everyday supplications, with meaning · ${learned.size} of ${Duas.ALL.size} learned by heart", hub = Hub.Deen) {
+        item("mem") {
+            Row(Modifier.padding(horizontal = Space.page), horizontalArrangement = Arrangement.spacedBy(Space.s)) {
+                Capsule(if (hideArabic) "✓ Memorise mode" else "Memorise mode", hideArabic) { hideArabic = !hideArabic; revealed = emptySet() }
+            }
+        }
         item("g") {
             LazyRow(contentPadding = PaddingValues(horizontal = Space.page), horizontalArrangement = Arrangement.spacedBy(Space.s)) {
                 items(groups) { g -> Capsule(g, g == group) { group = g } }
@@ -101,9 +110,23 @@ fun DuasScreen() {
                         Text(if (d.title in fav) "♥" else "♡", color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.pressable { Duas.toggle(ctx, d.title); fav = Duas.fav(ctx) }.padding(Space.xs))
                     }
-                    Text(d.arabic, style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.End, modifier = Modifier.fillMaxWidth().padding(vertical = Space.s))
-                    Text(d.translit, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                    val masked = hideArabic && d.title !in revealed
+                    Text(if (masked) d.arabic.split(" ").firstOrNull().orEmpty() + " … (tap to check yourself)" else d.arabic, style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.End,
+                        modifier = Modifier.fillMaxWidth().pressable { if (hideArabic) revealed = if (d.title in revealed) revealed - d.title else revealed + d.title }.padding(vertical = Space.s))
+                    if (!masked) Text(d.translit, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
                     Text(d.meaning, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Row(horizontalArrangement = Arrangement.spacedBy(Space.s), modifier = Modifier.padding(top = Space.s)) {
+                        val on = d.title in learned
+                        Capsule(if (on) "✓ Learned" else "Mark learned", on) {
+                            learned = if (on) learned - d.title else learned + d.title
+                            lp.edit().putStringSet("set", learned).apply()
+                            if (!on) com.nizam.app.ui.design.Celebrate.now()
+                        }
+                        Capsule("Share", false) {
+                            runCatching { ctx.startActivity(android.content.Intent.createChooser(android.content.Intent(android.content.Intent.ACTION_SEND).setType("text/plain")
+                                .putExtra(android.content.Intent.EXTRA_TEXT, "${d.title}\n\n${d.arabic}\n\n${d.translit}\n\n${d.meaning}"), "Share dua").addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) }
+                        }
+                    }
                 }
             }
         }
