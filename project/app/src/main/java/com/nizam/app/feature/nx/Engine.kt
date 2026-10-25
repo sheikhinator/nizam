@@ -166,6 +166,7 @@ fun FieldInput(f: F, value: String, onChange: (String) -> Unit, modifier: Modifi
             label = { Text(f.label + if (f.optional) " (optional)" else "") },
             placeholder = if (f.hint.isBlank()) null else { { Text(f.hint) } },
             singleLine = f.kind != K.LONG,
+            trailingIcon = if (f.kind == K.TEXT || f.kind == K.LONG) { { MicButton({ heard -> onChange((value.trimEnd() + " " + heard).trim()) }) } } else null,
             keyboardOptions = if (f.kind == K.NUMBER) KeyboardOptions(keyboardType = KeyboardType.Text) else KeyboardOptions.Default)
     }
 }
@@ -218,6 +219,7 @@ fun AiToolScreen(spec: AiSpec, container: AppContainer) {
         item("form") {
             Group(Modifier.padding(horizontal = Space.page, vertical = Space.s)) {
                 spec.fields.forEach { f -> FieldInput(f, values[f.key].orEmpty(), { values[f.key] = it }, Modifier.padding(bottom = Space.s)) }
+                if (spec.fields.none { it.key == "use" }) KnowsMeSwitch(spec.id, Modifier.padding(bottom = Space.s))
                 Button(onClick = {
                     busy = true; result = null
                     val snapshot = values.toMap()
@@ -226,7 +228,9 @@ fun AiToolScreen(spec: AiSpec, container: AppContainer) {
                     scope.launch {
                         runCatching {
                             if (snapshot["use"] == LifeContext.YES) Roads.warm(container)
-                            Ai.generate(container.settingsRepository, spec.prompt(snapshot), system = spec.system, maxOutputTokens = spec.tokens, useWeb = spec.web)
+                            val ask = spec.prompt(snapshot)
+                            val known = if (spec.fields.none { it.key == "use" }) EngineX.context(ctx, spec.id, ask) else ""
+                            Ai.generate(container.settingsRepository, if (known.isBlank()) ask else "$known\n\n$ask", system = spec.system, maxOutputTokens = spec.tokens, useWeb = spec.web)
                         }
                             .onSuccess { r ->
                                 result = r
@@ -238,11 +242,29 @@ fun AiToolScreen(spec: AiSpec, container: AppContainer) {
                         busy = false
                     }
                 }, enabled = ready && !busy) { Text(if (busy) "Working…" else spec.button) }
+                if (ready) ScheduleChips(spec.id, { values.toMap() }, Modifier.padding(top = Space.s))
             }
         }
         result?.let { r ->
             item("out") { Group(Modifier.padding(horizontal = Space.page, vertical = Space.s)) { Md(r) } }
             item("act") { ResultActions(spec.title, r) }
+            item("actonit") { ActOnIt(container, spec.title, r, Modifier.padding(horizontal = Space.page, vertical = 4.dp)) }
+            val prev = history.getOrNull(1)?.optString("out")
+            if (prev != null && history.firstOrNull()?.optString("out") == r) item("changed") {
+                var diff by remember(r) { mutableStateOf<String?>(null) }
+                var looking by remember(r) { mutableStateOf(false) }
+                Column(Modifier.padding(horizontal = Space.page, vertical = 4.dp)) {
+                    if (diff == null) Capsule(if (looking) "Comparing…" else "What changed since last time?", false) {
+                        if (looking) return@Capsule
+                        looking = true
+                        scope.launch {
+                            runCatching { Ai.generate(container.settingsRepository, "Earlier result:\n${prev.take(3500)}\n\nNew result:\n${r.take(3500)}\n\nWhat actually changed between them, and what does that mean for the user? Three short bullets.",
+                                system = spec.system, maxOutputTokens = 500) }.onSuccess { diff = it }.onFailure { Feedback.show(it.message ?: "Couldn't do that") }
+                            looking = false
+                        }
+                    } else Group { Md(diff!!) }
+                }
+            }
             item("thumbs") {
                 Row(Modifier.padding(horizontal = Space.page), verticalAlignment = Alignment.CenterVertically) {
                     Text("Was this helpful?", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -275,6 +297,7 @@ fun AiToolScreen(spec: AiSpec, container: AppContainer) {
                     }
                 }
             }
+            item("followup") { FollowUp(container, spec.system, r, Modifier.padding(horizontal = Space.page, vertical = Space.s)) }
         }
         if (history.isNotEmpty()) item("hh") { SectionHeader("Earlier") }
         history.forEach { h ->
@@ -400,8 +423,10 @@ fun ChatToolScreen(spec: ChatSpec, container: AppContainer) {
         val convo = msgs.takeLast(16).joinToString("\n") { (me, t) -> (if (me) "User: " else "You: ") + t }
         scope.launch {
             runCatching {
+                val known = if (spec.persistent) "" else EngineX.context(ctx, spec.id, text)
                 Ai.generate(container.settingsRepository, "$convo\nYou:", system = spec.persona(setup.toMap()) +
-                    "\nStay in role. Reply conversationally, usually under 150 words. Match the user's language (English, Urdu or Roman Urdu).",
+                    "\nStay in role. Reply conversationally, usually under 150 words. Match the user's language (English, Urdu or Roman Urdu)." +
+                    (if (known.isBlank()) "" else "\n\n$known"),
                     maxOutputTokens = 700, useWeb = spec.web)
             }.onSuccess {
                 if (!spec.persistent || activeStoryId == storyAtSend) {
@@ -511,9 +536,15 @@ fun ChatToolScreen(spec: ChatSpec, container: AppContainer) {
             if (busy) item("typing") { Text("…", Modifier.padding(horizontal = Space.page), style = MaterialTheme.typography.titleLarge) }
             item("in") {
                 Row(Modifier.padding(horizontal = Space.page, vertical = Space.s), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.s)) {
-                    OutlinedTextField(input, { input = it }, Modifier.weight(1f), placeholder = { Text("Say something") }, maxLines = 4)
+                    OutlinedTextField(input, { input = it }, Modifier.weight(1f), placeholder = { Text("Say something") }, maxLines = 4,
+                        trailingIcon = { MicButton({ heard -> send(heard) }) })
                     Button(onClick = { send(input.trim()) }, enabled = input.isNotBlank() && !busy) { Text("Send") }
                 }
+            }
+            if (!spec.persistent) item("knows") { KnowsMeSwitch(spec.id, Modifier.padding(horizontal = Space.page)) }
+            if (!spec.persistent && msgs.count { !it.first } >= 1 && !busy) item("chatact") {
+                ActOnIt(container, spec.title, msgs.takeLast(12).joinToString("\n") { (me, t) -> (if (me) "User: " else "Reply: ") + t },
+                    Modifier.padding(horizontal = Space.page, vertical = Space.s))
             }
         }
     }
@@ -545,7 +576,7 @@ fun num(s: String?): Double = s?.takeIf { it.isNotBlank() }?.let { runCatching {
 fun rs(v: Double) = if (com.nizam.app.feature.platform2.AmountPrivacy.hidden()) "Rs ••••" else (if (v < 0) "−Rs " else "Rs ") + "%,d".format(kotlin.math.abs(v).toLong())
 
 @Composable
-fun LogToolScreen(spec: LogSpec) {
+fun LogToolScreen(spec: LogSpec, container: AppContainer? = null) {
     val ctx = LocalContext.current
     val store = remember { JsonStore(ctx, "nxlog_${spec.id}", spec.sealed) }
     var list by remember { mutableStateOf(store.all().reversed()) }
@@ -554,6 +585,8 @@ fun LogToolScreen(spec: LogSpec) {
     var editing by remember { mutableStateOf<String?>(null) }
     fun reset() { spec.fields.forEach { values[it.key] = it.default.ifBlank { if (it.kind == K.DATE) java.time.LocalDate.now().toString() else "" } }; editing = null }
     val summary = remember(list) { runCatching { spec.summary(list) }.getOrDefault(emptyList()) }
+    var query by remember { mutableStateOf("") }
+    val shown = remember(list, query) { if (query.isBlank()) list else list.filter { o -> spec.fields.any { f -> o.optString(f.key).contains(query.trim(), ignoreCase = true) } } }
     AtlasScreen(title = spec.title, subtitle = spec.blurb, hub = spec.hub, actions = {
         Text(if (adding) "Close" else "Add", Modifier.padding(Space.s).pressable { adding = !adding; if (!adding) reset() }, style = MaterialTheme.typography.labelLarge, color = spec.hub.tint())
     }) {
@@ -562,6 +595,15 @@ fun LogToolScreen(spec: LogSpec) {
                 summary.forEachIndexed { i, s -> Text(s, style = if (i == 0) MaterialTheme.typography.titleMedium else MaterialTheme.typography.bodyMedium,
                     fontWeight = if (i == 0) FontWeight.SemiBold else FontWeight.Normal, modifier = Modifier.padding(vertical = 2.dp)) }
             }
+        }
+        if (list.size >= 2) item("stats") { LogStatsCard(spec, list, Modifier.padding(horizontal = Space.page, vertical = Space.s)) }
+        item("logtools") {
+            LogTools(spec, list, container, { m -> spec.fields.forEach { f -> m[f.key]?.let { values[f.key] = it } }; editing = null; adding = true },
+                Modifier.padding(horizontal = Space.page, vertical = 4.dp))
+        }
+        if (list.size > 8) item("search") {
+            OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth().padding(horizontal = Space.page, vertical = 4.dp), singleLine = true,
+                placeholder = { Text("Search ${list.size} entries") })
         }
         if (adding || list.isEmpty()) item("form") {
             Group(Modifier.padding(horizontal = Space.page, vertical = Space.s)) {
@@ -585,7 +627,7 @@ fun LogToolScreen(spec: LogSpec) {
             }
         }
         if (list.isEmpty() && !adding) item("e") { EmptyState(EmptySpec(spec.icon, "Nothing yet", "Add the first entry above.")) }
-        list.forEach { o ->
+        shown.forEach { o ->
             item(o.optString("id")) {
                 val (a, b) = runCatching { spec.line(o) }.getOrDefault(o.optString("_0") to "")
                 ListRow(a, supporting = b.ifBlank { null }, icon = spec.icon, tint = spec.hub.tint(), trailing = {
@@ -629,6 +671,7 @@ fun CalcToolScreen(spec: CalcSpec, container: AppContainer? = null) {
                 }
             }
         }
+        item("calcx") { CalcPowers(spec, values, results, Modifier.padding(horizontal = Space.page, vertical = Space.s)) }
         item("share") { Row(Modifier.padding(horizontal = Space.page)) { Capsule("Share result", false) {
             Share.text(ctx, spec.title + "\n" + spec.inputs.joinToString("\n") { "${it.label}: ${values[it.key]}" } + "\n\n" + results.joinToString("\n") { "${it.first}: ${it.second}" })
         } } }
@@ -677,7 +720,7 @@ private fun NxBody(id: String, container: AppContainer, open: (String) -> Unit) 
     when (val s = Nx.find(id)) {
         is AiSpec -> AiToolScreen(s, container)
         is ChatSpec -> ChatToolScreen(s, container)
-        is LogSpec -> LogToolScreen(s)
+        is LogSpec -> LogToolScreen(s, container)
         is CalcSpec -> CalcToolScreen(s, container)
         is LinkSpec -> LinkToolScreen(s)
         is ScreenSpec -> if (s.id in SELF_WRAPPED) s.content(container, open)
