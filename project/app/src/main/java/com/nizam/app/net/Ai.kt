@@ -56,7 +56,8 @@ object Ai {
         }.getOrNull().orEmpty()
         // one mind: when a question needs an expert, Atlas thinks with that expertise (still Atlas, same memory and voice)
         val expertise = if (lean) "" else runCatching { com.nizam.app.feature.expertise.Expertise.autoBlock(Router.appContext, prompt, system) }.getOrDefault("")
-        val laws = if (lean) "" else runCatching { com.nizam.app.feature.expertise.Laws.block(Router.appContext) }.getOrDefault("")
+        val laws = if (lean) "" else (runCatching { com.nizam.app.feature.expertise.Laws.block(Router.appContext) }.getOrDefault("") +
+            runCatching { com.nizam.app.feature.omni.Evolve.block(Router.appContext).let { if (it.isBlank()) "" else "\n\n$it" } }.getOrDefault("")).trim()
         // answers people read get the rich answer view's formats (tables, charts, diagrams…); structured JSON requests don't
         val rich = if (lean || (system?.contains("JSON") == true) || prompt.contains("JSON") || (system?.contains("Output only") == true)) ""
             else com.nizam.app.ui.components.RichFormat.GUIDE

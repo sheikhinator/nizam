@@ -88,6 +88,7 @@ class AtlasAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event != null && com.nizam.app.feature.agent.DemoRecorder.recording) runCatching { com.nizam.app.feature.agent.DemoRecorder.onEvent(this, event) }
         if (event != null) runCatching { com.nizam.app.feature.wild.WatchLearn.onEvent(this, event) }
+        if (event != null) runCatching { com.nizam.app.feature.omni.Sense.onEvent(this, event) }
         // Bodyguard: the 15 minutes you allowed in a paused app ran out while you're still scrolling, so Atlas steps in mid-session
         if (event != null && event.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) runCatching {
             val p = event.packageName?.toString()

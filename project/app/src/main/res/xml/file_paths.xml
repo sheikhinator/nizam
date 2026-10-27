@@ -5,4 +5,5 @@
     <files-path name="sketches" path="sketches/" />
     <files-path name="mcp" path="mcp/" />
     <files-path name="deliverables" path="deliverables/" />
+    <files-path name="omni" path="omni/" />
 </paths>

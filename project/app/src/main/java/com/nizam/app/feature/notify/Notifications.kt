@@ -251,6 +251,7 @@ class AtlasWorker(context: Context, params: WorkerParameters) : CoroutineWorker(
         runCatching { com.nizam.app.feature.next.Subs.tick(applicationContext, now) }
         runCatching { com.nizam.app.feature.earn.Earn.tick(applicationContext, container, now) }
         runCatching { com.nizam.app.feature.being.Being.live(container, applicationContext) }
+        runCatching { com.nizam.app.feature.omni.OmniTick.run(applicationContext) }
         runCatching { com.nizam.app.feature.agent.AutoRules.tick(applicationContext, container) }
         runCatching { com.nizam.app.feature.nx.Allowances.tick(applicationContext) }
         runCatching { Inbox.digestTick(applicationContext, now) }

@@ -795,6 +795,8 @@ fun NizamApp(container: AppContainer, startOnCurator: Boolean = false, startRout
             hidden = currentRoute == null || currentRoute in tabRoutes || currentRoute == Routes.PLAYER || currentRoute == Routes.IPTV_PLAYER || currentRoute == Routes.BEDSIDE ||
                 currentRoute == Routes.AMBIENT || currentRoute == Routes.MAPS || com.nizam.app.feature.cinema.Pip.active)
         com.nizam.app.ui.design.FeelOverlay(currentRoute)
+        com.nizam.app.feature.omni.BreathingOverlay()
+        com.nizam.app.feature.omni.XRayOverlay(currentRoute)
         // tips sit just above the tab bar, never over a screen's title
         if (!com.nizam.app.feature.cinema.Pip.active) androidx.compose.foundation.layout.Box(Modifier.fillMaxSize().padding(bottom = 104.dp), contentAlignment = Alignment.BottomCenter) {
             com.nizam.app.ui.design.TipCard(currentRoute)

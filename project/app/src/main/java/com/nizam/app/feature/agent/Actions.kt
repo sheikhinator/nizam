@@ -243,6 +243,8 @@ object Actions {
         // every action Atlas takes leaves a receipt in the activity feed
         runCatching { com.nizam.app.feature.next.Activity.log(container.appContext, action, r.summary, r.ok) }
         runCatching { com.nizam.app.feature.brain2.Skills.record(container.appContext, action, args, r.ok) }
+        // and an entry in the action journal, with a way to undo it where that's possible
+        runCatching { com.nizam.app.feature.omni.Journal.after(container, action, args, r.ok, r.summary) }
         return r
     }
 
