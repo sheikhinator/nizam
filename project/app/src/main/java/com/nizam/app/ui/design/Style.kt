@@ -127,7 +127,7 @@ object Style {
     val NAVS = listOf("Glass", "Solid", "Minimal")
 
     var s by mutableStateOf(S())
-        private set
+        internal set
     private var loaded = false
     private fun p(c: Context) = c.getSharedPreferences("style", 0)
 
