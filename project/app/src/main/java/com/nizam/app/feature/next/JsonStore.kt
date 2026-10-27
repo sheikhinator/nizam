@@ -119,8 +119,15 @@ class JsonStore(private val c: Context, private val name: String, private val se
     }
 
     fun add(o: JSONObject): JSONObject {
-        if (!o.has("id")) o.put("id", System.currentTimeMillis().toString() + (0..999).random())
-        save(all() + o); return o
+        val existing = all()
+        if (!o.has("id")) {
+            // ids must never repeat, even for two entries added in the same millisecond
+            val taken = existing.mapTo(HashSet()) { it.optString("id") }
+            var id: String
+            do { id = System.currentTimeMillis().toString() + (0..999).random().toString().padStart(3, '0') } while (id in taken)
+            o.put("id", id)
+        }
+        save(existing + o); return o
     }
     fun update(id: String, change: (JSONObject) -> Unit) = save(all().map { if (it.optString("id") == id) it.also(change) else it })
     fun remove(id: String) = save(all().filter { it.optString("id") != id })
