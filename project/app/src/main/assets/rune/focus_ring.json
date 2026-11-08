@@ -1,0 +1,83 @@
+{
+ "v": 1,
+ "name": "Focus Ring",
+ "theme": {
+  "bg": "#0B0E17",
+  "accent": "#6C8CFF",
+  "accent2": "#FF7AB6"
+ },
+ "vars": {},
+ "root": {
+  "id": "root",
+  "t": "column",
+  "fillW": true,
+  "fillH": true,
+  "padding": 24,
+  "gap": 18,
+  "align": "center",
+  "justify": "center",
+  "kids": [
+   {
+    "id": "t114",
+    "t": "text",
+    "text": "Today's prayers",
+    "size": 16,
+    "color": "@ink/60",
+    "upper": true,
+    "spacing": 2
+   },
+   {
+    "id": "t115",
+    "t": "progress",
+    "value": "{{m:prayers}}/5",
+    "pstyle": "ring",
+    "w": 240,
+    "thick": 18,
+    "text": "{{m:prayers}}/5",
+    "size": 44,
+    "enter": "pop"
+   },
+   {
+    "id": "t116",
+    "t": "progress",
+    "value": "{{m:tasks_done}}/{{m:tasks_open}}",
+    "pstyle": "arc",
+    "w": 160,
+    "thick": 12,
+    "color": "@accent",
+    "text": "tasks",
+    "size": 16,
+    "enter": "pop",
+    "enterDelay": 200
+   },
+   {
+    "id": "t120",
+    "t": "row",
+    "gap": 10,
+    "kids": [
+     {
+      "id": "t117",
+      "t": "chip",
+      "text": "{{m:tasks_done}} done",
+      "enter": "rise",
+      "enterDelay": 300
+     },
+     {
+      "id": "t118",
+      "t": "chip",
+      "text": "{{m:habits}} habits",
+      "enter": "rise",
+      "enterDelay": 400
+     },
+     {
+      "id": "t119",
+      "t": "chip",
+      "text": "{{m:water_ml}} ml",
+      "enter": "rise",
+      "enterDelay": 500
+     }
+    ]
+   }
+  ]
+ }
+}

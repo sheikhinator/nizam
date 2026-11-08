@@ -1,0 +1,275 @@
+{
+ "v": 1,
+ "name": "Aurora Today",
+ "theme": {
+  "bg": "#07120F",
+  "accent": "#3DF2B0",
+  "accent2": "#7A6CFF"
+ },
+ "vars": {},
+ "root": {
+  "id": "root",
+  "t": "box",
+  "fillW": true,
+  "fillH": true,
+  "fill": "aurora:#3DF2B0,#7A6CFF,#2B8CFF",
+  "fxSpeed": 0.6,
+  "kids": [
+   {
+    "id": "t1",
+    "t": "box",
+    "fillW": true,
+    "fillH": true,
+    "fx": "vignette"
+   },
+   {
+    "id": "t29",
+    "t": "column",
+    "fillW": true,
+    "fillH": true,
+    "padding": 22,
+    "gap": 14,
+    "scroll": true,
+    "stagger": 90,
+    "kids": [
+     {
+      "id": "t2",
+      "t": "text",
+      "text": "{{greeting}}",
+      "size": 18,
+      "color": "@ink/75",
+      "enter": "fade"
+     },
+     {
+      "id": "t3",
+      "t": "text",
+      "text": "{{time}}",
+      "size": 76,
+      "weight": 200,
+      "spacing": -2,
+      "tfill": "lin:90:#FFFFFF,#B8FFE6",
+      "enter": "blurzoom",
+      "enterMs": 900
+     },
+     {
+      "id": "t4",
+      "t": "text",
+      "text": "{{date}}  ·  {{hijri}}",
+      "size": 14,
+      "color": "@ink/70"
+     },
+     {
+      "id": "t5",
+      "t": "spacer",
+      "h": 8
+     },
+     {
+      "id": "t18",
+      "t": "row",
+      "fillW": true,
+      "gap": 10,
+      "kids": [
+       {
+        "id": "t9",
+        "t": "column",
+        "glass": true,
+        "radius": 22,
+        "padding": 14,
+        "gap": 2,
+        "weightF": 1,
+        "enter": "rise",
+        "press": "lift",
+        "kids": [
+         {
+          "id": "t6",
+          "t": "text",
+          "text": "Tasks left",
+          "size": 12,
+          "color": "@ink/65",
+          "upper": true,
+          "spacing": 1
+         },
+         {
+          "id": "t7",
+          "t": "text",
+          "text": "{{m:tasks_open}}",
+          "size": 30,
+          "weight": 600
+         },
+         {
+          "id": "t8",
+          "t": "text",
+          "text": "{{m:tasks_done}} done",
+          "size": 12,
+          "color": "@ink/55"
+         }
+        ]
+       },
+       {
+        "id": "t13",
+        "t": "column",
+        "glass": true,
+        "radius": 22,
+        "padding": 14,
+        "gap": 2,
+        "weightF": 1,
+        "enter": "rise",
+        "press": "lift",
+        "kids": [
+         {
+          "id": "t10",
+          "t": "text",
+          "text": "Prayers",
+          "size": 12,
+          "color": "@ink/65",
+          "upper": true,
+          "spacing": 1
+         },
+         {
+          "id": "t11",
+          "t": "text",
+          "text": "{{m:prayers}}/5",
+          "size": 30,
+          "weight": 600
+         },
+         {
+          "id": "t12",
+          "t": "text",
+          "text": "today",
+          "size": 12,
+          "color": "@ink/55"
+         }
+        ]
+       },
+       {
+        "id": "t17",
+        "t": "column",
+        "glass": true,
+        "radius": 22,
+        "padding": 14,
+        "gap": 2,
+        "weightF": 1,
+        "enter": "rise",
+        "press": "lift",
+        "kids": [
+         {
+          "id": "t14",
+          "t": "text",
+          "text": "Spent",
+          "size": 12,
+          "color": "@ink/65",
+          "upper": true,
+          "spacing": 1
+         },
+         {
+          "id": "t15",
+          "t": "text",
+          "text": "Rs {{m:spent}}",
+          "size": 30,
+          "weight": 600
+         },
+         {
+          "id": "t16",
+          "t": "text",
+          "text": "today",
+          "size": 12,
+          "color": "@ink/55"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "id": "t25",
+      "t": "card",
+      "glass": true,
+      "radius": 26,
+      "padding": 18,
+      "gap": 12,
+      "enter": "rise",
+      "kids": [
+       {
+        "id": "t23",
+        "t": "row",
+        "fillW": true,
+        "justify": "between",
+        "align": "center",
+        "kids": [
+         {
+          "id": "t21",
+          "t": "column",
+          "gap": 2,
+          "kids": [
+           {
+            "id": "t19",
+            "t": "text",
+            "text": "Prayer progress",
+            "size": 17,
+            "weight": 600
+           },
+           {
+            "id": "t20",
+            "t": "text",
+            "text": "Keep the streak alive",
+            "size": 13,
+            "color": "@ink/60"
+           }
+          ]
+         },
+         {
+          "id": "t22",
+          "t": "progress",
+          "value": "{{m:prayers}}/5",
+          "pstyle": "ring",
+          "w": 84,
+          "thick": 9,
+          "text": "{{m:prayers}}/5",
+          "size": 18
+         }
+        ]
+       },
+       {
+        "id": "t24",
+        "t": "progress",
+        "value": "{{m:prayers}}/5",
+        "pstyle": "dots",
+        "thick": 14
+       }
+      ]
+     },
+     {
+      "id": "t28",
+      "t": "row",
+      "fillW": true,
+      "gap": 10,
+      "kids": [
+       {
+        "id": "t26",
+        "t": "button",
+        "text": "Ask Atlas",
+        "fill": "lin:120:#3DF2B0,#7A6CFF",
+        "color": "#08120F",
+        "weightF": 1,
+        "radius": 18,
+        "glow": 18,
+        "glowC": "#3DF2B0",
+        "on": "open:atlasos",
+        "enter": "rise"
+       },
+       {
+        "id": "t27",
+        "t": "button",
+        "text": "Studio",
+        "glass": true,
+        "weightF": 1,
+        "radius": 18,
+        "on": "open:rune",
+        "enter": "rise"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

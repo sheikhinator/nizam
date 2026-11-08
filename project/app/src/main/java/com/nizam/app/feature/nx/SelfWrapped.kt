@@ -178,3 +178,6 @@ internal val SELF_WRAPPED: Set<String> = setOf(
     "wisdom",
     "zeroui"
 )
+
+/** Catalogue screens that draw their own full-screen layout: the fixed list, plus Atlas Rune and every saved Rune design. */
+internal fun isSelfWrapped(id: String): Boolean = id in SELF_WRAPPED || id == "rune" || id.startsWith("rune_")

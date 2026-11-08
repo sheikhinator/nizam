@@ -287,7 +287,7 @@ object ScreenReminders {
 fun RouteDock(route: String?, hidden: Boolean) {
     if (route == null || hidden) return
     val nxId = route.removePrefix("nx/").takeIf { route.startsWith("nx/") }
-    if (nxId != null && nxId !in SELF_WRAPPED) return          // catalogue tools already have their own ✦
+    if (nxId != null && !isSelfWrapped(nxId)) return          // catalogue tools already have their own ✦
     val feature = com.nizam.app.ui.screens.hubs.HubRegistry.byRoute(route)
     val spec = nxId?.let { Nx.find(it) }
     if (feature == null && spec == null) return

@@ -1,0 +1,209 @@
+{
+ "v": 1,
+ "name": "Bento Day",
+ "theme": {
+  "bg": "#0E0F14",
+  "accent": "#6C8CFF",
+  "accent2": "#FF7AB6"
+ },
+ "vars": {},
+ "root": {
+  "id": "root",
+  "t": "column",
+  "fillW": true,
+  "fillH": true,
+  "padding": 16,
+  "gap": 10,
+  "scroll": true,
+  "stagger": 70,
+  "kids": [
+   {
+    "id": "t45",
+    "t": "text",
+    "text": "{{greeting}}",
+    "size": 30,
+    "weight": 700,
+    "enter": "rise"
+   },
+   {
+    "id": "t46",
+    "t": "text",
+    "text": "{{date}}",
+    "size": 14,
+    "color": "@ink/60"
+   },
+   {
+    "id": "t59",
+    "t": "grid",
+    "cols": 2,
+    "gap": 10,
+    "kids": [
+     {
+      "id": "t49",
+      "t": "column",
+      "fill": "lin:140:#6C8CFF,#4B5BFF",
+      "radius": 26,
+      "padding": 16,
+      "gap": 4,
+      "justify": "between",
+      "enter": "scale",
+      "press": "squish",
+      "h": 130,
+      "kids": [
+       {
+        "id": "t47",
+        "t": "text",
+        "text": "Tasks left",
+        "size": 12,
+        "color": "#FFFFFF/80",
+        "upper": true,
+        "spacing": 1.2
+       },
+       {
+        "id": "t48",
+        "t": "text",
+        "text": "{{m:tasks_open}}",
+        "size": 34,
+        "weight": 700,
+        "color": "#FFFFFF"
+       }
+      ]
+     },
+     {
+      "id": "t52",
+      "t": "column",
+      "fill": "lin:140:#3DF2B0,#1FA37A",
+      "radius": 26,
+      "padding": 16,
+      "gap": 4,
+      "justify": "between",
+      "enter": "scale",
+      "press": "squish",
+      "h": 130,
+      "kids": [
+       {
+        "id": "t50",
+        "t": "text",
+        "text": "Prayers",
+        "size": 12,
+        "color": "#FFFFFF/80",
+        "upper": true,
+        "spacing": 1.2
+       },
+       {
+        "id": "t51",
+        "t": "text",
+        "text": "{{m:prayers}}/5",
+        "size": 34,
+        "weight": 700,
+        "color": "#FFFFFF"
+       }
+      ]
+     },
+     {
+      "id": "t55",
+      "t": "column",
+      "fill": "lin:140:#FF7AB6,#C4478A",
+      "radius": 26,
+      "padding": 16,
+      "gap": 4,
+      "justify": "between",
+      "enter": "scale",
+      "press": "squish",
+      "h": 130,
+      "kids": [
+       {
+        "id": "t53",
+        "t": "text",
+        "text": "Spent",
+        "size": 12,
+        "color": "#FFFFFF/80",
+        "upper": true,
+        "spacing": 1.2
+       },
+       {
+        "id": "t54",
+        "t": "text",
+        "text": "Rs {{m:spent}}",
+        "size": 34,
+        "weight": 700,
+        "color": "#FFFFFF"
+       }
+      ]
+     },
+     {
+      "id": "t58",
+      "t": "column",
+      "fill": "lin:140:#31D0D0,#2278C8",
+      "radius": 26,
+      "padding": 16,
+      "gap": 4,
+      "justify": "between",
+      "enter": "scale",
+      "press": "squish",
+      "h": 130,
+      "kids": [
+       {
+        "id": "t56",
+        "t": "text",
+        "text": "Water",
+        "size": 12,
+        "color": "#FFFFFF/80",
+        "upper": true,
+        "spacing": 1.2
+       },
+       {
+        "id": "t57",
+        "t": "text",
+        "text": "{{m:water_ml}} ml",
+        "size": 34,
+        "weight": 700,
+        "color": "#FFFFFF"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "t62",
+    "t": "card",
+    "fill": "mesh:#6C8CFF,#FF7AB6,#FFC86B,#3DF2B0",
+    "fxSpeed": 0.5,
+    "fx": "grain",
+    "radius": 28,
+    "padding": 20,
+    "gap": 6,
+    "h": 150,
+    "justify": "end",
+    "kids": [
+     {
+      "id": "t60",
+      "t": "text",
+      "text": "Today",
+      "size": 14,
+      "color": "#FFFFFF/80",
+      "upper": true,
+      "spacing": 2
+     },
+     {
+      "id": "t61",
+      "t": "text",
+      "text": "Make it count.",
+      "size": 28,
+      "weight": 700,
+      "color": "#FFFFFF"
+     }
+    ]
+   },
+   {
+    "id": "t63",
+    "t": "chart",
+    "values": "3,5,2,8,6,9,4",
+    "cstyle": "area",
+    "h": 110,
+    "fillW": true,
+    "color": "@primary"
+   }
+  ]
+ }
+}

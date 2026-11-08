@@ -1,0 +1,243 @@
+{
+ "v": 1,
+ "name": "Command Bridge",
+ "theme": {
+  "bg": "#03080A",
+  "accent": "#7CFFB2",
+  "accent2": "#31D0D0"
+ },
+ "vars": {},
+ "root": {
+  "id": "root",
+  "t": "box",
+  "fillW": true,
+  "fillH": true,
+  "fill": "lin:180:#03080A,#06141A",
+  "fx": "scan",
+  "kids": [
+   {
+    "id": "t90",
+    "t": "column",
+    "fillW": true,
+    "fillH": true,
+    "padding": 18,
+    "gap": 14,
+    "scroll": true,
+    "stagger": 60,
+    "kids": [
+     {
+      "id": "t67",
+      "t": "row",
+      "fillW": true,
+      "justify": "between",
+      "align": "center",
+      "kids": [
+       {
+        "id": "t65",
+        "t": "text",
+        "text": "ATLAS // BRIDGE",
+        "size": 13,
+        "font": "mono",
+        "spacing": 3,
+        "color": "#7CFFB2"
+       },
+       {
+        "id": "t66",
+        "t": "text",
+        "text": "{{time}}:{{sec}}",
+        "size": 13,
+        "font": "mono",
+        "color": "#7CFFB2/80"
+       }
+      ]
+     },
+     {
+      "id": "t68",
+      "t": "divider",
+      "fill": "#7CFFB2/30"
+     },
+     {
+      "id": "t69",
+      "t": "text",
+      "text": "{{greeting}}.",
+      "size": 34,
+      "font": "mono",
+      "weight": 300,
+      "color": "#E6FFF2",
+      "enter": "left"
+     },
+     {
+      "id": "t85",
+      "t": "card",
+      "fill": "#7CFFB2/08",
+      "borderW": 1,
+      "border": "#7CFFB2/35",
+      "radius": 10,
+      "padding": 14,
+      "gap": 12,
+      "kids": [
+       {
+        "id": "t74",
+        "t": "column",
+        "fillW": true,
+        "gap": 4,
+        "kids": [
+         {
+          "id": "t72",
+          "t": "row",
+          "fillW": true,
+          "justify": "between",
+          "kids": [
+           {
+            "id": "t70",
+            "t": "text",
+            "text": "PRAYERS",
+            "size": 12,
+            "font": "mono",
+            "color": "#7CFFB2/80"
+           },
+           {
+            "id": "t71",
+            "t": "text",
+            "text": "{{m:prayers}}/5",
+            "size": 12,
+            "font": "mono",
+            "color": "#7CFFB2"
+           }
+          ]
+         },
+         {
+          "id": "t73",
+          "t": "progress",
+          "value": "{{m:prayers}}/5",
+          "thick": 6,
+          "color": "#7CFFB2"
+         }
+        ]
+       },
+       {
+        "id": "t79",
+        "t": "column",
+        "fillW": true,
+        "gap": 4,
+        "kids": [
+         {
+          "id": "t77",
+          "t": "row",
+          "fillW": true,
+          "justify": "between",
+          "kids": [
+           {
+            "id": "t75",
+            "t": "text",
+            "text": "BATTERY",
+            "size": 12,
+            "font": "mono",
+            "color": "#7CFFB2/80"
+           },
+           {
+            "id": "t76",
+            "t": "text",
+            "text": "{{battery}}",
+            "size": 12,
+            "font": "mono",
+            "color": "#7CFFB2"
+           }
+          ]
+         },
+         {
+          "id": "t78",
+          "t": "progress",
+          "value": "{{battery}}",
+          "thick": 6,
+          "color": "#7CFFB2"
+         }
+        ]
+       },
+       {
+        "id": "t84",
+        "t": "column",
+        "fillW": true,
+        "gap": 4,
+        "kids": [
+         {
+          "id": "t82",
+          "t": "row",
+          "fillW": true,
+          "justify": "between",
+          "kids": [
+           {
+            "id": "t80",
+            "t": "text",
+            "text": "WATER",
+            "size": 12,
+            "font": "mono",
+            "color": "#7CFFB2/80"
+           },
+           {
+            "id": "t81",
+            "t": "text",
+            "text": "{{m:water_ml}}/2500",
+            "size": 12,
+            "font": "mono",
+            "color": "#7CFFB2"
+           }
+          ]
+         },
+         {
+          "id": "t83",
+          "t": "progress",
+          "value": "{{m:water_ml}}/2500",
+          "thick": 6,
+          "color": "#7CFFB2"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "id": "t86",
+      "t": "chart",
+      "values": "4,7,3,9,5,8,6,10",
+      "cstyle": "line",
+      "h": 100,
+      "fillW": true,
+      "color": "#7CFFB2"
+     },
+     {
+      "id": "t89",
+      "t": "row",
+      "fillW": true,
+      "gap": 8,
+      "kids": [
+       {
+        "id": "t87",
+        "t": "button",
+        "text": "> OPEN ATLAS",
+        "font": "mono",
+        "weightF": 1,
+        "radius": 6,
+        "fill": "#7CFFB2",
+        "color": "#03080A",
+        "on": "open:atlasos"
+       },
+       {
+        "id": "t88",
+        "t": "button",
+        "text": "> STUDIO",
+        "font": "mono",
+        "weightF": 1,
+        "radius": 6,
+        "borderW": 1,
+        "border": "#7CFFB2",
+        "fill": "none",
+        "color": "#7CFFB2",
+        "on": "open:rune"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

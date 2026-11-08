@@ -1,0 +1,156 @@
+{
+ "v": 1,
+ "name": "Motion Lab",
+ "theme": {
+  "bg": "#0D0B14",
+  "accent": "#C77DFF",
+  "accent2": "#FFC86B"
+ },
+ "vars": {},
+ "root": {
+  "id": "root",
+  "t": "column",
+  "fillW": true,
+  "fillH": true,
+  "padding": 20,
+  "gap": 16,
+  "scroll": true,
+  "stagger": 120,
+  "kids": [
+   {
+    "id": "t122",
+    "t": "text",
+    "text": "Motion lab",
+    "size": 32,
+    "weight": 700,
+    "enter": "left"
+   },
+   {
+    "id": "t123",
+    "t": "text",
+    "text": "Every tile uses a different enter, loop or press effect. Open the Motion tab to change them.",
+    "size": 14,
+    "color": "@ink/65"
+   },
+   {
+    "id": "t130",
+    "t": "grid",
+    "cols": 3,
+    "gap": 12,
+    "kids": [
+     {
+      "id": "t124",
+      "t": "shape",
+      "shape": "circle",
+      "w": 84,
+      "h": 84,
+      "fill": "lin:135:#C77DFF,#6C8CFF",
+      "loop": "pulse",
+      "glow": 22,
+      "glowC": "#C77DFF"
+     },
+     {
+      "id": "t125",
+      "t": "shape",
+      "shape": "blob",
+      "w": 84,
+      "h": 84,
+      "fill": "lin:135:#FFC86B,#FF7A5A",
+      "loop": "float"
+     },
+     {
+      "id": "t126",
+      "t": "shape",
+      "shape": "diamond",
+      "w": 64,
+      "h": 64,
+      "fill": "lin:135:#31D0D0,#3DF2B0",
+      "loop": "spin",
+      "loopMs": 6000,
+      "offX": 10,
+      "offY": 10
+     },
+     {
+      "id": "t127",
+      "t": "shape",
+      "shape": "ring",
+      "w": 84,
+      "h": 84,
+      "border": "#FF7AB6",
+      "loop": "heartbeat",
+      "loopMs": 1600
+     },
+     {
+      "id": "t128",
+      "t": "shape",
+      "shape": "pill",
+      "w": 84,
+      "h": 44,
+      "fill": "lin:90:#6C8CFF,#C77DFF",
+      "loop": "wiggle",
+      "loopMs": 1400
+     },
+     {
+      "id": "t129",
+      "t": "icon",
+      "name": "star",
+      "size": 56,
+      "color": "#FFC86B",
+      "loop": "swing",
+      "loopMs": 2400
+     }
+    ]
+   },
+   {
+    "id": "t134",
+    "t": "row",
+    "fillW": true,
+    "gap": 10,
+    "kids": [
+     {
+      "id": "t131",
+      "t": "button",
+      "text": "Squish",
+      "weightF": 1,
+      "press": "squish"
+     },
+     {
+      "id": "t132",
+      "t": "button",
+      "text": "Lift",
+      "weightF": 1,
+      "press": "lift",
+      "fill": "@accent"
+     },
+     {
+      "id": "t133",
+      "t": "button",
+      "text": "Tilt",
+      "weightF": 1,
+      "press": "tilt",
+      "fill": "lin:120:#6C8CFF,#C77DFF"
+     }
+    ]
+   },
+   {
+    "id": "t136",
+    "t": "card",
+    "fill": "mesh:#C77DFF,#6C8CFF,#FF7AB6",
+    "fx": "shimmer",
+    "radius": 26,
+    "h": 120,
+    "enter": "flip",
+    "kids": [
+     {
+      "id": "t135",
+      "t": "text",
+      "text": "Shimmer + mesh",
+      "size": 22,
+      "weight": 600,
+      "color": "#FFFFFF"
+     }
+    ]
+   }
+  ]
+ }
+}

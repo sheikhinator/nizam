@@ -1,0 +1,126 @@
+{
+ "v": 1,
+ "name": "Night Dock",
+ "theme": {
+  "bg": "#000000",
+  "accent": "#FF9A3D",
+  "accent2": "#7A6CFF"
+ },
+ "vars": {},
+ "root": {
+  "id": "root",
+  "t": "box",
+  "fillW": true,
+  "fillH": true,
+  "fill": "#000000",
+  "boxAlign": "center",
+  "kids": [
+   {
+    "id": "t31",
+    "t": "shape",
+    "shape": "circle",
+    "w": 420,
+    "h": 420,
+    "fill": "rad:#FF9A3D/30,#00000000",
+    "blur": 40,
+    "loop": "breathe",
+    "loopMs": 7000,
+    "offY": -40
+   },
+   {
+    "id": "t43",
+    "t": "column",
+    "align": "center",
+    "gap": 8,
+    "kids": [
+     {
+      "id": "t32",
+      "t": "text",
+      "text": "{{time}}",
+      "size": 104,
+      "weight": 100,
+      "spacing": -4,
+      "color": "#FFE9D2",
+      "enter": "fade",
+      "enterMs": 1400
+     },
+     {
+      "id": "t33",
+      "t": "text",
+      "text": "{{day}}, {{date}}",
+      "size": 18,
+      "color": "#FFFFFF/60",
+      "enter": "fade",
+      "enterDelay": 300
+     },
+     {
+      "id": "t34",
+      "t": "text",
+      "text": "{{hijri}}",
+      "size": 14,
+      "color": "#FF9A3D/80",
+      "enter": "fade",
+      "enterDelay": 500
+     },
+     {
+      "id": "t35",
+      "t": "spacer",
+      "h": 20
+     },
+     {
+      "id": "t42",
+      "t": "row",
+      "gap": 22,
+      "align": "center",
+      "kids": [
+       {
+        "id": "t38",
+        "t": "row",
+        "gap": 6,
+        "align": "center",
+        "kids": [
+         {
+          "id": "t36",
+          "t": "icon",
+          "name": "bolt",
+          "size": 18,
+          "color": "#FF9A3D"
+         },
+         {
+          "id": "t37",
+          "t": "text",
+          "text": "{{battery}}%",
+          "size": 16,
+          "color": "#FFFFFF/70"
+         }
+        ]
+       },
+       {
+        "id": "t41",
+        "t": "row",
+        "gap": 6,
+        "align": "center",
+        "kids": [
+         {
+          "id": "t39",
+          "t": "icon",
+          "name": "check",
+          "size": 18,
+          "color": "#3DF2B0"
+         },
+         {
+          "id": "t40",
+          "t": "text",
+          "text": "{{m:tasks_open}} tasks left",
+          "size": 16,
+          "color": "#FFFFFF/70"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
