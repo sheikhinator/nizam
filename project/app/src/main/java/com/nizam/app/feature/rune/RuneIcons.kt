@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -114,8 +115,8 @@ fun RuneIconPicker(current: String, style: String, onPick: (String) -> Unit) {
     var q by remember { mutableStateOf("") }
     val m = MaterialTheme.colorScheme
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        OutlinedTextField(current, onPick, singleLine = true, label = { Text("Icon name (any Material icon)", fontSize = 12.sp) }, modifier = Modifier.fillMaxWidthCompat())
-        OutlinedTextField(q, { q = it }, singleLine = true, label = { Text("Search the picker", fontSize = 12.sp) }, modifier = Modifier.fillMaxWidthCompat())
+        OutlinedTextField(current, onPick, singleLine = true, label = { Text("Icon name (any Material icon)", fontSize = 12.sp) }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(q, { q = it }, singleLine = true, label = { Text("Search the picker", fontSize = 12.sp) }, modifier = Modifier.fillMaxWidth())
         val list = remember(q) { val k = q.trim().replace(" ", "").lowercase(); RuneIconLib.catalog.filter { k.isEmpty() || it.lowercase().contains(k) }.take(60) }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             list.forEach { nm ->
@@ -127,4 +128,3 @@ fun RuneIconPicker(current: String, style: String, onPick: (String) -> Unit) {
     }
 }
 
-private fun Modifier.fillMaxWidthCompat(): Modifier = this.then(androidx.compose.foundation.layout.fillMaxWidth())
