@@ -207,6 +207,7 @@ fun RunePropEditor(def: PropDef, node: JSONObject, theme: RuneTheme, set: (Strin
             Text(def.label, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             RuneChoice(def.options, node.optString(k, def.options.firstOrNull().orEmpty()).ifEmpty { def.options.first() }) { v -> set(k, if (v == def.options.first() && (k == "enter" || k == "loop" || k == "press" || k == "fx")) null else v) }
         }
+        "icon" -> RuneIconPicker(node.optString(k), node.optString("istyle", "outlined")) { v -> set(k, v.ifEmpty { null }) }
         "color" -> RuneColorField(def.label, node.optString(k), theme) { v -> set(k, v.ifEmpty { null }) }
         "fill" -> RuneFillEditor(def.label, node.optString(k), theme) { v -> set(k, v.ifEmpty { null }) }
     }

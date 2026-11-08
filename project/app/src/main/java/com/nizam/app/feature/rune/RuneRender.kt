@@ -207,22 +207,6 @@ object RuneActions {
     }
 }
 
-object RuneIconMap {
-    fun vector(n: String): ImageVector = when (n) {
-        "star" -> Icons.Outlined.Star; "heart" -> Icons.Outlined.FavoriteBorder; "home" -> Icons.Outlined.Home; "bolt" -> Icons.Outlined.Bolt
-        "moon" -> Icons.Outlined.NightsStay; "sun" -> Icons.Outlined.WbSunny; "cloud" -> Icons.Outlined.Cloud; "mosque" -> Icons.Outlined.Mosque
-        "book" -> Icons.Outlined.MenuBook; "check" -> Icons.Outlined.Check; "add" -> Icons.Outlined.Add; "close" -> Icons.Outlined.Close
-        "search" -> Icons.Outlined.Search; "settings" -> Icons.Outlined.Settings; "person" -> Icons.Outlined.Person; "group" -> Icons.Outlined.Groups
-        "wallet" -> Icons.Outlined.AccountBalanceWallet; "chart" -> Icons.Outlined.BarChart; "timer" -> Icons.Outlined.Timer; "alarm" -> Icons.Outlined.Alarm
-        "water" -> Icons.Outlined.WaterDrop; "fitness" -> Icons.Outlined.FitnessCenter; "food" -> Icons.Outlined.Restaurant; "music" -> Icons.Outlined.MusicNote
-        "play" -> Icons.Outlined.PlayArrow; "pause" -> Icons.Outlined.Pause; "camera" -> Icons.Outlined.CameraAlt; "mail" -> Icons.Outlined.Mail
-        "chat" -> Icons.Outlined.ChatBubbleOutline; "phone" -> Icons.Outlined.Phone; "map" -> Icons.Outlined.Map; "lock" -> Icons.Outlined.Lock
-        "bell" -> Icons.Outlined.Notifications; "fire" -> Icons.Outlined.LocalFireDepartment; "leaf" -> Icons.Outlined.Eco; "gift" -> Icons.Outlined.CardGiftcard
-        "flag" -> Icons.Outlined.Flag; "bulb" -> Icons.Outlined.Lightbulb; "rocket" -> Icons.Outlined.RocketLaunch; "palette" -> Icons.Outlined.Palette
-        else -> Icons.Outlined.Star
-    }
-}
-
 /** Live Atlas numbers a design can show with {{m:name}}. */
 object RuneData {
     suspend fun load(ctx: Context): Map<String, String> = runCatching {
@@ -429,8 +413,17 @@ fun RuneNodeView(n: JSONObject, env: RuneEnv, index: Int, outer: Modifier, stagg
             val size = n.f("size", 28f)
             val ink = textColor(n, env, th.ink)
             val emoji = n.s("emoji")
-            if (emoji.isNotEmpty()) Text(emoji, m, style = TextStyle(fontSize = size.sp))
-            else Icon(RuneIconMap.vector(n.s("name", "star")), null, m.size(size.dp), ink)
+            val svg = n.s("svg")
+            Box(m, Alignment.Center) {
+                when {
+                    emoji.isNotEmpty() -> Text(emoji, style = TextStyle(fontSize = size.sp))
+                    svg.isNotEmpty() -> RuneSvgIcon(svg, n.f("vb", 24f), n.b("sfill"), n.f("sw", 2f), ink, size)
+                    else -> {
+                        val v = remember(n.s("name"), n.s("istyle")) { RuneIconLib.vector(n.s("name", "star"), n.s("istyle", "outlined")) }
+                        if (v != null) Icon(v, null, Modifier.size(size.dp), ink) else Text("?", color = ink, fontSize = size.sp)
+                    }
+                }
+            }
         }
         "image" -> AsyncImage(RuneBind.resolve(n.s("url"), env), n.s("desc").ifEmpty { null }, m.then(if (n.has("w") || n.has("h") || n.has("fillW")) Modifier else Modifier.size(96.dp)), contentScale = ContentScale.Crop)
         "button" -> {

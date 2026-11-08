@@ -3,12 +3,12 @@ package com.nizam.app.feature.rune
 import android.os.Build
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.State
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -18,6 +18,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.ShaderBrush
@@ -133,7 +134,7 @@ fun Modifier.runeFill(spec: String?, shape: Shape, theme: RuneTheme, speed: Floa
         val agsl = remember(f.kind) { if (f.kind == "liquid" && RuneFx.shaderOk) runCatching { LiquidShader() }.getOrNull() else null }
         this.drawWithCache {
             val outline = shape.createOutline(size, layoutDirection, this)
-            val clip = Path().apply { addOutline(outline) }
+            val clip = outlinePath(outline)
             val still0 = f.brush(size)
             onDrawBehind {
                 clipPath(clip) {
@@ -221,7 +222,7 @@ fun Modifier.runeFx(kind: String?, shape: Shape, theme: RuneTheme, speed: Float 
         } else null
         this.drawWithCache {
             val outline = shape.createOutline(size, layoutDirection, this)
-            val clip = Path().apply { addOutline(outline) }
+            val clip = outlinePath(outline)
             val dots: List<Offset> = when (k) {
                 "grain" -> { val rnd = Random(7); List(((size.width * size.height) / 380f).toInt().coerceIn(40, 4200)) { Offset(rnd.nextFloat() * size.width, rnd.nextFloat() * size.height) } }
                 "sparkle" -> { val rnd = Random(11); List(26) { Offset(rnd.nextFloat() * size.width, rnd.nextFloat() * size.height) } }
@@ -263,4 +264,12 @@ fun Modifier.runeGlow(color: Color, radiusDp: Float, shape: Shape): Modifier =
 internal fun rememberRuneTime(): State<Float> {
     val tr = rememberInfiniteTransition(label = "rune-clock")
     return tr.animateFloat(0f, 1f, infiniteRepeatable(tween(1000, easing = LinearEasing), RepeatMode.Restart), label = "tick")
+}
+
+private fun outlinePath(o: Outline): Path = Path().apply {
+    when (o) {
+        is Outline.Rectangle -> addRect(o.rect)
+        is Outline.Rounded -> addRoundRect(o.roundRect)
+        is Outline.Generic -> addPath(o.path)
+    }
 }

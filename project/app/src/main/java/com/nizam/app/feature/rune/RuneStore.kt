@@ -96,4 +96,3 @@ fun RuneSavedScreen(id: String, open: (String) -> Unit) {
     else RuneView(doc, open, Modifier.fillMaxSize())
 }
 
-private fun Modifier.fillMaxSize(): Modifier = this.then(androidx.compose.foundation.layout.fillMaxSize())

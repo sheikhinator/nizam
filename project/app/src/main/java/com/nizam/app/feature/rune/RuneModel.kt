@@ -104,7 +104,12 @@ object RuneProps {
     val all: List<PropDef> = listOf(
         // content
         PropDef("text", "Text", "string", "Content", setOf("text", "button", "chip")),
-        PropDef("name", "Icon", "choice", "Content", setOf("icon"), options = RuneIcons.names),
+        PropDef("name", "Icon (any Material icon name)", "icon", "Content", setOf("icon")),
+        PropDef("istyle", "Icon style", "choice", "Content", setOf("icon"), listOf("outlined", "filled", "rounded", "sharp", "twotone")),
+        PropDef("svg", "Your own icon: SVG path data", "string", "Content", setOf("icon")),
+        PropDef("vb", "SVG box size", "num", "Content", setOf("icon"), min = 8f, max = 512f, def = "24"),
+        PropDef("sfill", "SVG: filled (off = outline)", "bool", "Content", setOf("icon")),
+        PropDef("sw", "SVG outline width", "num", "Content", setOf("icon"), min = 0.5f, max = 8f, step = 0.5f, def = "2"),
         PropDef("emoji", "Emoji or symbol", "string", "Content", setOf("icon")),
         PropDef("url", "Image address", "string", "Content", setOf("image")),
         PropDef("value", "Value (0–1, or 3/5, or {{m:prayers}}/5)", "string", "Content", setOf("progress")),
@@ -188,9 +193,3 @@ object RuneProps {
     fun forType(t: String): List<PropDef> = all.filter { it.types == null || t in it.types }
 }
 
-/** Curated icon names (Material outlined) a design can use. */
-object RuneIcons {
-    val names = listOf("star", "heart", "home", "bolt", "moon", "sun", "cloud", "mosque", "book", "check", "add", "close", "search", "settings",
-        "person", "group", "wallet", "chart", "timer", "alarm", "water", "fitness", "food", "music", "play", "pause", "camera", "mail", "chat",
-        "phone", "map", "lock", "bell", "fire", "leaf", "gift", "flag", "bulb", "rocket", "palette")
-}
