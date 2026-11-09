@@ -63,7 +63,7 @@ class Sci(val d: TodayData, val snap: LifeGraph.Snapshot?, val container: AppCon
     fun later(t: Task) { scope.launch { runCatching { container.taskRepository.save(t.copy(due = System.currentTimeMillis() + 3_600_000L)) } } }
     val clock: String get() = "%02d:%02d:%02d".format(now.hour, now.minute, now.second)
     val prayersDone: Int get() = d.prayers.count { it.second }
-    val beingLine: String get() = if (Being.born(c)) Being.name(c) + " · " + Being.activity(c).lowercase() else "being: not hatched yet"
+    val beingLine: String get() = if (Being.born(c)) Being.name(c) + " · " + Being.activity(c).lowercase() else "not hatched yet · tap to hatch"
     fun s(key: String): List<Float> = snap?.series(key) ?: emptyList()
 }
 
@@ -112,10 +112,10 @@ fun SciToday(style: UiStyle, d: TodayData, container: AppContainer, onOpen: (Str
 // ───────────────────────── shared blocks ─────────────────────────
 
 @Composable
-internal fun Head(x: Sci, label: String, title: String = "Today", serif: Boolean = false) {
+internal fun Head(x: Sci, label: String, title: String = x.d.greeting, serif: Boolean = false) {
     val p = LocalSci.current
     Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.Bottom) {
-        Column(Modifier.weight(1f)) { Lab(label); M(title, 30, bold = !serif, mono = false, serif = serif, maxLines = 1) }
+        Column(Modifier.weight(1f)) { Lab(label); M(title, 26, bold = !serif, mono = false, serif = serif, maxLines = 1) }
         Column(horizontalAlignment = Alignment.End) { M(x.clock, 12, p.a); M("bat ${RuneBind.battery(x.c)}%" + if (x.d.unread > 0) " · ${x.d.unread} new" else "", 10, p.dim) }
     }
 }
@@ -237,7 +237,7 @@ private fun InstrumentToday(x: Sci) {
 private fun PaperToday(x: Sci) {
     val p = LocalSci.current; val d = x.d
     Lab("Atlas · daily report · ${d.dateLine} · ${x.clock.take(5)}")
-    M("Today, in one place", 28, serif = true, mono = false)
+    M(d.greeting, 28, serif = true, mono = false)
     M("${d.greeting}. ${x.prayersDone} of 5 prayers are done, ${d.openCount} task${if (d.openCount == 1) " is" else "s are"} open and ${money(d.spentToday, d.currency)} has been spent today." +
         (d.nextPrayer?.let { " ${it.first} is in ${countdown(it.second)}." } ?: ""), 14, p.dim, serif = true, mono = false)
     BeingLine(x); HubStrip(x.open)

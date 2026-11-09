@@ -57,10 +57,11 @@ internal fun GraphToday(x: Sci) {
         Head(x, "your life as a system · ${x.d.dateLine}")
         if (snap == null) { M("reading your last 30 days…", 12, p.dim); return@Column }
         val nodes = snap.nodes; val n = nodes.size
+        val u = androidx.compose.ui.platform.LocalDensity.current.density
         val index = remember(snap) { nodes.mapIndexed { i, nd -> nd.id to i }.toMap() }
         val links = remember(snap) { snap.edges.mapNotNull { e -> val a = index[e.a]; val b = index[e.b]; if (a == null || b == null) null else Triple(a, b, e) } }
-        val px = remember(snap) { FloatArray(n) { i -> (cos(i * 2.4) * (60 + i * 9)).toFloat() } }
-        val py = remember(snap) { FloatArray(n) { i -> (sin(i * 2.4) * (60 + i * 9)).toFloat() } }
+        val px = remember(snap) { FloatArray(n) { i -> (cos(i * 2.4) * (46 + i * 8) * u).toFloat() } }
+        val py = remember(snap) { FloatArray(n) { i -> (sin(i * 2.4) * (46 + i * 8) * u).toFloat() } }
         val vx = remember(snap) { FloatArray(n) }; val vy = remember(snap) { FloatArray(n) }
         var tick by remember { mutableIntStateOf(0) }
         var sel by remember(snap) { mutableStateOf<Int?>(null) }
@@ -74,20 +75,20 @@ internal fun GraphToday(x: Sci) {
             while (true) {
                 withFrameNanos { }
                 t += 0.016f
-                val k = 78f
+                val k = 52f * u
                 for (i in 0 until n) { var fx = 0f; var fy = 0f
-                    for (j in 0 until n) if (i != j) { val dx = px[i] - px[j]; val dy = py[i] - py[j]; val d2 = (dx * dx + dy * dy).coerceAtLeast(25f); val f = k * k / d2; val d = sqrt(d2); fx += dx / d * f; fy += dy / d * f }
+                    for (j in 0 until n) if (i != j) { val dx = px[i] - px[j]; val dy = py[i] - py[j]; val d2 = (dx * dx + dy * dy).coerceAtLeast(25f * u * u); val f = k * k / d2; val d = sqrt(d2); fx += dx / d * f; fy += dy / d * f }
                     fx -= px[i] * 0.012f; fy -= py[i] * 0.016f
-                    fx += sin(t * 0.7f + i) * 0.35f; fy += cos(t * 0.6f + i * 1.7f) * 0.35f
+                    fx += sin(t * 0.7f + i) * 0.3f * u; fy += cos(t * 0.6f + i * 1.7f) * 0.3f * u
                     vx[i] = (vx[i] + fx * 0.02f) * 0.86f; vy[i] = (vy[i] + fy * 0.02f) * 0.86f }
-                links.forEach { (a, b, e) -> val dx = px[b] - px[a]; val dy = py[b] - py[a]; val d = hypot(dx, dy).coerceAtLeast(1f); val rest = if (e.kind == "corr") 150f else 70f
+                links.forEach { (a, b, e) -> val dx = px[b] - px[a]; val dy = py[b] - py[a]; val d = hypot(dx, dy).coerceAtLeast(1f); val rest = (if (e.kind == "corr") 120f else 58f) * u
                     val f = (d - rest) * 0.012f; val ux = dx / d * f; val uy = dy / d * f; vx[a] += ux; vy[a] += uy; vx[b] -= ux; vy[b] -= uy }
-                for (i in 0 until n) if (i != held) { px[i] += vx[i].coerceIn(-12f, 12f); py[i] += vy[i].coerceIn(-12f, 12f) }
+                for (i in 0 until n) if (i != held) { px[i] += vx[i].coerceIn(-6f * u, 6f * u); py[i] += vy[i].coerceIn(-6f * u, 6f * u) }
                 tick++
             }
         }
         fun screen(i: Int) = Offset(center.x + pan.x + px[i] * scale, center.y + pan.y + py[i] * scale)
-        fun hit(o: Offset): Int { var best = -1; var bd = 34f * 34f; for (i in 0 until n) { val s = screen(i); val d = (s.x - o.x) * (s.x - o.x) + (s.y - o.y) * (s.y - o.y); if (d < bd * (if (nodes[i].kind == "area") 4f else 1f)) { bd = d / (if (nodes[i].kind == "area") 4f else 1f); best = i } }; return best }
+        fun hit(o: Offset): Int { var best = -1; var bd = 26f * u * 26f * u; for (i in 0 until n) { val s = screen(i); val d = (s.x - o.x) * (s.x - o.x) + (s.y - o.y) * (s.y - o.y); if (d < bd * (if (nodes[i].kind == "area") 4f else 1f)) { bd = d / (if (nodes[i].kind == "area") 4f else 1f); best = i } }; return best }
         val measurer = rememberTextMeasurer()
         val near = remember(sel, snap) { sel?.let { s -> links.filter { it.first == s || it.second == s }.map { if (it.first == s) it.second else it.first }.toSet() + s } }
         SciBox(Modifier.fillMaxWidth().weight(1f)) {
