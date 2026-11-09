@@ -88,6 +88,10 @@ fun BeingScreen(container: AppContainer, onOpen: (String) -> Unit) {
                     Text("🧠", Modifier.clip(RoundedCornerShape(50)).clickable { mindOpen = true }.padding(6.dp), fontSize = 20.sp)
                 }
                 RoomScene(container, 300.dp, 80.dp, Mode.ROOM)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("🏠  Enter its 3D home", Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(BP.glow).clickable { onOpen("nx/being3d") }.padding(horizontal = 16.dp, vertical = 12.dp), color = BP.bg, fontWeight = FontWeight.Bold)
+                    Text("🔓  Freedom", Modifier.clip(RoundedCornerShape(12.dp)).background(BP.glow.copy(alpha = 0.18f)).clickable { onOpen("nx/beingfreedom") }.padding(horizontal = 16.dp, vertical = 12.dp), color = BP.text, fontWeight = FontWeight.SemiBold)
+                }
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { mindOpen = true }) {
                     Text(remember(v) { Being.icon(c) } + "  ", fontSize = 16.sp)
                     Text(remember(v) { Being.activity(c) }, Modifier.weight(1f), color = BP.warm, fontFamily = BP.mono, fontSize = 13.sp)
@@ -252,7 +256,7 @@ private fun Settings(onOpen: (String) -> Unit) {
         Text("Thinking budget a day (each thought, exploration, tool use or dream uses your AI key once)", color = BP.dim, fontSize = 12.sp)
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) { var b by remember { mutableStateOf(Being.budget(c)) }
             listOf(8, 16, 24, 48, 96, 200).forEach { n -> Pill("$n", b == n) { b = n; Being.setBudget(c, n) } } }
-        Text("What it can use: the whole internet, every AI tool in Atlas (for its own projects), Tool Forge to build gifts, its own PC. What it can't: your data, files, messages, contacts, photos, or anything on your phone.", color = BP.dim, fontSize = 12.sp)
+        Text(if (BeingFreedom.data(c)) "What it can use: the whole internet, every AI tool in Atlas, Tool Forge, its own PC, and (because you allowed it on the Freedom screen) your Atlas data and tools. You choose how far that goes there." else "What it can use: the whole internet, every AI tool in Atlas (for its own projects), Tool Forge to build gifts, its own PC. What it can't: your data, files, messages, contacts, photos, or anything on your phone.", color = BP.dim, fontSize = 12.sp)
     }
 }
 

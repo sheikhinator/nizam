@@ -286,6 +286,7 @@ object Being {
         options += "pc" to (if (hasPc) 0.35f + drive(c, "curiosity") * 0.2f else 0f)
         options += "news" to (if (h in 7..11 && p(c).getString("news_day", "") != LocalDate.now().toString()) 0.9f else 0.08f)
         options += "visit" to 0.2f
+        options += "act" to (if (BeingFreedom.data(c)) BeingFreedom.initiativeWeight(c) * (0.6f + drive(c, "curiosity") * 0.5f) else 0f)
         val total = options.sumOf { it.second.toDouble() }.toFloat()
         var roll = Random.nextFloat() * total
         val pick = options.firstOrNull { roll -= it.second; roll <= 0 }?.first ?: "think"
@@ -315,6 +316,7 @@ object Being {
             "pc" -> World.pc(container, c)
             "news" -> { p(c).edit().putString("news_day", LocalDate.now().toString()).apply(); World.news(container, c) }
             "visit" -> World.visit(container, c)
+            "act" -> { val said = BeingAgent.autonomous(container, c); say(c, said.take(200)) }
         }
         pending = null
         // growing up
