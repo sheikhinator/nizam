@@ -191,7 +191,7 @@ private fun SpacesHomeBody(container: AppContainer, open: (String) -> Unit) {
                     when (val s = spaces[page]) {
                         Space.Today -> Box(Modifier.fillMaxSize().padding(bottom = 88.dp)) { TodayScreen(container) { openOrPeek(it) } }
                         Space.You -> Box(Modifier.fillMaxSize().padding(bottom = 88.dp)) { MeScreen(container) { openOrPeek(it) } }
-                        is Space.Life -> if (uiStyle == com.nizam.app.ui.style.UiStyle.CLASSIC) SpacePage(s.hub, ::openOrPeek)
+                        is Space.Life -> if (uiStyle == com.nizam.app.ui.style.UiStyle.CLASSIC || uiStyle.sci) SpacePage(s.hub, ::openOrPeek)
                             else com.nizam.app.ui.style.StyledSpacePage(uiStyle, s.hub, ::openOrPeek)
                     }
                 }

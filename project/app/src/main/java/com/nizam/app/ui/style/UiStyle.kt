@@ -22,12 +22,21 @@ import androidx.compose.material.icons.outlined.AutoAwesome
  * How Atlas looks and moves. Same structure everywhere (Today, spaces, hubs, the dock), drawn five ways.
  * Classic is the look you already have and is never changed by the others.
  */
-enum class UiStyle(val title: String, val blurb: String, val emoji: String) {
+enum class UiStyle(val title: String, val blurb: String, val emoji: String, val sci: Boolean = false) {
     CLASSIC("Classic", "The Atlas you know", "◐"),
     DECK("Living Deck", "Rich cards you swipe, flip and fling", "🂠"),
     BRIDGE("Command Bridge", "A live cockpit of readouts and modules", "◈"),
     MAGAZINE("Magazine", "Your day as a beautiful daily edition", "❡"),
-    LAYERS("Living Layers", "Depth, parallax and a sky that follows the day", "◎")
+    LAYERS("Living Layers", "Depth, parallax and a sky that follows the day", "◎"),
+    NOTEBOOK("Lab Notebook", "One row per area: number, note and a live 7-day chart", "▤", true),
+    INSTRUMENT("Instrument Panel", "A 24-hour day ring, your Being, and chart tiles", "◔", true),
+    PAPER("Paper Report", "Your day as a light journal page with numbered figures", "❏", true),
+    HEATGRID("Heat Grid", "Your last 7 days as a grid: brighter means more", "▦", true),
+    TERMINAL("Terminal", "Today as a shell session you can tap", "▮", true),
+    GITLOG("Git Log", "Your day as a commit graph: staged, HEAD, committed", "⑂", true),
+    CELLS("Notebook Cells", "Each part of your day is a cell with a live result", "⌗", true),
+    PROCESS("Process Monitor", "Your day as running, sleeping and blocked processes", "≣", true),
+    GRAPH("System Graph", "A living graph of your areas, tasks, promises and notes, and how they link", "⌬", true)
 }
 
 object UiStyles {
@@ -117,6 +126,8 @@ private fun StylePreview(s: UiStyle) {
             UiStyle.LAYERS -> { drawRect(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(p.copy(alpha = 0.35f), androidx.compose.ui.graphics.Color.Transparent)))
                 drawCircle(androidx.compose.ui.graphics.Color(0xFFFFE082), 7f, androidx.compose.ui.geometry.Offset(w * 0.78f, 12f))
                 rr(6f, 30f, w - 12, 26f, p.copy(alpha = 0.6f), 8f); rr(10f, 62f, w / 2 - 14, 20f, p.copy(alpha = 0.35f), 8f); rr(w / 2 + 2, 62f, w / 2 - 14, 20f, p.copy(alpha = 0.35f), 8f) }
+            else -> { drawRect(SciDark.bg); for (i in 0..4) { rr(6f, 10f + i * 16f, w * 0.34f, 7f, SciDark.text.copy(alpha = 0.8f), 0f); rr(w * 0.5f, 10f + i * 16f, w * (0.2f + (i * 37 % 5) * 0.05f), 7f, listOf(SciDark.a, SciDark.w, SciDark.g, SciDark.v, SciDark.a)[i], 0f) }
+                drawRect(SciDark.a, androidx.compose.ui.geometry.Offset(6f, h - 14f), androidx.compose.ui.geometry.Size(w - 12f, 8f), style = androidx.compose.ui.graphics.drawscope.Stroke(1.5f)) }
         }
     }
 }

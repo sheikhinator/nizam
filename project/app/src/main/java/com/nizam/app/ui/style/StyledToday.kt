@@ -105,6 +105,7 @@ fun StyledToday(style: UiStyle, d: TodayData, container: AppContainer, onOpen: (
         UiStyle.MAGAZINE -> MagazineToday(d, container, onOpen)
         UiStyle.LAYERS -> LayersToday(d, container, onOpen)
         UiStyle.CLASSIC -> {}
+        else -> SciToday(style, d, container, onOpen)
     }
 }
 
