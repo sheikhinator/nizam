@@ -86,15 +86,7 @@ object Noticer {
         if (diary.isNotEmpty() && ageDays(diary.maxOf { it.ts }) >= 7) out += Notice("diary", "You have not written in a week",
             "A few prompts can make it easy.", "nx/journalprompts", 0)
         // promises due soon and follow-ups due
-        by("Promises Made").forEach { p ->
-            val due = DATE.find(p.text.substringAfter("Due:", ""))?.value?.let { dayMillis(it) }
-            if (due != null && p.text.contains("Status: Open") && due - today <= 2 * DAY)
-                out += Notice("promise_${p.text.hashCode()}", "A promise is due soon", p.text.take(110), "nx/promisekeeper", 2)
-        }
-        by("Waiting On").forEach { w ->
-            val chase = DATE.find(w.text.substringAfter("Chase on:", ""))?.value?.let { dayMillis(it) }
-            if (chase != null && chase <= today) out += Notice("wait_${w.text.hashCode()}", "Time to follow up", w.text.take(110), "nx/waitwatch", 1)
-        }
+        runCatching { com.nizam.app.feature.pro.Promises.notices(c).forEach { (id, text, level) -> out += Notice("promise_$id", if (level == 2) "A promise is due" else "Time to follow up", text, "nx/promises", level) } }
         // once a week, a look-back on what Atlas has learned, to be corrected
         if (LocalDate.now().dayOfWeek == java.time.DayOfWeek.SUNDAY) out += Notice("weekly", "Your weekly look-back is ready",
             "See what Atlas has learned about you this week and correct anything it got wrong.", "nx/atlaslearned", 1)
