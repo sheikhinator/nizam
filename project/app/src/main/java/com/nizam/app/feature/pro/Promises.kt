@@ -13,7 +13,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Bedtime
 import androidx.compose.material.icons.outlined.Handshake
+import androidx.compose.material.icons.outlined.MonitorHeart
+import androidx.compose.material.icons.outlined.ShoppingBag
+import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.TrendingDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
@@ -285,7 +290,7 @@ fun PromisesScreen(container: AppContainer) {
 }
 
 @Composable
-private fun Stat(label: String, value: String, color: Color, modifier: Modifier) {
+internal fun Stat(label: String, value: String, color: Color, modifier: Modifier) {
     Column(modifier.clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(vertical = 12.dp, horizontal = 10.dp)) {
         Text(value, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = color)
         Text(label, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -293,17 +298,32 @@ private fun Stat(label: String, value: String, color: Color, modifier: Modifier)
 }
 
 @Composable
-private fun Card2(content: @Composable () -> Unit) {
+internal fun Card2(content: @Composable () -> Unit) {
     Column(Modifier.padding(horizontal = 16.dp, vertical = 5.dp).fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(3.dp)) { content() }
 }
 
 /** Old tool ids that now open a rebuilt tool, so pins, shortcuts and links keep working. */
 object Merged {
-    val map: Map<String, String> = mapOf("promisekeeper" to "promises", "promisesmade" to "promises", "waitingon" to "promises", "waitwatch" to "promises", "promise" to "promises")
+    val map: Map<String, String> = mapOf("promisekeeper" to "promises", "promisesmade" to "promises", "waitingon" to "promises", "waitwatch" to "promises", "promise" to "promises",
+        "impulsebrake" to "wants", "impulse" to "wants", "debtescape" to "debtfree", "snowball" to "debtfree",
+        "sleepdebt" to "sleep", "sleepreg" to "sleep", "sleepcausehunt" to "sleep",
+        "bplog" to "vitals", "sugarlog" to "vitals", "cravinglog" to "cravings", "craving" to "cravings")
+    /** Rebuilt tools draw their own full screen. */
+    val own: Set<String> = setOf("promises", "wants", "debtfree", "sleep", "vitals", "cravings")
 }
 
 val ProSpecs: List<Spec> get() = listOf(
     ScreenSpec("promises", "Promises", "What you owe people and what they owe you: add in plain words, scan a chat, plan, nudge, and see who keeps their word", Icons.Outlined.Handshake, Hub.Work,
-        "promise promises keeper commitment owe waiting on follow up chase nudge reliability word made loose ends") { ct, _ -> PromisesScreen(ct) }
+        "promise promises keeper commitment owe waiting on follow up chase nudge reliability word made loose ends") { ct, _ -> PromisesScreen(ct) },
+    ScreenSpec("wants", "Wants", "Park what you feel like buying, see it in hours of your work, and decide after it cools off", androidx.compose.material.icons.Icons.Outlined.ShoppingBag, Hub.Money,
+        "want wishlist impulse brake buy purchase cooling off hours of work regret skip save") { _, _ -> WantsScreen() },
+    ScreenSpec("debtfree", "Debt-free plan", "The real month you finish, the interest you pay, and what to clear first", androidx.compose.material.icons.Icons.Outlined.TrendingDown, Hub.Money,
+        "debt loan payoff snowball avalanche escape instalment interest qarz free plan") { _, _ -> DebtFreeScreen() },
+    ScreenSpec("sleep", "Sleep", "Hours, sleep debt, regularity, and what in your own days changes your sleep", androidx.compose.material.icons.Icons.Outlined.Bedtime, Hub.Health,
+        "sleep debt regularity bedtime wake hours night rest cause insomnia neend") { ct, _ -> SleepScreen(ct) },
+    ScreenSpec("vitals", "Vitals", "Blood pressure and sugar with the standard ranges, trends and a PDF for your doctor", androidx.compose.material.icons.Icons.Outlined.MonitorHeart, Hub.Health,
+        "blood pressure bp sugar glucose diabetes vitals readings doctor report") { _, _ -> VitalsScreen() },
+    ScreenSpec("cravings", "Cravings", "Ride an urge out with a 10-minute timer and see your win rate, triggers and hardest hours", androidx.compose.material.icons.Icons.Outlined.Timer, Hub.Health,
+        "craving urge timer quit smoking sugar habit trigger surf beat") { _, _ -> CravingsScreen() }
 )

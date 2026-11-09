@@ -1,1 +1,1 @@
-New: Promises, one real tool for what you owe people and what they owe you (replaces Promise Keeper, Promises Made, Waiting On, Waiting-On List and Promise to project). Add in plain words, scan a chat, plan it, nudge them, and see who keeps their word.
+Six tools rebuilt as real, hand-built tools (each replaces several thin ones): Promises, Wants, Debt-free plan, Sleep, Vitals, Cravings. Also Atlas Rune and your Being's 3D home.
