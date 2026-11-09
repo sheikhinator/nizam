@@ -99,8 +99,8 @@ fun Being3DScreen(container: AppContainer, onOpen: (String) -> Unit) {
     val c = LocalContext.current
     val scope = rememberSafeScope()
     val holder = remember { arrayOfNulls<WebView>(1) }
-    val activity = c as? android.app.Activity
-    val bridge = remember { Bridge(c, container, scope, { holder[0] }, onOpen) { activity?.onBackPressedDispatcher?.onBackPressed() } }
+    val dispatcher = androidx.activity.compose.LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+    val bridge = remember { Bridge(c, container, scope, { holder[0] }, onOpen) { dispatcher?.onBackPressed() } }
     LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { Being.visited(c); Being.liveNow(c) } }
     LaunchedEffect(Unit) { while (true) { delay(4000); bridge.pushState() } }
     DisposableEffect(Unit) { onDispose { holder[0]?.destroy(); holder[0] = null } }
