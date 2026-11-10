@@ -293,7 +293,7 @@ private fun TagsPane(notes: List<Note>, selected: String?, onSelect: (String?) -
 private fun QuickSwitcher(notes: List<Note>, onClose: () -> Unit, onOpen: (String) -> Unit) {
     var q by remember { mutableStateOf("") }
     androidx.compose.ui.window.Dialog(onDismissRequest = onClose) {
-        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surface).padding(14.dp)) {
+        Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(16.dp)).background(MaterialTheme.colorScheme.surface).padding(14.dp)) {
             OutlinedTextField(q, { q = it }, singleLine = true, placeholder = { Text("Find or create a note…") }, modifier = Modifier.fillMaxWidth())
             val t = q.trim()
             val byTitle = notes.filter { t.isBlank() || it.title.contains(t, true) }.sortedBy { if (it.title.startsWith(t, true)) 0 else 1 }.take(8)
@@ -402,7 +402,7 @@ private fun Editor(note: Note, notes: List<Note>, vm: NotesViewModel, onBack: ()
                 val partial = if (open >= 0 && !before.substring(open).contains("]]") && !before.substring(open).contains('\n')) before.substring(open + 2) else null
                 if (partial != null) {
                     val hits = notes.filter { it.id != note.id && it.title.contains(partial, true) }.take(6)
-                    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).background(MaterialTheme.colorScheme.surfaceVariant)) {
+                    Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(10.dp)).background(MaterialTheme.colorScheme.surfaceVariant)) {
                         (hits.map { it.title } + listOfNotNull(partial.takeIf { p -> p.isNotBlank() && notes.none { it.title.equals(p, true) } })).forEach { h ->
                             Text(if (notes.any { it.title == h }) h else "Link new note “$h”", style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.fillMaxWidth().clickable {
@@ -473,7 +473,7 @@ private fun Backlinks(note: Note, notes: List<Note>, onOpen: (String) -> Unit) {
 @Composable
 private fun Snippet(n: Note, term: String, onClick: () -> Unit) {
     val at = n.body.indexOf(term, ignoreCase = true).coerceAtLeast(0)
-    Column(Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+    Column(Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(com.nizam.app.ui.design.labShape(8.dp)).background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
         .clickable(onClick = onClick).padding(10.dp)) {
         Text(n.title, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
         Text(n.body.substring((at - 40).coerceAtLeast(0), (at + 80).coerceAtMost(n.body.length)).replace("\n", " "),
@@ -513,7 +513,7 @@ fun Graph(notes: List<Note>, focus: String?, modifier: Modifier, onOpen: (String
     val cs = MaterialTheme.colorScheme
     val labelStyle = TextStyle(fontSize = 10.sp, color = cs.onSurfaceVariant)
     if (n == 0) { Box(modifier, contentAlignment = Alignment.Center) { Text("Link notes with [[ ]] to see your graph grow.", color = cs.onSurfaceVariant) }; return }
-    Canvas(modifier.clip(RoundedCornerShape(12.dp))
+    Canvas(modifier.clip(com.nizam.app.ui.design.labShape(12.dp))
         .pointerInput(g) { detectTransformGestures { _, p, z, _ -> pan += p; zoom = (zoom * z).coerceIn(0.3f, 4f) } }
         .pointerInput(g, "tap") { detectTapGestures { tap ->
             val centre = Offset(size.width / 2f, size.height / 2f) + pan

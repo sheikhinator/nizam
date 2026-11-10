@@ -105,7 +105,7 @@ fun SchedulesScreen() {
         items(jobs, key = { it.id }) { j ->
             val next = Schedules.nextAt(j)
             val last = j.history.firstOrNull()
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(if (j.enabled) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.045f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.02f))
+            Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(22.dp)).background(if (j.enabled) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.045f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.02f))
                 .clickable { expanded = if (expanded == j.id) null else j.id }.padding(14.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(Modifier.size(40.dp).clip(CircleShape).background(Brush.linearGradient(listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.25f), MaterialTheme.colorScheme.tertiary.copy(alpha = 0.18f)))),
@@ -119,7 +119,7 @@ fun SchedulesScreen() {
                 }
                 // a strip of the last runs: green worked, red failed
                 if (j.history.isNotEmpty()) Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-                    j.history.take(20).reversed().forEach { r -> Box(Modifier.width(10.dp).height(18.dp).clip(RoundedCornerShape(3.dp))
+                    j.history.take(20).reversed().forEach { r -> Box(Modifier.width(10.dp).height(18.dp).clip(com.nizam.app.ui.design.labShape(3.dp))
                         .background(if (r.ok) Color(0xFF16A34A).copy(alpha = if (r.test) 0.45f else 0.9f) else MaterialTheme.colorScheme.error)) }
                     Text("  ${j.history.count { it.ok }}/${j.history.size} ok", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }

@@ -215,17 +215,17 @@ internal fun NextStepsCard(steps: List<NextSteps.Step>, context: String) {
     val c = LocalContext.current
     val cs = MaterialTheme.colorScheme
     val here = LocalChatAsk.current
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(cs.primary.copy(alpha = 0.06f))
-        .border(1.dp, cs.primary.copy(alpha = 0.25f), RoundedCornerShape(20.dp)).padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(20.dp)).background(cs.primary.copy(alpha = 0.06f))
+        .border(1.dp, cs.primary.copy(alpha = 0.25f), com.nizam.app.ui.design.labShape(20.dp)).padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text("NEXT STEPS", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = cs.primary, modifier = Modifier.padding(start = 4.dp))
         var all by androidx.compose.runtime.remember(context) { androidx.compose.runtime.mutableStateOf(false) }
         (if (all || steps.size <= 5) steps else steps.take(4)).forEach { s ->
             val k = NextSteps.key(context, s)
             val st = NextSteps.status[k]
             val done = st?.ok == true
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
+            Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp))
                 .background(if (done) cs.primary.copy(alpha = 0.14f) else cs.surface.copy(alpha = 0.7f))
-                .border(1.dp, if (done) cs.primary.copy(alpha = 0.5f) else cs.outlineVariant.copy(alpha = 0.6f), RoundedCornerShape(14.dp))
+                .border(1.dp, if (done) cs.primary.copy(alpha = 0.5f) else cs.outlineVariant.copy(alpha = 0.6f), com.nizam.app.ui.design.labShape(14.dp))
                 .clickable(enabled = st?.busy != true) {
                     val r = st?.route
                     if (done && r != null) com.nizam.app.ui.screens.search.AtlasNav.go?.invoke(r) else NextSteps.run(c, s, context, here)

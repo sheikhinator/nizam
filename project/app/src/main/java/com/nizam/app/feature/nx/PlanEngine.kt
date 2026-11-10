@@ -223,7 +223,7 @@ private fun PlanEngineScreen(container: AppContainer) {
                     val color = when (b.kind) { "prayer" -> Hub.Deen.spine; "event" -> Hub.Work.spine; else -> MaterialTheme.colorScheme.primary }
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Text("%02d:%02d".format(b.startMin / 60, b.startMin % 60), Modifier.width(54.dp), style = MaterialTheme.typography.labelMedium)
-                        Box(Modifier.weight(1f).clip(RoundedCornerShape(10.dp)).background(color.copy(alpha = 0.16f)).padding(10.dp)) {
+                        Box(Modifier.weight(1f).clip(com.nizam.app.ui.design.labShape(10.dp)).background(color.copy(alpha = 0.16f)).padding(10.dp)) {
                             Text("${if (b.kind == "prayer") "🕌 " else if (b.kind == "event") "📅 " else ""}${b.label} · ${b.endMin - b.startMin} min", style = MaterialTheme.typography.bodyMedium)
                         }
                     }

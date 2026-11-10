@@ -527,7 +527,7 @@ fun ChatToolScreen(spec: ChatSpec, container: AppContainer) {
                 item("m$i") {
                     Box(Modifier.fillMaxWidth().padding(horizontal = Space.page, vertical = 4.dp), contentAlignment = if (me) Alignment.CenterEnd else Alignment.CenterStart) {
                         // your words in a bubble; Atlas's answer full width, so tables, charts and diagrams have room
-                        if (me) Box(Modifier.widthIn(max = 320.dp).background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(18.dp))
+                        if (me) Box(Modifier.widthIn(max = 320.dp).background(MaterialTheme.colorScheme.primaryContainer, com.nizam.app.ui.design.labShape(18.dp))
                             .padding(horizontal = 14.dp, vertical = 10.dp)) { Text(t, style = MaterialTheme.typography.bodyMedium) }
                         else Box(Modifier.fillMaxWidth().padding(vertical = 4.dp)) { Md(t) }
                     }

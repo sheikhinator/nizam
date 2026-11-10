@@ -252,7 +252,7 @@ private fun PipelinesPane(container: AppContainer) {
     Button(onClick = { busy = true; log = emptyList(); work.launch { runCatching { AiLab.run(container, pl, input) { i, out, pr -> log = log + Triple(i, out, pr) } }; busy = false } },
         enabled = input.isNotBlank() && !busy) { Text(if (busy) "Running step ${log.size + 1}…" else "Run the pipeline") }
     log.forEach { (i, out, pr) ->
-        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(10.dp)) {
+        Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(10.dp)) {
             Text("${pl.steps[i].role} ${if (pr.isEmpty()) "✓ passed" else "⚠ ${pr.joinToString()}"}", style = MaterialTheme.typography.labelLarge)
             Text(out.take(1500), style = MaterialTheme.typography.bodySmall)
         }

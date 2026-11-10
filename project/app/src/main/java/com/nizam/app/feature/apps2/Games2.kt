@@ -104,12 +104,12 @@ fun Game2048() {
     AtlasScreen(title = "2048", subtitle = "Score $score · best $best", hub = Hub.Media) {
         item("b") {
             var acc by remember { mutableStateOf(Offset.Zero) }
-            Column(Modifier.fillMaxWidth().padding(Space.page).aspectRatio(1f).clip(RoundedCornerShape(16.dp)).background(Color(0xFFBBADA0)).padding(6.dp)
+            Column(Modifier.fillMaxWidth().padding(Space.page).aspectRatio(1f).clip(com.nizam.app.ui.design.labShape(16.dp)).background(Color(0xFFBBADA0)).padding(6.dp)
                 .pointerInput(Unit) { detectDragGestures(onDragStart = { acc = Offset.Zero }, onDragEnd = {
                     if (abs(acc.x) > 40 || abs(acc.y) > 40) move(if (abs(acc.x) > abs(acc.y)) (if (acc.x < 0) 0 else 1) else (if (acc.y < 0) 2 else 3)) }) { _, d -> acc += d } }) {
                 (0 until 4).forEach { r -> Row(Modifier.weight(1f)) {
                     (0 until 4).forEach { c -> val v = board[r * 4 + c]
-                        Box(Modifier.weight(1f).fillMaxWidth().padding(4.dp).aspectRatio(1f).clip(RoundedCornerShape(8.dp)).background(colours[v] ?: Color(0xFF3C3A32)), contentAlignment = Alignment.Center) {
+                        Box(Modifier.weight(1f).fillMaxWidth().padding(4.dp).aspectRatio(1f).clip(com.nizam.app.ui.design.labShape(8.dp)).background(colours[v] ?: Color(0xFF3C3A32)), contentAlignment = Alignment.Center) {
                             if (v > 0) Text("$v", fontSize = if (v < 100) 30.sp else if (v < 1000) 24.sp else 18.sp, fontWeight = FontWeight.Bold, color = if (v <= 4) Color(0xFF776E65) else Color.White)
                         }
                     }
@@ -146,7 +146,7 @@ fun SnakeGame() {
     AtlasScreen(title = "Snake", subtitle = "Score ${snake.size - 3} · best $best", hub = Hub.Media) {
         item("b") {
             var acc by remember { mutableStateOf(Offset.Zero) }
-            Canvas(Modifier.fillMaxWidth().padding(Space.page).aspectRatio(1f).clip(RoundedCornerShape(16.dp)).background(Color(0xFF1C2A1C))
+            Canvas(Modifier.fillMaxWidth().padding(Space.page).aspectRatio(1f).clip(com.nizam.app.ui.design.labShape(16.dp)).background(Color(0xFF1C2A1C))
                 .pointerInput(Unit) { detectDragGestures(onDragStart = { acc = Offset.Zero }, onDragEnd = {
                     nextDir = if (abs(acc.x) > abs(acc.y)) Pair(if (acc.x > 0) 1 else -1, 0) else Pair(0, if (acc.y > 0) 1 else -1) }) { _, d -> acc += d } }) {
                 val c = size.width / n
@@ -191,7 +191,7 @@ fun TicTacToe() {
             Capsule("vs AI", vsAi) { vsAi = true; board = List(9) { ' ' }; xTurn = true }; Capsule("2 players", !vsAi) { vsAi = false; board = List(9) { ' ' }; xTurn = true } } }
         item("b") { Column(Modifier.fillMaxWidth().padding(Space.page).aspectRatio(1f)) {
             (0 until 3).forEach { r -> Row(Modifier.weight(1f)) { (0 until 3).forEach { c -> val i = r * 3 + c
-                Box(Modifier.weight(1f).fillMaxWidth().aspectRatio(1f).padding(4.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant).pressable { play(i) },
+                Box(Modifier.weight(1f).fillMaxWidth().aspectRatio(1f).padding(4.dp).clip(com.nizam.app.ui.design.labShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant).pressable { play(i) },
                     contentAlignment = Alignment.Center) { Text("${board[i]}".trim(), fontSize = 48.sp, fontWeight = FontWeight.Bold, color = if (board[i] == 'X') Hub.Media.tint() else MaterialTheme.colorScheme.error) }
             } } }
         } }

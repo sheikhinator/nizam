@@ -180,7 +180,7 @@ fun CompanyInsights(container: AppContainer) {
                     .map { "${it.target.ifBlank { "saved skill" }} · ${it.summary.ifBlank { if (it.ok) "completed" else "failed" }}" }
                     .distinct().take(3)
                 Column(
-                    Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
+                    Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant).padding(12.dp)
                 ) {
                     Text("${agent.emoji} ${agent.name} · ${agent.role}", fontWeight = FontWeight.SemiBold)
@@ -273,7 +273,7 @@ fun CompanyInsights(container: AppContainer) {
             batchTasks.forEachIndexed { index, task ->
                 val held = task in heldBatchTasks
                 val assignedName = team.firstOrNull { it.id == batchAssignments[task] }?.let { "${it.emoji} ${it.name}" } ?: "Auto-route"
-                Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
+                Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(12.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant).padding(8.dp)) {
                     Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         Text(task, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
@@ -335,7 +335,7 @@ fun CompanyInsights(container: AppContainer) {
                 val id = thread.optString("id")
                 val expanded = replayId == id
                 Column(
-                    Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
+                    Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant).clickable {
                             replayId = if (expanded) "" else id
                         }.padding(12.dp)
@@ -367,7 +367,7 @@ fun CompanyInsights(container: AppContainer) {
 @Composable
 private fun InsightSection(title: String, detail: String, content: @Composable () -> Unit) {
     Column(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp))
+        Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(18.dp))
             .background(MaterialTheme.colorScheme.surface).padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -426,7 +426,7 @@ fun HqReplaySheet(container: AppContainer) {
                 val kind = event.optString("kind").ifBlank { "event" }.replace('_', ' ')
                 val actor = agents[event.optString("from")] ?: event.optString("from").ifBlank { "System" }
                 Column(
-                    Modifier.fillMaxWidth().padding(vertical = 3.dp).clip(RoundedCornerShape(12.dp))
+                    Modifier.fillMaxWidth().padding(vertical = 3.dp).clip(com.nizam.app.ui.design.labShape(12.dp))
                         .background(if (active) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant)
                         .clickable { cursor = index.toFloat() }.padding(10.dp)
                 ) {

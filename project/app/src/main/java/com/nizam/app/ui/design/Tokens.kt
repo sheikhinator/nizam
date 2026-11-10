@@ -72,7 +72,7 @@ object Density {
 
 /** Corner radii. Cards and sheets share one language with the theme's shapes. */
 object Radius {
-    val chip = RoundedCornerShape(10.dp)
+    val chip = androidx.compose.foundation.shape.RoundedCornerShape(10.dp)
     // squircles: continuous-curvature corners (see Kit2.Squircle)
     val field: androidx.compose.ui.graphics.Shape get() = Style.shape(14.dp)
     val card: androidx.compose.ui.graphics.Shape get() = Style.shape(20.dp)
@@ -170,3 +170,12 @@ object Depth {
     val raised: Dp = 2.dp
     val floating: Dp = 10.dp
 }
+
+/** A rounded corner that squares off under Atlas Lab (the scientific look) and stays exactly as drawn in Classic. Use instead of RoundedCornerShape(n.dp). */
+fun labShape(r: androidx.compose.ui.unit.Dp): androidx.compose.foundation.shape.RoundedCornerShape =
+    androidx.compose.foundation.shape.RoundedCornerShape(if (com.nizam.app.ui.style.UiStyles.current.sci) minOf(r, 2.dp) else r)
+
+/** A fixed dark backdrop drawn by older screens: under Atlas Lab it becomes your theme's background instead. */
+@androidx.compose.runtime.Composable
+fun labBg(fixed: androidx.compose.ui.graphics.Color): androidx.compose.ui.graphics.Color =
+    if (com.nizam.app.ui.style.UiStyles.now().sci) androidx.compose.material3.MaterialTheme.colorScheme.background else fixed

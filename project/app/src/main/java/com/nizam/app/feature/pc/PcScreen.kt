@@ -115,7 +115,7 @@ private fun Machines(container: AppContainer, pcs: List<org.json.JSONObject>, on
         if (PcAgent.queued != null) Text("A task is waiting: “${PcAgent.queued}”. Start a PC and Atlas will begin.", color = WARN, style = MaterialTheme.typography.bodySmall)
         pcs.forEach { p ->
             val id = p.optString("id")
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(CARD).border(1.dp, EDGE, RoundedCornerShape(18.dp)).padding(16.dp)) {
+            Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(18.dp)).background(CARD).border(1.dp, EDGE, com.nizam.app.ui.design.labShape(18.dp)).padding(16.dp)) {
                 Text(p.optString("name"), color = FG, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Text("${p.optString("image")} · ${p.optString("desktop")} · ${p.optString("size")}" + if (!p.optBoolean("ready")) " · setup unfinished" else "", color = DIM, style = MaterialTheme.typography.labelSmall, fontFamily = FontFamily.Monospace)
                 Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -151,7 +151,7 @@ private fun Installer(onDone: () -> Unit, onCancel: (() -> Unit)?) {
         if (busy) Text("Keep Atlas open on this screen while it installs (the screen stays on).", color = WARN, style = MaterialTheme.typography.labelSmall)
         Text("Set up a PC", color = FG, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Black)
         val p = progress
-        if (p != null) Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(CARD).padding(14.dp)) {
+        if (p != null) Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(16.dp)).background(CARD).padding(14.dp)) {
             Text(p.stage, color = if (p.error.isNotBlank()) Color(0xFFF56565) else FG)
             if (p.pct in 0..99) LinearProgressIndicator(progress = { p.pct / 100f }, modifier = Modifier.fillMaxWidth().padding(top = 6.dp))
             else if (busy) LinearProgressIndicator(Modifier.fillMaxWidth().padding(top = 6.dp))
@@ -163,7 +163,7 @@ private fun Installer(onDone: () -> Unit, onCancel: (() -> Unit)?) {
             Text("LINUX", color = DIM, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
             PcEnv.DISTROS.forEach { d ->
                 val on = d == distro && custom.isBlank()
-                Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(if (on) TEAL.copy(alpha = 0.15f) else CARD).border(1.dp, if (on) TEAL else EDGE, RoundedCornerShape(14.dp))
+                Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(if (on) TEAL.copy(alpha = 0.15f) else CARD).border(1.dp, if (on) TEAL else EDGE, com.nizam.app.ui.design.labShape(14.dp))
                     .clickable { distro = d; custom = "" }.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(d.emoji, fontSize = 22.sp, modifier = Modifier.padding(end = 10.dp))
                     Column { Text(d.title, color = FG, fontWeight = FontWeight.SemiBold); Text(d.note, color = DIM, style = MaterialTheme.typography.labelSmall) }
@@ -375,28 +375,28 @@ private fun Desktop(container: AppContainer, id: String, changed: () -> Unit) {
         // mouse buttons (trackpad) and keys
         if (trackpad) Row(Modifier.fillMaxWidth().background(CARD).padding(horizontal = 6.dp, vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             listOf("Left click" to 1, "Right click" to 3).forEach { (l, b) ->
-                Text(l, color = FG, style = MaterialTheme.typography.labelMedium, modifier = Modifier.weight(1f).clip(RoundedCornerShape(10.dp)).background(EDGE)
+                Text(l, color = FG, style = MaterialTheme.typography.labelMedium, modifier = Modifier.weight(1f).clip(com.nizam.app.ui.design.labShape(10.dp)).background(EDGE)
                     .clickable { val m = mouse; bg { Vnc.click(m.x.toInt(), m.y.toInt(), button = b) } }.padding(vertical = 10.dp), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
             }
-            Text("▲", color = FG, modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(EDGE).clickable { val m = mouse; bg { Vnc.scroll(m.x.toInt(), m.y.toInt(), -3) } }.padding(horizontal = 14.dp, vertical = 10.dp))
-            Text("▼", color = FG, modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(EDGE).clickable { val m = mouse; bg { Vnc.scroll(m.x.toInt(), m.y.toInt(), 3) } }.padding(horizontal = 14.dp, vertical = 10.dp))
+            Text("▲", color = FG, modifier = Modifier.clip(com.nizam.app.ui.design.labShape(10.dp)).background(EDGE).clickable { val m = mouse; bg { Vnc.scroll(m.x.toInt(), m.y.toInt(), -3) } }.padding(horizontal = 14.dp, vertical = 10.dp))
+            Text("▼", color = FG, modifier = Modifier.clip(com.nizam.app.ui.design.labShape(10.dp)).background(EDGE).clickable { val m = mouse; bg { Vnc.scroll(m.x.toInt(), m.y.toInt(), 3) } }.padding(horizontal = 14.dp, vertical = 10.dp))
         }
         if (keysOpen) Column(Modifier.fillMaxWidth().background(CARD).padding(4.dp)) {
             Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 listOf("Ctrl", "Alt", "Shift", "Super").forEach { m -> val on = m in mods
                     Text(m, color = if (on) Color.Black else FG, fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.labelMedium,
-                        modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(if (on) TEAL else EDGE).clickable { if (on) mods.remove(m) else mods.add(m) }.padding(horizontal = 12.dp, vertical = 9.dp)) }
+                        modifier = Modifier.clip(com.nizam.app.ui.design.labShape(8.dp)).background(if (on) TEAL else EDGE).clickable { if (on) mods.remove(m) else mods.add(m) }.padding(horizontal = 12.dp, vertical = 9.dp)) }
                 listOf("Esc" to "esc", "Tab" to "tab", "Enter" to "enter", "⌫" to "backspace", "Del" to "delete", "←" to "left", "↑" to "up", "↓" to "down", "→" to "right",
                     "Home" to "home", "End" to "end", "PgUp" to "pageup", "PgDn" to "pagedown", "F5" to "f5", "F11" to "f11").forEach { (l, k) ->
                     Text(l, color = FG, fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.labelMedium,
-                        modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(EDGE).clickable { press(k) }.padding(horizontal = 10.dp, vertical = 9.dp)) }
+                        modifier = Modifier.clip(com.nizam.app.ui.design.labShape(8.dp)).background(EDGE).clickable { press(k) }.padding(horizontal = 10.dp, vertical = 9.dp)) }
                 Text("✕", color = DIM, modifier = Modifier.clickable { keysOpen = false; kb?.hide() }.padding(horizontal = 10.dp, vertical = 9.dp))
             }
             Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 listOf("Copy" to "ctrl+c", "Paste" to "ctrl+v", "Cut" to "ctrl+x", "Undo" to "ctrl+z", "Select all" to "ctrl+a", "Save" to "ctrl+s", "Find" to "ctrl+f",
                     "New tab" to "ctrl+t", "Address bar" to "ctrl+l", "Close" to "ctrl+w", "Switch app" to "alt+tab", "Quit app" to "alt+f4", "Terminal" to "ctrl+alt+t").forEach { (l, k) ->
                     Text(l, color = FG, style = MaterialTheme.typography.labelMedium,
-                        modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(EDGE.copy(alpha = 0.6f)).clickable { mods.clear(); bg { Vnc.combo(k) } }.padding(horizontal = 10.dp, vertical = 8.dp)) }
+                        modifier = Modifier.clip(com.nizam.app.ui.design.labShape(8.dp)).background(EDGE.copy(alpha = 0.6f)).clickable { mods.clear(); bg { Vnc.combo(k) } }.padding(horizontal = 10.dp, vertical = 8.dp)) }
             }
         }
         // ── Atlas at work ──

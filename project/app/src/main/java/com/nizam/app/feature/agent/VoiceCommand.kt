@@ -160,7 +160,7 @@ fun VoiceCommandBar(container: AppContainer, onOpen: (String) -> Unit, modifier:
         else mic.launch(Manifest.permission.RECORD_AUDIO)
     }
 
-    val shape = RoundedCornerShape(28.dp)
+    val shape = androidx.compose.foundation.shape.RoundedCornerShape(28.dp)
     val brand = Brush.linearGradient(listOf(cs.primary, cs.tertiary))
     Column(modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth().shadow(if (listening) 14.dp else 4.dp, shape, ambientColor = cs.primary, spotColor = cs.primary).clip(shape)
@@ -201,7 +201,7 @@ fun VoiceCommandBar(container: AppContainer, onOpen: (String) -> Unit, modifier:
                         .padding(horizontal = 12.dp, vertical = 6.dp)) }
         }
         AnimatedVisibility(reply != null) {
-            Column(Modifier.padding(top = 10.dp).fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(cs.primary.copy(alpha = 0.07f)).padding(14.dp)) {
+            Column(Modifier.padding(top = 10.dp).fillMaxWidth().clip(com.nizam.app.ui.design.labShape(22.dp)).background(cs.primary.copy(alpha = 0.07f)).padding(14.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     com.nizam.app.ui.design.Art3D("robot", 28.dp, float = false, shadow = false)
                     Text("Atlas", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold), modifier = Modifier.padding(start = 6.dp).weight(1f))

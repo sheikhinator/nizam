@@ -226,7 +226,7 @@ private fun HomeTab(all: List<Track>, granted: Boolean, askAccess: () -> Unit, o
     LazyColumn(Modifier.fillMaxSize()) {
         item {
             Text(greeting(), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp))
-            if (!granted) Row(Modifier.padding(horizontal = 18.dp, vertical = 4.dp).clip(RoundedCornerShape(14.dp)).background(MaterialTheme.colorScheme.surfaceVariant)
+            if (!granted) Row(Modifier.padding(horizontal = 18.dp, vertical = 4.dp).clip(com.nizam.app.ui.design.labShape(14.dp)).background(MaterialTheme.colorScheme.surfaceVariant)
                 .clickable(role = Role.Button, onClick = askAccess).padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Filled.LibraryMusic, null); Text("  Allow access to add the music on your phone", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
             }
@@ -238,7 +238,7 @@ private fun HomeTab(all: List<Track>, granted: Boolean, askAccess: () -> Unit, o
             }.take(6)
             if (quick.isNotEmpty()) Column(Modifier.padding(horizontal = 14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 quick.chunked(2).forEach { row -> Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    row.forEach { q -> Row(Modifier.weight(1f).height(56.dp).clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colorScheme.surfaceVariant)
+                    row.forEach { q -> Row(Modifier.weight(1f).height(56.dp).clip(com.nizam.app.ui.design.labShape(8.dp)).background(MaterialTheme.colorScheme.surfaceVariant)
                         .clickable(role = Role.Button) { open(q) }, verticalAlignment = Alignment.CenterVertically) {
                         Cover(q, Modifier.size(56.dp), 0)
                         Text(q.title, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold, maxLines = 2, overflow = TextOverflow.Ellipsis,
@@ -257,7 +257,7 @@ private fun HomeTab(all: List<Track>, granted: Boolean, askAccess: () -> Unit, o
             SectionTitle("Browse genres", null)
             LazyRow(contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 18.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 items(Audius.GENRES.size) { i -> val g = Audius.GENRES[i]
-                    Box(Modifier.size(width = 130.dp, height = 70.dp).clip(RoundedCornerShape(10.dp)).background(Color(GENRE_COLOURS[i % GENRE_COLOURS.size]))
+                    Box(Modifier.size(width = 130.dp, height = 70.dp).clip(com.nizam.app.ui.design.labShape(10.dp)).background(Color(GENRE_COLOURS[i % GENRE_COLOURS.size]))
                         .clickable(role = Role.Button) { open(Opened(g, "Trending $g this week", colour = GENRE_COLOURS[i % GENRE_COLOURS.size], load = { Audius.trending(g) })) }
                         .padding(10.dp)) { Text(g, color = Color.White, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall) }
                 }
@@ -337,7 +337,7 @@ private fun OpenedPage(o: Opened, onBack: () -> Unit, onMenu: (Track) -> Unit, o
         item {
             Icon(Icons.Filled.KeyboardArrowDown, "Back", Modifier.padding(12.dp).rotate(90f).size(30.dp).clip(CircleShape).clickable(onClick = onBack))
             Column(Modifier.fillMaxWidth().padding(horizontal = 18.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Cover(o.copy(tracks = shown), Modifier.size(210.dp).shadow(16.dp, RoundedCornerShape(10.dp)), 10)
+                Cover(o.copy(tracks = shown), Modifier.size(210.dp).shadow(16.dp, com.nizam.app.ui.design.labShape(10.dp)), 10)
             }
             Text(o.title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 18.dp, end = 18.dp, top = 16.dp))
             Text(listOfNotNull(o.subtitle.ifBlank { null }, shown?.let { l -> "${l.size} songs" + l.sumOf { it.durationMs }.takeIf { it > 0 }?.let { " · ${time(it)}" }.orEmpty() })
@@ -394,7 +394,7 @@ private fun SearchTab(all: List<Track>, openPlayer: () -> Unit, open: (Opened) -
                 Opened("All-time hits", "Audius' most played", colour = 0xFFE91429, load = { Audius.trending(time = "allTime") })
             items(tiles.chunked(2).size) { r -> val row = tiles.chunked(2)[r]
                 Row(Modifier.padding(bottom = 10.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    row.forEach { o -> Box(Modifier.weight(1f).height(92.dp).clip(RoundedCornerShape(10.dp)).background(Color(o.colour ?: 0xFF444444))
+                    row.forEach { o -> Box(Modifier.weight(1f).height(92.dp).clip(com.nizam.app.ui.design.labShape(10.dp)).background(Color(o.colour ?: 0xFF444444))
                         .clickable(role = Role.Button) { open(o) }.padding(12.dp)) {
                         Text(o.title, color = Color.White, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
                     } }
@@ -756,7 +756,7 @@ private fun MiniPlayer(open: () -> Unit) {
     val t = MusicPlayback.current ?: return
     val tint = rememberTint(t)
     val bg = (tint ?: MaterialTheme.colorScheme.surfaceVariant).let { Color(androidx.core.graphics.ColorUtils.blendARGB(it.toArgb(), android.graphics.Color.BLACK, 0.35f)) }
-    Column(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp).clip(RoundedCornerShape(10.dp)).background(bg).clickable(role = Role.Button, onClick = open)) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp).clip(com.nizam.app.ui.design.labShape(10.dp)).background(bg).clickable(role = Role.Button, onClick = open)) {
         Row(Modifier.padding(horizontal = 8.dp, vertical = 7.dp), verticalAlignment = Alignment.CenterVertically) {
             TrackArt(t, Modifier.size(42.dp), 6)
             Spacer(Modifier.width(10.dp))
@@ -817,7 +817,7 @@ private fun NowPlaying(onClose: () -> Unit, onEdit: (Track) -> Unit, onOpen: (Op
                 "Lyrics" -> OnDark { LyricsPane(t) }
                 "Queue" -> OnDark { QueuePane() }
                 else -> TrackArt(t, Modifier.fillMaxWidth().aspectRatio(1f).graphicsLayer { scaleX = artScale; scaleY = artScale }
-                    .shadow(24.dp, RoundedCornerShape(12.dp)), if (t.source == "radio") 200 else 12)
+                    .shadow(24.dp, com.nizam.app.ui.design.labShape(12.dp)), if (t.source == "radio") 200 else 12)
             }
         }
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 18.dp)) {
@@ -1098,7 +1098,7 @@ private fun TrackSheet(t: Track, onClose: () -> Unit, onChanged: () -> Unit) {
                         scope.launch { MusicMeta.year(m.artist, m.album).takeIf { it.isNotBlank() }?.let { year = it } }
                         matches = null
                     }.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                        AsyncImage(m.cover, m.album, Modifier.size(44.dp).clip(RoundedCornerShape(6.dp)))
+                        AsyncImage(m.cover, m.album, Modifier.size(44.dp).clip(com.nizam.app.ui.design.labShape(6.dp)))
                         Spacer(Modifier.width(10.dp))
                         Column { Text(m.title, style = MaterialTheme.typography.bodyMedium); Text("${m.artist} · ${m.album}",
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }

@@ -171,7 +171,7 @@ fun HoloCard(modifier: Modifier = Modifier, content: @Composable BoxScope.() -> 
     Box(modifier.graphicsLayer {
         rotationY = tx * 14f; rotationX = -ty * 10f; cameraDistance = 14f * density
         compositingStrategy = CompositingStrategy.Offscreen
-    }.clip(RoundedCornerShape(26.dp)).drawWithContent {
+    }.clip(com.nizam.app.ui.design.labShape(26.dp)).drawWithContent {
         drawContent()
         val shift = (tx + 1f) / 2f * 0.6f + drift * 0.4f
         drawRect(Brush.linearGradient(listOf(Color(0x55FF0080), Color(0x55FFD000), Color(0x5500FFB0), Color(0x5500A0FF), Color(0x55B000FF), Color(0x55FF0080)),
@@ -179,7 +179,7 @@ fun HoloCard(modifier: Modifier = Modifier, content: @Composable BoxScope.() -> 
         drawCircle(Brush.radialGradient(listOf(Color.White.copy(alpha = 0.38f), Color.Transparent),
             center = Offset(size.width * (0.5f + tx * 0.45f), size.height * (0.4f - ty * 0.45f)), radius = size.minDimension * 0.7f),
             center = Offset(size.width * (0.5f + tx * 0.45f), size.height * (0.4f - ty * 0.45f)), radius = size.minDimension * 0.7f, blendMode = BlendMode.Screen)
-    }.border(1.dp, Brush.linearGradient(listOf(Color.White.copy(alpha = 0.7f), Color.White.copy(alpha = 0.1f))), RoundedCornerShape(26.dp)), content = content)
+    }.border(1.dp, Brush.linearGradient(listOf(Color.White.copy(alpha = 0.7f), Color.White.copy(alpha = 0.1f))), com.nizam.app.ui.design.labShape(26.dp)), content = content)
 }
 
 object WildUi {
@@ -278,8 +278,8 @@ fun CanvasScreen(open: (String) -> Unit) {
                 }
             }
             if (scale > 0.28f) features.forEach { f -> val o = place[f.route] ?: return@forEach
-                Column(Modifier.offset { IntOffset((o.x - 60).toInt(), (o.y - 36).toInt()) }.width(120.dp).clip(RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)).border(1.dp, f.hub.spine.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+                Column(Modifier.offset { IntOffset((o.x - 60).toInt(), (o.y - 36).toInt()) }.width(120.dp).clip(com.nizam.app.ui.design.labShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)).border(1.dp, f.hub.spine.copy(alpha = 0.5f), com.nizam.app.ui.design.labShape(16.dp))
                     .clickable { open(f.route) }.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(f.icon, null, tint = f.hub.spine, modifier = Modifier.size(22.dp))
                     Text(f.title, fontSize = 11.sp, maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)

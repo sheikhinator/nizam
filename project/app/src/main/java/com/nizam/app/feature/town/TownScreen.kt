@@ -365,7 +365,7 @@ fun TownScreen(container: AppContainer) {
         // ── Overlay: status, what's next, the talk ──────────────────────────
         Column(Modifier.align(Alignment.TopStart).fillMaxWidth().padding(14.dp)) {
             Column(
-                Modifier.background(Color(0xCC0B0F1A), RoundedCornerShape(16.dp)).padding(12.dp)
+                Modifier.background(Color(0xCC0B0F1A), com.nizam.app.ui.design.labShape(16.dp)).padding(12.dp)
             ) {
                 Text("${t.facts.name.ifBlank { "Your" }}'s Town", color = Color.White,
                     style = MaterialTheme.typography.titleLarge.copy(fontFamily = DisplayFamily))
@@ -394,10 +394,10 @@ fun TownScreen(container: AppContainer) {
         Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(14.dp)) {
             selected?.let { s ->
                 Column(
-                    Modifier.fillMaxWidth().background(Color(0xEE0B0F1A), RoundedCornerShape(16.dp)).padding(14.dp)
+                    Modifier.fillMaxWidth().background(Color(0xEE0B0F1A), com.nizam.app.ui.design.labShape(16.dp)).padding(14.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(Modifier.width(14.dp).height(14.dp).background(Color(s.shirt), RoundedCornerShape(3.dp)))
+                        Box(Modifier.width(14.dp).height(14.dp).background(Color(s.shirt), com.nizam.app.ui.design.labShape(3.dp)))
                         Spacer(Modifier.width(8.dp))
                         Text("${s.name}, ${s.age}", color = Color.White, style = MaterialTheme.typography.titleMedium)
                         Spacer(Modifier.weight(1f))
@@ -418,7 +418,7 @@ fun TownScreen(container: AppContainer) {
             }
 
             newAdventure?.let { a ->
-                Column(Modifier.fillMaxWidth().background(Color(0xEE0B0F1A), RoundedCornerShape(16.dp)).padding(14.dp)) {
+                Column(Modifier.fillMaxWidth().background(Color(0xEE0B0F1A), com.nizam.app.ui.design.labShape(16.dp)).padding(14.dp)) {
                     Text("${a.emoji}  An adventure!", color = Color(0xFFE0B14A), style = MaterialTheme.typography.titleMedium)
                     Text(a.story, color = Color.White, style = MaterialTheme.typography.bodyMedium)
                     Text("nice", color = Color(0xFFB8BCC8), style = MaterialTheme.typography.labelMedium,
@@ -427,7 +427,7 @@ fun TownScreen(container: AppContainer) {
                 Spacer(Modifier.height(8.dp))
             }
             if (showAdventures) {
-                Column(Modifier.fillMaxWidth().heightIn(max = 280.dp).background(Color(0xEE0B0F1A), RoundedCornerShape(16.dp))
+                Column(Modifier.fillMaxWidth().heightIn(max = 280.dp).background(Color(0xEE0B0F1A), com.nizam.app.ui.design.labShape(16.dp))
                     .verticalScroll(rememberScrollState()).padding(14.dp)) {
                     Text("ADVENTURES · ${adventures.size}", color = Color(0xFFE0B14A), style = MaterialTheme.typography.labelMedium)
                     if (adventures.isEmpty()) Text("A day with 40+ XP sends someone exploring.", color = Color.White)
@@ -441,7 +441,7 @@ fun TownScreen(container: AppContainer) {
             if (showTalk && dialogues.isNotEmpty()) {
                 Column(
                     Modifier.fillMaxWidth().heightIn(max = 320.dp)
-                        .background(Color(0xEE0B0F1A), RoundedCornerShape(16.dp))
+                        .background(Color(0xEE0B0F1A), com.nizam.app.ui.design.labShape(16.dp))
                         .verticalScroll(rememberScrollState()).padding(14.dp)
                 ) {
                     Text("TOWN TALK · TODAY", color = Color(0xFFE0B14A),
@@ -463,7 +463,7 @@ fun TownScreen(container: AppContainer) {
             }
 
             Row {
-                Text("🎒", modifier = Modifier.background(Color(0xCC0B0F1A), RoundedCornerShape(24.dp))
+                Text("🎒", modifier = Modifier.background(Color(0xCC0B0F1A), com.nizam.app.ui.design.labShape(24.dp))
                     .clickable(role = Role.Button) { showAdventures = !showAdventures }.padding(horizontal = 14.dp, vertical = 10.dp),
                     style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.width(8.dp))
@@ -477,7 +477,7 @@ fun TownScreen(container: AppContainer) {
                     color = Color(0xFF0B0F1A),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier
-                        .background(Color(0xFFE0B14A), RoundedCornerShape(24.dp))
+                        .background(Color(0xFFE0B14A), com.nizam.app.ui.design.labShape(24.dp))
                         .clickable(enabled = !listening, role = Role.Button) {
                             if (dialogues.isNotEmpty() && fresh) { showTalk = !showTalk; return@clickable }
                             scope.launch {

@@ -119,8 +119,8 @@ fun EarnScreen(container: AppContainer, open: (String) -> Unit) {
 
 @Composable
 private fun Panel(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
-    Box(modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Brush.verticalGradient(listOf(T.panel, T.deep)))
-        .border(BorderStroke(1.dp, T.line), RoundedCornerShape(18.dp)).padding(16.dp)) { Column(verticalArrangement = Arrangement.spacedBy(8.dp)) { content() } }
+    Box(modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(18.dp)).background(Brush.verticalGradient(listOf(T.panel, T.deep)))
+        .border(BorderStroke(1.dp, T.line), com.nizam.app.ui.design.labShape(18.dp)).padding(16.dp)) { Column(verticalArrangement = Arrangement.spacedBy(8.dp)) { content() } }
 }
 
 @Composable
@@ -131,13 +131,13 @@ private fun Pill(t: String, on: Boolean, onClick: () -> Unit) {
 
 @Composable
 private fun GoldButton(t: String, enabled: Boolean = true, onClick: () -> Unit) {
-    Text(t, Modifier.clip(RoundedCornerShape(12.dp)).background(if (enabled) T.gold else T.line).clickable(enabled = enabled, onClick = onClick)
+    Text(t, Modifier.clip(com.nizam.app.ui.design.labShape(12.dp)).background(if (enabled) T.gold else T.line).clickable(enabled = enabled, onClick = onClick)
         .padding(horizontal = 16.dp, vertical = 10.dp), color = if (enabled) T.ink else T.dim, fontWeight = FontWeight.Bold, fontSize = 14.sp)
 }
 
 @Composable
 private fun Ghost(t: String, onClick: () -> Unit) {
-    Text(t, Modifier.clip(RoundedCornerShape(12.dp)).border(1.dp, T.line, RoundedCornerShape(12.dp)).clickable(onClick = onClick)
+    Text(t, Modifier.clip(com.nizam.app.ui.design.labShape(12.dp)).border(1.dp, T.line, com.nizam.app.ui.design.labShape(12.dp)).clickable(onClick = onClick)
         .padding(horizontal = 12.dp, vertical = 8.dp), color = T.gold, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
 }
 
@@ -249,7 +249,7 @@ private fun Hq(c: android.content.Context, tick: Int, go: (String) -> Unit) {
         s.byStream.entries.sortedByDescending { it.value }.forEach { (k, v) ->
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(k, color = T.text, fontSize = 13.sp, modifier = Modifier.width(96.dp))
-                Box(Modifier.weight(1f).height(10.dp).clip(RoundedCornerShape(5.dp)).background(T.line)) {
+                Box(Modifier.weight(1f).height(10.dp).clip(com.nizam.app.ui.design.labShape(5.dp)).background(T.line)) {
                     Box(Modifier.fillMaxWidth((v / max).toFloat().coerceIn(0.03f, 1f)).height(10.dp).background(Brush.horizontalGradient(listOf(T.mint, T.gold))))
                 }
                 Text(Earn.fmt(v), color = T.gold, fontFamily = T.mono, fontSize = 12.sp, modifier = Modifier.padding(start = 8.dp))
@@ -265,7 +265,7 @@ private fun Hq(c: android.content.Context, tick: Int, go: (String) -> Unit) {
         Label("Pipeline")
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Earn.STAGES.forEach { st -> val n = w.count { it.optString("stage") == st }
-                Column(Modifier.clip(RoundedCornerShape(12.dp)).background(T.deep).border(1.dp, T.line, RoundedCornerShape(12.dp)).clickable { go("Work") }.padding(10.dp),
+                Column(Modifier.clip(com.nizam.app.ui.design.labShape(12.dp)).background(T.deep).border(1.dp, T.line, com.nizam.app.ui.design.labShape(12.dp)).clickable { go("Work") }.padding(10.dp),
                     horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("$n", color = if (n > 0) T.gold else T.dim, fontFamily = T.mono, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Text(Earn.STAGE_LABEL[st] ?: st, color = T.dim, fontSize = 11.sp)
@@ -279,7 +279,7 @@ private fun Hq(c: android.content.Context, tick: Int, go: (String) -> Unit) {
 
 @Composable
 private fun TapRow(icon: String, t: String, onClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(T.deep).clickable(onClick = onClick).padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(12.dp)).background(T.deep).clickable(onClick = onClick).padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(icon, Modifier.width(28.dp)); Text(t, color = T.text, fontSize = 14.sp, modifier = Modifier.weight(1f)); Text("›", color = T.gold, fontSize = 20.sp)
     }
 }

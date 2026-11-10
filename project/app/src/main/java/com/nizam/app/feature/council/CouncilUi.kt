@@ -44,8 +44,8 @@ fun PixelAvatar(advisor: Advisor, size: Dp = 36.dp, glow: Boolean = false) {
     Box(
         Modifier
             .size(size)
-            .background(advisor.colour.copy(alpha = if (glow) 0.28f else 0.14f), RoundedCornerShape(10.dp))
-            .border(1.dp, advisor.colour.copy(alpha = if (glow) 0.9f else 0.35f), RoundedCornerShape(10.dp)),
+            .background(advisor.colour.copy(alpha = if (glow) 0.28f else 0.14f), com.nizam.app.ui.design.labShape(10.dp))
+            .border(1.dp, advisor.colour.copy(alpha = if (glow) 0.9f else 0.35f), com.nizam.app.ui.design.labShape(10.dp)),
         contentAlignment = Alignment.Center
     ) {
         Canvas(Modifier.size(size * 0.72f)) {
@@ -122,7 +122,7 @@ fun StancePill(stance: String) {
         style = MaterialTheme.typography.labelMedium.copy(fontFamily = MonoFamily),
         color = colour,
         modifier = Modifier
-            .border(1.dp, colour.copy(alpha = 0.6f), RoundedCornerShape(6.dp))
+            .border(1.dp, colour.copy(alpha = 0.6f), com.nizam.app.ui.design.labShape(6.dp))
             .padding(horizontal = 6.dp, vertical = 1.dp)
     )
 }
@@ -202,8 +202,8 @@ fun VerdictCard(
         Modifier
             .fillMaxWidth()
             .padding(vertical = 10.dp)
-            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(20.dp))
-            .border(1.dp, arbiter.colour.copy(alpha = 0.4f), RoundedCornerShape(20.dp))
+            .background(MaterialTheme.colorScheme.surface, com.nizam.app.ui.design.labShape(20.dp))
+            .border(1.dp, arbiter.colour.copy(alpha = 0.4f), com.nizam.app.ui.design.labShape(20.dp))
             .padding(16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -225,7 +225,7 @@ fun VerdictCard(
                                     .background(
                                         if (i < confidence) arbiter.colour
                                         else MaterialTheme.colorScheme.surfaceVariant,
-                                        RoundedCornerShape(2.dp)
+                                        com.nizam.app.ui.design.labShape(2.dp)
                                     )
                             )
                         }
@@ -251,7 +251,7 @@ fun VerdictCard(
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFFE06A4C).copy(alpha = 0.10f), RoundedCornerShape(12.dp))
+                    .background(Color(0xFFE06A4C).copy(alpha = 0.10f), com.nizam.app.ui.design.labShape(12.dp))
                     .padding(12.dp)
             ) {
                 Text("UNRESOLVED DISSENT", style = MaterialTheme.typography.labelMedium,
@@ -296,7 +296,7 @@ fun ActionRow(actions: List<ProposedAction>, onAction: (ProposedAction) -> Unit,
                 .background(
                     if (isDone) MaterialTheme.colorScheme.surfaceVariant
                     else MaterialTheme.colorScheme.primary.copy(alpha = 0.16f),
-                    RoundedCornerShape(12.dp)
+                    com.nizam.app.ui.design.labShape(12.dp)
                 )
                 .clickable(enabled = !isDone) { onAction(a) }
                 .padding(horizontal = 14.dp, vertical = 11.dp)

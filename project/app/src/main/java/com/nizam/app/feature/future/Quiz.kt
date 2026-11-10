@@ -100,7 +100,7 @@ fun QuizScreen(container: AppContainer) {
                     k == picked -> MaterialTheme.colorScheme.error.copy(alpha = 0.25f)
                     else -> MaterialTheme.colorScheme.surface
                 }
-                Text(o, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(12.dp)).background(bg)
+                Text(o, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(com.nizam.app.ui.design.labShape(12.dp)).background(bg)
                     .clickable(enabled = picked < 0) { picked = k; if (k == q.answer) score++ }.padding(14.dp))
             }
             if (picked >= 0) {

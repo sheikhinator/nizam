@@ -109,7 +109,7 @@ fun EbooksScreen() {
             val fmts = b.optJSONObject("formats") ?: JSONObject()
             val txt = fmts.keys().asSequence().firstOrNull { it.startsWith("text/plain") }?.let { fmts.optString(it) }
             Row(Modifier.fillMaxWidth().padding(horizontal = Space.page, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                AsyncImage(fmts.optString("image/jpeg"), null, Modifier.size(52.dp, 76.dp).clip(RoundedCornerShape(6.dp)).background(MaterialTheme.colorScheme.surfaceVariant), contentScale = ContentScale.Crop)
+                AsyncImage(fmts.optString("image/jpeg"), null, Modifier.size(52.dp, 76.dp).clip(com.nizam.app.ui.design.labShape(6.dp)).background(MaterialTheme.colorScheme.surfaceVariant), contentScale = ContentScale.Crop)
                 Column(Modifier.weight(1f).padding(horizontal = Space.m)) {
                     Text(b.optString("title"), style = MaterialTheme.typography.titleSmall, maxLines = 2)
                     Text("$author · ${b.optInt("download_count")} reads", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -194,7 +194,7 @@ fun MangaScreen() {
         AtlasScreen(title = title(m), subtitle = "${chapters.size} English chapters", hub = Hub.Media, actions = {
             Text("Back", Modifier.padding(Space.s).pressable { manga = null }, style = MaterialTheme.typography.labelLarge) }) {
             item("top") { Row(Modifier.padding(horizontal = Space.page)) {
-                AsyncImage(cover(m), null, Modifier.size(110.dp, 160.dp).clip(RoundedCornerShape(10.dp)), contentScale = ContentScale.Crop)
+                AsyncImage(cover(m), null, Modifier.size(110.dp, 160.dp).clip(com.nizam.app.ui.design.labShape(10.dp)), contentScale = ContentScale.Crop)
                 Column(Modifier.padding(start = Space.m)) {
                     Text(m.optJSONObject("attributes")?.optJSONObject("description")?.optString("en").orEmpty().take(400), style = MaterialTheme.typography.bodySmall, maxLines = 9)
                     val isF = followed.any { it.optString("mid") == m.optString("id") }
@@ -233,7 +233,7 @@ fun MangaScreen() {
                         scope.launch { runCatching { JSONObject(Http.getJson("$MD/manga/${f.optString("mid")}?includes[]=cover_art")).getJSONObject("data") }.getOrNull()?.let { open ->
                             manga = open; chapters = runCatching { JSONObject(Http.getJson("$MD/manga/${f.optString("mid")}/feed?translatedLanguage[]=en&order[chapter]=desc&limit=100$SAFE")).optJSONArray("data").objs() }.getOrDefault(emptyList()) } }
                     }) {
-                        AsyncImage(f.optString("cover"), null, Modifier.fillMaxWidth().aspectRatio(0.7f).clip(RoundedCornerShape(8.dp)), contentScale = ContentScale.Crop)
+                        AsyncImage(f.optString("cover"), null, Modifier.fillMaxWidth().aspectRatio(0.7f).clip(com.nizam.app.ui.design.labShape(8.dp)), contentScale = ContentScale.Crop)
                         Text(f.optString("title"), style = MaterialTheme.typography.labelSmall, maxLines = 2)
                     }
                 } } }
@@ -244,7 +244,7 @@ fun MangaScreen() {
                 manga = x; chapters = emptyList()
                 scope.launch { chapters = runCatching { JSONObject(Http.getJson("$MD/manga/${x.optString("id")}/feed?translatedLanguage[]=en&order[chapter]=desc&limit=100$SAFE")).optJSONArray("data").objs() }.getOrDefault(emptyList()) }
             }, verticalAlignment = Alignment.CenterVertically) {
-                AsyncImage(cover(x), null, Modifier.size(52.dp, 74.dp).clip(RoundedCornerShape(6.dp)), contentScale = ContentScale.Crop)
+                AsyncImage(cover(x), null, Modifier.size(52.dp, 74.dp).clip(com.nizam.app.ui.design.labShape(6.dp)), contentScale = ContentScale.Crop)
                 Column(Modifier.padding(start = Space.m)) {
                     Text(title(x), style = MaterialTheme.typography.titleSmall, maxLines = 2)
                     Text(x.optJSONObject("attributes")?.optString("status").orEmpty().replaceFirstChar { it.uppercase() }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -275,7 +275,7 @@ fun AnimeScreen() {
     if (o != null) {
         AtlasScreen(title = o.optString("title_english").ifBlank { o.optString("title") }, subtitle = "${o.optString("type")} · ${o.optInt("episodes")} eps · ★ ${o.optDouble("score", 0.0)}", hub = Hub.Media, actions = {
             Text("Back", Modifier.padding(Space.s).pressable { open = null }, style = MaterialTheme.typography.labelLarge) }) {
-            item("i") { AsyncImage(img(o), null, Modifier.fillMaxWidth().padding(Space.page).aspectRatio(0.7f).clip(RoundedCornerShape(16.dp)), contentScale = ContentScale.Crop) }
+            item("i") { AsyncImage(img(o), null, Modifier.fillMaxWidth().padding(Space.page).aspectRatio(0.7f).clip(com.nizam.app.ui.design.labShape(16.dp)), contentScale = ContentScale.Crop) }
             item("s") { Row(Modifier.padding(horizontal = Space.page), horizontalArrangement = Arrangement.spacedBy(Space.s)) {
                 listOf("Plan", "Watching", "Done").forEach { st ->
                     val cur = mine.firstOrNull { it.optInt("mal") == o.optInt("mal_id") }
@@ -313,7 +313,7 @@ fun AnimeScreen() {
             if (l == null) item("l") { Text("Loading…", Modifier.padding(Space.page)) }
             else l.chunked(3).forEachIndexed { i, row -> item("r$i") { Row(Modifier.padding(horizontal = Space.page, vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(Space.s)) {
                 row.forEach { a -> Column(Modifier.weight(1f).pressable { open = a }) {
-                    AsyncImage(img(a), null, Modifier.fillMaxWidth().aspectRatio(0.7f).clip(RoundedCornerShape(10.dp)), contentScale = ContentScale.Crop)
+                    AsyncImage(img(a), null, Modifier.fillMaxWidth().aspectRatio(0.7f).clip(com.nizam.app.ui.design.labShape(10.dp)), contentScale = ContentScale.Crop)
                     Text(a.optString("title_english").ifBlank { a.optString("title") }, style = MaterialTheme.typography.labelMedium, maxLines = 2)
                 } }
                 repeat(3 - row.size) { androidx.compose.foundation.layout.Spacer(Modifier.weight(1f)) }

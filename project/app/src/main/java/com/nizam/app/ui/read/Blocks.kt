@@ -140,7 +140,7 @@ object BlockParser {
 private fun PracticeCard(block: Block.Practice, accent: Color) {
     var shown by remember { mutableStateOf(false) }
     Surface(
-        shape = RoundedCornerShape(12.dp),
+        shape = com.nizam.app.ui.design.labShape(12.dp),
         color = MaterialTheme.colorScheme.surface,
         modifier = Modifier
             .fillMaxWidth()
@@ -169,7 +169,7 @@ fun BlockList(blocks: List<Block>, tone: Color, accent: Color) {
                     Row {
                         Box(
                             Modifier.width(3.dp).height(22.dp)
-                                .background(accent, RoundedCornerShape(2.dp))
+                                .background(accent, com.nizam.app.ui.design.labShape(2.dp))
                         )
                         Spacer(Modifier.width(10.dp))
                         Text(
@@ -192,7 +192,7 @@ fun BlockList(blocks: List<Block>, tone: Color, accent: Color) {
 
                 is Block.Example -> {
                     Surface(
-                        shape = RoundedCornerShape(12.dp),
+                        shape = com.nizam.app.ui.design.labShape(12.dp),
                         color = tone.copy(alpha = 0.10f),
                         modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
                     ) {
@@ -213,7 +213,7 @@ fun BlockList(blocks: List<Block>, tone: Color, accent: Color) {
 
                 is Block.Takeaways -> {
                     Surface(
-                        shape = RoundedCornerShape(12.dp),
+                        shape = com.nizam.app.ui.design.labShape(12.dp),
                         color = accent.copy(alpha = 0.12f),
                         modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
                     ) {
@@ -254,7 +254,7 @@ fun BlockList(blocks: List<Block>, tone: Color, accent: Color) {
 
                 is Block.Formula -> {
                     Surface(
-                        shape = RoundedCornerShape(12.dp),
+                        shape = com.nizam.app.ui.design.labShape(12.dp),
                         color = MaterialTheme.colorScheme.surfaceVariant,
                         modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
                     ) {
@@ -335,7 +335,7 @@ private fun FlowDiagram(block: Block.Flow, tone: Color, accent: Color) {
         }
         block.steps.forEachIndexed { index, step ->
             Surface(
-                shape = RoundedCornerShape(12.dp),
+                shape = com.nizam.app.ui.design.labShape(12.dp),
                 color = tone.copy(alpha = 0.12f),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -367,7 +367,7 @@ private fun TableBlock(block: Block.Table, accent: Color) {
     if (block.headers.isEmpty() && block.rows.isEmpty()) return
     val columns = maxOf(block.headers.size, block.rows.maxOfOrNull { it.size } ?: 0)
     Surface(
-        shape = RoundedCornerShape(12.dp),
+        shape = com.nizam.app.ui.design.labShape(12.dp),
         color = MaterialTheme.colorScheme.surface,
         modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
     ) {
@@ -408,7 +408,7 @@ private fun TableBlock(block: Block.Table, accent: Color) {
 private fun ChartBlock(block: Block.Chart, accent: Color) {
     if (block.values.isEmpty()) return
     Surface(
-        shape = RoundedCornerShape(12.dp),
+        shape = com.nizam.app.ui.design.labShape(12.dp),
         color = MaterialTheme.colorScheme.surface,
         modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
     ) {
@@ -481,7 +481,7 @@ private fun CalloutBlock(block: Block.Callout, tone: Color, accent: Color) {
         else -> "ℹ" to tone
     }
     Surface(
-        shape = RoundedCornerShape(12.dp),
+        shape = com.nizam.app.ui.design.labShape(12.dp),
         color = colour.copy(alpha = 0.12f),
         modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
     ) {

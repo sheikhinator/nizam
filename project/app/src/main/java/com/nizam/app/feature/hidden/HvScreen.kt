@@ -347,7 +347,7 @@ private fun Library(s: Hv.Session, onLock: () -> Unit) {
             Round("🔒") { onLock() }
         }
         // search
-        Box(Modifier.padding(horizontal = 16.dp).fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(CARD).padding(horizontal = 14.dp, vertical = 11.dp)) {
+        Box(Modifier.padding(horizontal = 16.dp).fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(CARD).padding(horizontal = 14.dp, vertical = 11.dp)) {
             if (query.isEmpty()) Text("Search titles, tags, performers, notes", color = DIM)
             BasicTextField(query, { query = it }, singleLine = true, textStyle = TextStyle(color = Color.White, fontSize = 15.sp), cursorBrush = SolidColor(HOT), modifier = Modifier.fillMaxWidth())
         }
@@ -389,12 +389,12 @@ private fun Library(s: Hv.Session, onLock: () -> Unit) {
                 Text(o, color = if (o == sort) EMBER else DIM, style = MaterialTheme.typography.labelMedium, modifier = Modifier.clickable { sort = o }.padding(6.dp)) }
         }
         importing?.let { (i, n) ->
-            Column(Modifier.padding(16.dp).fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(CARD).padding(14.dp)) {
+            Column(Modifier.padding(16.dp).fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(CARD).padding(14.dp)) {
                 Text("Sealing $i of $n…", color = Color.White)
                 LinearProgressIndicator(progress = { importPct }, color = HOT, trackColor = Color(0xFF2E262B), modifier = Modifier.fillMaxWidth().padding(top = 8.dp))
             }
         }
-        if (toDelete.isNotEmpty()) Row(Modifier.padding(horizontal = 16.dp, vertical = 6.dp).fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(CARD).padding(12.dp),
+        if (toDelete.isNotEmpty()) Row(Modifier.padding(horizontal = 16.dp, vertical = 6.dp).fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(CARD).padding(12.dp),
             verticalAlignment = Alignment.CenterVertically) {
             Text("Remove the ${toDelete.size} originals from your gallery?", color = Color.White, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
             Text("Remove", color = HOT, fontWeight = FontWeight.Bold, modifier = Modifier.clickable {
@@ -427,7 +427,7 @@ private fun Library(s: Hv.Session, onLock: () -> Unit) {
 
     // selection bar
     if (selected.isNotEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
-        Row(Modifier.navigationBarsPadding().padding(12.dp).fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Color(0xF0221A1F)).padding(8.dp),
+        Row(Modifier.navigationBarsPadding().padding(12.dp).fillMaxWidth().clip(com.nizam.app.ui.design.labShape(20.dp)).background(Color(0xF0221A1F)).padding(8.dp),
             horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
             Text("${selected.size}", color = Color.White, fontWeight = FontWeight.Bold)
             Action("🏷", "Tag") { sheet = "tag" }
@@ -464,19 +464,19 @@ private fun Tile(s: Hv.Session, i: Hv.Item, tags: List<Pair<String, String>>, se
     var bmp by remember(i.id) { mutableStateOf<Bitmap?>(null) }
     LaunchedEffect(i.id) { com.nizam.app.ui.design.guard { bmp = withContext(Dispatchers.IO) { s.thumb(i.id) } } }
     Column(modifier) {
-    Box(Modifier.aspectRatio(0.72f).clip(RoundedCornerShape(10.dp)).background(CARD)
-        .then(if (sel) Modifier.border(3.dp, HOT, RoundedCornerShape(10.dp)) else Modifier)) {
+    Box(Modifier.aspectRatio(0.72f).clip(com.nizam.app.ui.design.labShape(10.dp)).background(CARD)
+        .then(if (sel) Modifier.border(3.dp, HOT, com.nizam.app.ui.design.labShape(10.dp)) else Modifier)) {
         bmp?.let { Image(it.asImageBitmap(), null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }
             ?: Text(if (i.video) "🎬" else "📸", modifier = Modifier.align(Alignment.Center), fontSize = 24.sp)
         Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, Color.Transparent, Color.Black.copy(alpha = 0.75f)))))
         val flags = remember(i.performers, i.tags) { HvFlags.of(i) }
         Column(Modifier.align(Alignment.TopEnd).padding(5.dp), horizontalAlignment = Alignment.End) {
             if (flags.isNotEmpty()) Text(flags.take(3).joinToString(""), fontSize = 15.sp,
-                modifier = Modifier.clip(RoundedCornerShape(6.dp)).background(Color.Black.copy(alpha = 0.35f)).padding(horizontal = 3.dp))
+                modifier = Modifier.clip(com.nizam.app.ui.design.labShape(6.dp)).background(Color.Black.copy(alpha = 0.35f)).padding(horizontal = 3.dp))
             if (i.fav) Text("❤", color = HOT, fontSize = 14.sp, modifier = Modifier.padding(top = 2.dp, end = 1.dp))
         }
         if (i.rating > 0 && i.views > 0) Text("★${i.rating}", color = EMBER, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.TopStart).padding(6.dp))
-        if (i.views == 0) Box(Modifier.align(Alignment.TopStart).padding(6.dp).clip(RoundedCornerShape(6.dp)).background(GRAD).padding(horizontal = 5.dp, vertical = 1.dp)) {
+        if (i.views == 0) Box(Modifier.align(Alignment.TopStart).padding(6.dp).clip(com.nizam.app.ui.design.labShape(6.dp)).background(GRAD).padding(horizontal = 5.dp, vertical = 1.dp)) {
             Text("NEW", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Black) }
         Row(Modifier.align(Alignment.BottomStart).padding(6.dp)) {
             i.tags.take(3).forEach { t -> Text(tagIcon(tags, t), fontSize = 12.sp) }
@@ -784,8 +784,8 @@ private fun GalleryPicker(onCancel: () -> Unit, onPick: (List<Uri>) -> Unit) {
                     if (Build.VERSION.SDK_INT >= 29) c.contentResolver.loadThumbnail(g.uri, Size(256, 256), null)
                     else MediaStore.Images.Thumbnails.getThumbnail(c.contentResolver, ContentUris.parseId(g.uri), MediaStore.Images.Thumbnails.MINI_KIND, null) }.getOrNull() } } }
                 val on = g.uri in picked
-                Box(Modifier.aspectRatio(1f).clip(RoundedCornerShape(6.dp)).background(CARD).clickable { picked = if (on) picked - g.uri else picked + g.uri }
-                    .then(if (on) Modifier.border(3.dp, HOT, RoundedCornerShape(6.dp)) else Modifier)) {
+                Box(Modifier.aspectRatio(1f).clip(com.nizam.app.ui.design.labShape(6.dp)).background(CARD).clickable { picked = if (on) picked - g.uri else picked + g.uri }
+                    .then(if (on) Modifier.border(3.dp, HOT, com.nizam.app.ui.design.labShape(6.dp)) else Modifier)) {
                     bmp?.let { Image(it.asImageBitmap(), null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }
                     if (g.video) Text("▶", color = Color.White, fontSize = 12.sp, modifier = Modifier.align(Alignment.BottomStart).padding(4.dp))
                     if (on) Box(Modifier.align(Alignment.TopEnd).padding(4.dp).size(20.dp).clip(CircleShape).background(HOT), contentAlignment = Alignment.Center) {
@@ -811,16 +811,16 @@ private fun GalleryPicker(onCancel: () -> Unit, onPick: (List<Uri>) -> Unit) {
 
 @Composable private fun Title(t: String) = Text(t, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 10.dp, bottom = 8.dp))
 
-@Composable private fun GradButton(t: String, onClick: () -> Unit) = Box(Modifier.padding(top = 10.dp).fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(GRAD)
+@Composable private fun GradButton(t: String, onClick: () -> Unit) = Box(Modifier.padding(top = 10.dp).fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(GRAD)
     .clickable(onClick = onClick).padding(14.dp), contentAlignment = Alignment.Center) { Text(t, color = Color.White, fontWeight = FontWeight.Bold) }
 
-@Composable private fun Field(v: String, hint: String, onChange: (String) -> Unit) = Box(Modifier.padding(top = 8.dp).fillMaxWidth().clip(RoundedCornerShape(12.dp))
+@Composable private fun Field(v: String, hint: String, onChange: (String) -> Unit) = Box(Modifier.padding(top = 8.dp).fillMaxWidth().clip(com.nizam.app.ui.design.labShape(12.dp))
     .background(Color(0xFF241C21)).padding(horizontal = 14.dp, vertical = 12.dp)) {
     if (v.isEmpty()) Text(hint, color = DIM)
     BasicTextField(v, onChange, singleLine = true, textStyle = TextStyle(color = Color.White, fontSize = 15.sp), cursorBrush = SolidColor(HOT), modifier = Modifier.fillMaxWidth())
 }
 
-@Composable private fun SheetRow(icon: String, title: String, sub: String, onClick: () -> Unit) = Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
+@Composable private fun SheetRow(icon: String, title: String, sub: String, onClick: () -> Unit) = Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp))
     .clickable(onClick = onClick).padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
     Box(Modifier.size(44.dp).clip(CircleShape).background(CARD), contentAlignment = Alignment.Center) { Text(icon, fontSize = 20.sp) }
     Column(Modifier.padding(start = 12.dp)) { Text(title, color = Color.White, fontWeight = FontWeight.SemiBold); Text(sub, color = DIM, style = MaterialTheme.typography.bodySmall) }
@@ -854,7 +854,7 @@ private fun Stats(items: List<Hv.Item>, tags: List<Pair<String, String>>, onClos
                 "❤" to "${items.count { it.fav }} favourites", "🆕" to "${items.count { it.added > weekAgo }} added this week",
                 "💾" to "%.1f GB".format(items.sumOf { it.size } / 1_073_741_824.0),
                 "★" to (items.filter { it.rating > 0 }.map { it.rating }.average().takeIf { !it.isNaN() }?.let { "%.1f avg rating".format(it) } ?: "no ratings yet")
-            ).forEach { (ic, t) -> Column(Modifier.clip(RoundedCornerShape(14.dp)).background(CARD).padding(horizontal = 14.dp, vertical = 10.dp)) {
+            ).forEach { (ic, t) -> Column(Modifier.clip(com.nizam.app.ui.design.labShape(14.dp)).background(CARD).padding(horizontal = 14.dp, vertical = 10.dp)) {
                 Text(ic, fontSize = 20.sp); Text(t, color = Color.White, fontWeight = FontWeight.SemiBold) } }
         }
         val top = items.filter { it.views > 0 }.sortedByDescending { it.views }.take(5)
@@ -896,7 +896,7 @@ private fun Calendar(s: Hv.Session, onClose: () -> Unit) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf("${since?.let { if (it == 0L) "Today" else "$it days" } ?: "—"}" to "since last", "$longestGap days" to "longest streak",
                 "$last30" to "last 30 days").forEach { (v, l) ->
-                Column(Modifier.weight(1f).clip(RoundedCornerShape(14.dp)).background(CARD).padding(10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(Modifier.weight(1f).clip(com.nizam.app.ui.design.labShape(14.dp)).background(CARD).padding(10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(v, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp); Text(l, color = DIM, fontSize = 11.sp) }
             }
         }
@@ -970,14 +970,14 @@ private fun AlbumsGrid(s: Hv.Session, items: List<Hv.Item>, albums: List<Pair<St
             val coverId = cover.takeIf { id -> inside.any { it.id == id } } ?: inside.maxByOrNull { it.added }?.id
             var bmp by remember(coverId) { mutableStateOf<Bitmap?>(null) }
             LaunchedEffect(coverId) { com.nizam.app.ui.design.guard { bmp = coverId?.let { withContext(Dispatchers.IO) { s.thumb(it) } } } }
-            Column(Modifier.clip(RoundedCornerShape(14.dp)).clickable { onOpen(a) }) {
-                Box(Modifier.fillMaxWidth().aspectRatio(0.9f).clip(RoundedCornerShape(14.dp)).background(CARD)) {
+            Column(Modifier.clip(com.nizam.app.ui.design.labShape(14.dp)).clickable { onOpen(a) }) {
+                Box(Modifier.fillMaxWidth().aspectRatio(0.9f).clip(com.nizam.app.ui.design.labShape(14.dp)).background(CARD)) {
                     bmp?.let { Image(it.asImageBitmap(), null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }
                         ?: Text("📁", fontSize = 40.sp, modifier = Modifier.align(Alignment.Center))
                     Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.8f)))))
                     val flags = remember(inside) { (HvFlags.of(listOf(a)) + inside.flatMap { HvFlags.of(it) }).distinct().take(4) }
                     if (flags.isNotEmpty()) Text(flags.joinToString(""), fontSize = 18.sp, modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)
-                        .clip(RoundedCornerShape(8.dp)).background(Color.Black.copy(alpha = 0.35f)).padding(horizontal = 4.dp))
+                        .clip(com.nizam.app.ui.design.labShape(8.dp)).background(Color.Black.copy(alpha = 0.35f)).padding(horizontal = 4.dp))
                     Column(Modifier.align(Alignment.BottomStart).padding(10.dp)) {
                         Text(a, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         Text("${inside.count { it.video }} videos · ${inside.count { !it.video }} photos" +

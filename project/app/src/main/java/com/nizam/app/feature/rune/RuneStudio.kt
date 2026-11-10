@@ -208,7 +208,7 @@ private fun RuneGallery(open: (String) -> Unit, edit: (RuneEditor) -> Unit) {
         if (saved.isEmpty()) item("mine-e") { Text("Nothing yet. Start from a template below, or describe one above.", Modifier.padding(horizontal = 16.dp), color = m.onSurfaceVariant) }
         items(saved.size, key = { "d" + saved[it].optString("id") }) { i ->
             val rec = saved[i]; val rid = rec.optString("id"); val doc = rec.optJSONObject("doc") ?: JSONObject()
-            Column(Modifier.padding(horizontal = 16.dp, vertical = 6.dp).fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(m.surfaceVariant).padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(Modifier.padding(horizontal = 16.dp, vertical = 6.dp).fillMaxWidth().clip(com.nizam.app.ui.design.labShape(18.dp)).background(m.surfaceVariant).padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
                     Text(rec.optString("name"), fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
                     Text("${RuneModel.count(doc.optJSONObject("root") ?: JSONObject())} parts", fontSize = 12.sp, color = m.onSurfaceVariant)
@@ -227,7 +227,7 @@ private fun RuneGallery(open: (String) -> Unit, edit: (RuneEditor) -> Unit) {
             LazyRow(contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(templates, key = { it.slug }) { t ->
                     Column(Modifier.clickable { edit(RuneEditor(JSONObject(t.doc.toString()), null).also { it.dirty = true }) }, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Box(Modifier.size(width = 150.dp, height = 270.dp).clip(RoundedCornerShape(18.dp)).border(1.dp, m.outline.copy(alpha = 0.3f), RoundedCornerShape(18.dp))) {
+                        Box(Modifier.size(width = 150.dp, height = 270.dp).clip(com.nizam.app.ui.design.labShape(18.dp)).border(1.dp, m.outline.copy(alpha = 0.3f), com.nizam.app.ui.design.labShape(18.dp))) {
                             Box(Modifier.requiredSize(360.dp, 648.dp).graphicsLayer { scaleX = 150f / 360f; scaleY = 150f / 360f; transformOrigin = TransformOrigin(0f, 0f) }) {
                                 RuneView(t.doc, {}, Modifier.fillMaxSize())
                             }
@@ -265,7 +265,7 @@ private fun RuneEditorScreen(ed: RuneEditor, open: (String) -> Unit, close: () -
             Button({ save(); RuneActions.toast(c, "Saved") }, Modifier.weight(1f)) { Text(if (ed.dirty) "Save" else "Saved") }
             OutlinedButton({ val id = save(); open("nx/rune_$id") }, Modifier.weight(1f)) { Text("Run full screen") }
         }
-        Box(Modifier.fillMaxWidth().weight(0.9f).padding(10.dp).clip(RoundedCornerShape(20.dp)).border(1.dp, m.outline.copy(alpha = 0.3f), RoundedCornerShape(20.dp))) {
+        Box(Modifier.fillMaxWidth().weight(0.9f).padding(10.dp).clip(com.nizam.app.ui.design.labShape(20.dp)).border(1.dp, m.outline.copy(alpha = 0.3f), com.nizam.app.ui.design.labShape(20.dp))) {
             RuneView(ed.doc, open, Modifier.fillMaxSize(), hooks, ed.replay)
         }
         LazyRow(contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -291,7 +291,7 @@ private fun LayersTab(ed: RuneEditor) {
     RuneModel.flatten(ed.root).forEach { (n, depth) ->
         val id = n.optString("id"); val on = id == ed.selected
         val label = n.optString("t") + (n.optString("text").takeIf { it.isNotBlank() }?.let { " · " + it.take(22) } ?: "")
-        Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).background(if (on) m.primary.copy(alpha = 0.18f) else androidx.compose.ui.graphics.Color.Transparent)
+        Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(10.dp)).background(if (on) m.primary.copy(alpha = 0.18f) else androidx.compose.ui.graphics.Color.Transparent)
             .clickable { ed.selected = id }.padding(start = (depth * 14).dp, top = 6.dp, bottom = 6.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(label, Modifier.weight(1f), fontSize = 14.sp, color = if (on) m.primary else m.onSurface, maxLines = 1)
         }
@@ -386,7 +386,7 @@ private fun ThemeTab(ed: RuneEditor) {
     }
     Text("Contrast: text ${"%.1f".format(RuneColor.contrast(cur.ink, cur.surface))}:1 · accent ${"%.1f".format(RuneColor.contrast(cur.primary, cur.surface))}:1 (text is always pushed to at least 7:1, muted text 4.5:1)", fontSize = 12.sp, color = m.onSurfaceVariant)
     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        listOf(cur.surface, cur.card, cur.ink, cur.muted, cur.primary, cur.accent).forEach { col -> Box(Modifier.size(34.dp).clip(RoundedCornerShape(10.dp)).background(col).border(1.dp, m.outline.copy(alpha = 0.3f), RoundedCornerShape(10.dp))) }
+        listOf(cur.surface, cur.card, cur.ink, cur.muted, cur.primary, cur.accent).forEach { col -> Box(Modifier.size(34.dp).clip(com.nizam.app.ui.design.labShape(10.dp)).background(col).border(1.dp, m.outline.copy(alpha = 0.3f), com.nizam.app.ui.design.labShape(10.dp))) }
     }
     Button({
         scope.launch {

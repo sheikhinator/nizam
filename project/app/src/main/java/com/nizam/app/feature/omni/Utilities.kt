@@ -132,7 +132,7 @@ fun RankerScreen() {
                 val pair = remember(v, names.size) { val least = names.sortedBy { items.optJSONObject(it)?.optInt("n") ?: 0 }.take(4).shuffled(); least[0] to (names - least[0]).random() }
                 Text("Which is better?", style = MaterialTheme.typography.titleMedium)
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    listOf(pair.first, pair.second).forEach { pick -> Box(Modifier.weight(1f).height(110.dp).clip(RoundedCornerShape(20.dp)).background(MaterialTheme.colorScheme.primaryContainer).clickable {
+                    listOf(pair.first, pair.second).forEach { pick -> Box(Modifier.weight(1f).height(110.dp).clip(com.nizam.app.ui.design.labShape(20.dp)).background(MaterialTheme.colorScheme.primaryContainer).clickable {
                         Ranker.lists(c).update(l.optString("id")) { x -> val it2 = x.optJSONObject("items")!!
                             val a = it2.optJSONObject(pair.first)!!; val b = it2.optJSONObject(pair.second)!!
                             val (na, nb) = Ranker.elo(a.optDouble("r", 1000.0), b.optDouble("r", 1000.0), pick == pair.first)
@@ -319,7 +319,7 @@ private fun MissionUi(kind: String, done: () -> Unit) {
         val want = DUA.lowercase().split(" ").filter { it.length > 3 }
         val hit = want.count { w -> heard.contains(w.take(5)) }
         if (hit >= want.size / 2) done() else msg = "Say the whole dua clearly, once more." }
-    Column(Modifier.fillMaxSize().background(Color(0xFF060814)).padding(28.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(Modifier.fillMaxSize().background(com.nizam.app.ui.design.labBg(Color(0xFF060814))).padding(28.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
         Text("🕌", fontSize = 64.sp); Text("Time for Fajr", color = Color.White, fontSize = 34.sp, fontWeight = FontWeight.Bold)
         Text("As-salatu khayrun min an-nawm", color = Color(0xFF8BE9FD), fontSize = 16.sp, modifier = Modifier.padding(8.dp))
         when {
@@ -403,7 +403,7 @@ fun NotificationJarScreen() {
             tick.let { }
             drops.forEach { d -> val alpha = if (d.weight < 0.3f) 0.55f else 1f
                 Box(Modifier.offset { IntOffset((d.x * (w - with(dens) { 140.dp.toPx() })).toInt(), (d.y.coerceIn(-0.2f, 1f) * (h - with(dens) { 60.dp.toPx() })).toInt()) }
-                    .width(140.dp).clip(RoundedCornerShape(30.dp)).background(Color.hsv(200f - d.weight * 180f, 0.55f, 0.95f, alpha)).padding(horizontal = 10.dp, vertical = 6.dp)) {
+                    .width(140.dp).clip(com.nizam.app.ui.design.labShape(30.dp)).background(Color.hsv(200f - d.weight * 180f, 0.55f, 0.95f, alpha)).padding(horizontal = 10.dp, vertical = 6.dp)) {
                     Text("${d.app}: ${d.title}", color = Color(0xFF0B0E1A), fontSize = 11.sp, maxLines = 2) } }
         }
         picked?.let { d -> OCard { OText("${d.app}: ${d.title}"); ORow { OBtn("Open") { com.nizam.app.feature.phone.AtlasNotificationListener.open(c, d.key); picked = null }

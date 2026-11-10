@@ -167,7 +167,7 @@ fun BeingFreedomScreen(container: AppContainer) {
         if (log.isEmpty()) item("log-e") { Text("Nothing yet. Open its 3D home and ask it to do something.", Modifier.padding(horizontal = 16.dp), color = m.onSurfaceVariant) }
         log.forEach { e ->
             item("l" + e.optString("id")) {
-                Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp).fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(m.surfaceVariant).padding(12.dp)) {
+                Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp).fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(m.surfaceVariant).padding(12.dp)) {
                     Text(e.optJSONObject("args")?.optString("goal").orEmpty().ifBlank { e.optString("fn") }, fontWeight = FontWeight.Medium, fontSize = 14.sp)
                     Text(e.optString("result"), fontSize = 12.sp, color = m.onSurfaceVariant, maxLines = 4)
                     if (e.has("undo") && !e.optBoolean("undone")) TextButton({ scope.launch { msg = Journal.undo(container, e.optString("id")); log = Journal.store(c).all().filter { it.optString("source") == "Being" }.sortedByDescending { it.optLong("t") }.take(25) } }) { Text("Undo") }

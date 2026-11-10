@@ -220,8 +220,8 @@ fun MnemonicConstellationScreen() {
                 Column(
                     Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(22.dp))
-                        .luminex(RoundedCornerShape(22.dp), star.color, 0.5f)
+                        .clip(com.nizam.app.ui.design.labShape(22.dp))
+                        .luminex(com.nizam.app.ui.design.labShape(22.dp), star.color, 0.5f)
                         .background(Color(0xCC0A0B14))
                         .padding(18.dp)
                 ) {

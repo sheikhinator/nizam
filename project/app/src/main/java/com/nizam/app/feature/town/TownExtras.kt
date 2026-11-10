@@ -169,7 +169,7 @@ fun TownPlannerScreen(container: AppContainer) {
                     var name by remember(s.id) { mutableStateOf(s.name) }
                     var job by remember(s.id) { mutableStateOf(s.job) }
                     val stories = Adventures.all(c).filter { it.sim == s.name } + TownLife.expeditions(c).filter { it.optString("who") == s.name }.map { Adventure(it.optString("d"), s.name, it.optString("story"), "", "🧭") }
-                    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(10.dp)) {
+                    Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(10.dp)) {
                         Text("${s.personality.label} · ${s.age}", style = MaterialTheme.typography.labelSmall)
                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             OutlinedTextField(name, { name = it }, Modifier.weight(1f), singleLine = true, label = { Text("Name") })

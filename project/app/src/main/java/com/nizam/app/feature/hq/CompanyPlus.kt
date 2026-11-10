@@ -263,7 +263,7 @@ fun PeopleOpsTab(container: AppContainer, openAgent: (String) -> Unit) {
     var tick by remember { mutableIntStateOf(0) }
     val reviews = remember(version, tick) { CompanyPlus.reviews(c) }
     LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        CompanyPlus.occasion()?.let { o -> item { Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(MaterialTheme.colorScheme.tertiaryContainer).padding(12.dp)) { Text(o) } } }
+        CompanyPlus.occasion()?.let { o -> item { Box(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(MaterialTheme.colorScheme.tertiaryContainer).padding(12.dp)) { Text(o) } } }
         item {
             Text("🏷️ Task marketplace", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             Text("Post a task; agents bid on fit, rating, level and workload. The winner starts it.", style = MaterialTheme.typography.bodySmall)

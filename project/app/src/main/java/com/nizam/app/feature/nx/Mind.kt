@@ -178,7 +178,7 @@ internal fun MindDock(spec: Spec, open: (String) -> Unit, modifier: Modifier = M
             }
             if (power != null) Box(Modifier.align(Alignment.TopEnd).size(10.dp).background(MaterialTheme.colorScheme.tertiary, CircleShape))
         } else {
-            Column(Modifier.fillMaxWidth(0.86f).background(MaterialTheme.colorScheme.surface, RoundedCornerShape(18.dp)).padding(14.dp),
+            Column(Modifier.fillMaxWidth(0.86f).background(MaterialTheme.colorScheme.surface, com.nizam.app.ui.design.labShape(18.dp)).padding(14.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 if (power != null) {
                     Text("Across your life", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
@@ -298,7 +298,7 @@ fun RouteDock(route: String?, hidden: Boolean) {
     Box(Modifier.fillMaxSize().padding(end = 14.dp, bottom = 176.dp), contentAlignment = Alignment.BottomEnd) {
         if (!shown) Box(Modifier.size(40.dp).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.88f), CircleShape).clickable { shown = true },
             contentAlignment = Alignment.Center) { Text("✦", color = MaterialTheme.colorScheme.onPrimary) }
-        else Column(Modifier.fillMaxWidth(0.9f).background(MaterialTheme.colorScheme.surface, RoundedCornerShape(18.dp)).padding(14.dp),
+        else Column(Modifier.fillMaxWidth(0.9f).background(MaterialTheme.colorScheme.surface, com.nizam.app.ui.design.labShape(18.dp)).padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(title, fontWeight = FontWeight.SemiBold)
             ScreenPowersFor(spec?.id ?: route, route, title, blurb, words) { shown = false }

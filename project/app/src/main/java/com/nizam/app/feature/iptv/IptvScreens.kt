@@ -65,7 +65,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 private fun Logo(url: String?, name: String, modifier: Modifier = Modifier) {
-    Box(modifier.aspectRatio(16f / 10f).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surface),
+    Box(modifier.aspectRatio(16f / 10f).clip(com.nizam.app.ui.design.labShape(12.dp)).background(MaterialTheme.colorScheme.surface),
         contentAlignment = Alignment.Center) {
         if (url != null) AsyncImage(url, name, contentScale = ContentScale.Fit, modifier = Modifier.fillMaxSize().padding(8.dp))
         else Text(name.take(18), style = MaterialTheme.typography.labelSmall, textAlign = TextAlign.Center, modifier = Modifier.padding(6.dp))
@@ -242,15 +242,15 @@ fun IptvPlayerScreen() {
         AndroidView(factory = { PlayerView(it).apply { this.player = player; keepScreenOn = true } }, modifier = Modifier.fillMaxSize())
         Row(Modifier.align(Alignment.TopStart).padding(12.dp)) {
             Text(channel?.name.orEmpty(), color = Color.White, style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.background(Color(0xAA000000), RoundedCornerShape(10.dp)).padding(horizontal = 10.dp, vertical = 6.dp))
+                modifier = Modifier.background(Color(0xAA000000), com.nizam.app.ui.design.labShape(10.dp)).padding(horizontal = 10.dp, vertical = 6.dp))
             Spacer(Modifier.width(8.dp))
             Text("Channels", color = Color.White, style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.background(Color(0xAA000000), RoundedCornerShape(10.dp))
+                modifier = Modifier.background(Color(0xAA000000), com.nizam.app.ui.design.labShape(10.dp))
                     .clickable(role = Role.Button) { showList = !showList }.padding(horizontal = 10.dp, vertical = 8.dp))
         }
         error?.let {
             Text(it, color = Color.White, textAlign = TextAlign.Center,
-                modifier = Modifier.align(Alignment.Center).background(Color(0xCC000000), RoundedCornerShape(12.dp)).padding(16.dp))
+                modifier = Modifier.align(Alignment.Center).background(Color(0xCC000000), com.nizam.app.ui.design.labShape(12.dp)).padding(16.dp))
         }
         if (showList) {
             LazyColumn(Modifier.align(Alignment.CenterEnd).fillMaxHeight().width(260.dp).background(Color(0xE60B0F1A)).padding(10.dp)) {

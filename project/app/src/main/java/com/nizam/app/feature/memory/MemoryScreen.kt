@@ -232,7 +232,7 @@ private fun PhotoTab() {
                 }.getOrNull()
             }
             Column(Modifier.width(104.dp)) {
-                bmp?.let { Image(it, d, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(10.dp))) }
+                bmp?.let { Image(it, d, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxWidth().aspectRatio(1f).clip(com.nizam.app.ui.design.labShape(10.dp))) }
                 Text(d.takeLast(5), style = MaterialTheme.typography.labelSmall)
             }
         }

@@ -178,10 +178,10 @@ fun GhostRunScreen() {
             OCard { OTitle("Storyboard · ${b.optString("verdict")}")
                 Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     O.arr(b.optJSONArray("steps")).forEachIndexed { i, s ->
-                        Column(Modifier.size(150.dp, 230.dp).clip(RoundedCornerShape(18.dp)).background(Color(0xFF10131F))
-                            .border(2.dp, if (s.optBoolean("risky")) Color(0xFFFF6B6B) else Color(0xFF39425E), RoundedCornerShape(18.dp)).padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Column(Modifier.size(150.dp, 230.dp).clip(com.nizam.app.ui.design.labShape(18.dp)).background(Color(0xFF10131F))
+                            .border(2.dp, if (s.optBoolean("risky")) Color(0xFFFF6B6B) else Color(0xFF39425E), com.nizam.app.ui.design.labShape(18.dp)).padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text("${i + 1} · ${s.optString("app")}", color = Color(0xFF8BE9FD), fontSize = 11.sp)
-                            Box(Modifier.size(130.dp, 70.dp).clip(RoundedCornerShape(8.dp)).background(Color(0xFF1C2236)).padding(6.dp)) { Text(s.optString("screen"), color = Color(0xFFB8C0DA), fontSize = 10.sp) }
+                            Box(Modifier.size(130.dp, 70.dp).clip(com.nizam.app.ui.design.labShape(8.dp)).background(Color(0xFF1C2236)).padding(6.dp)) { Text(s.optString("screen"), color = Color(0xFFB8C0DA), fontSize = 10.sp) }
                             Text("👆 " + s.optString("action"), color = Color.White, fontSize = 12.sp)
                             Text(s.optString("why"), color = Color(0xFF8E97B8), fontSize = 10.sp)
                             if (s.optBoolean("risky")) Text("✋ asks you first", color = Color(0xFFFF6B6B), fontSize = 11.sp)

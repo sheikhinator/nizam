@@ -280,7 +280,7 @@ fun SpeechBubble(text: String, modifier: Modifier = Modifier, below: Boolean = f
     LaunchedEffect(text) { com.nizam.app.ui.design.guard { onTyping(true); while (shown < text.length) { delay(24); shown += if (text[shown] == ' ') 1 else 1 }; delay(300); onTyping(false) } }
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         if (below) Tail(up = true)
-        Text(text.take(shown), Modifier.widthIn(max = 230.dp).clip(RoundedCornerShape(16.dp)).background(Color.White).border(2.dp, BP.ink, RoundedCornerShape(16.dp))
+        Text(text.take(shown), Modifier.widthIn(max = 230.dp).clip(com.nizam.app.ui.design.labShape(16.dp)).background(Color.White).border(2.dp, BP.ink, com.nizam.app.ui.design.labShape(16.dp))
             .padding(horizontal = 11.dp, vertical = 7.dp), color = BP.ink, fontSize = 13.sp, lineHeight = 17.sp, fontWeight = FontWeight.Medium)
         if (!below) Tail(up = false)
     }
@@ -515,7 +515,7 @@ fun MindDialog(onClose: () -> Unit) {
     var sel by remember { mutableStateOf<JSONObject?>(null) }
     val m = sel ?: remember(v) { Being.mind(c) }
     Dialog(onClose, DialogProperties(usePlatformDefaultWidth = false)) {
-        Column(Modifier.fillMaxWidth().padding(16.dp).heightIn(max = 640.dp).clip(RoundedCornerShape(24.dp)).background(BP.bg).border(1.dp, BP.line, RoundedCornerShape(24.dp))
+        Column(Modifier.fillMaxWidth().padding(16.dp).heightIn(max = 640.dp).clip(com.nizam.app.ui.design.labShape(24.dp)).background(BP.bg).border(1.dp, BP.line, com.nizam.app.ui.design.labShape(24.dp))
             .verticalScroll(rememberScrollState()).padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(m.optString("icon", "💭"), fontSize = 30.sp)
@@ -548,7 +548,7 @@ fun MindDialog(onClose: () -> Unit) {
 }
 
 @Composable private fun Section(title: String, body: @Composable () -> Unit) {
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(BP.panel).padding(12.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+    Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(BP.panel).padding(12.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
         Text(title, color = BP.glow, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = BP.mono); body()
     }
 }
@@ -557,7 +557,7 @@ fun MindDialog(onClose: () -> Unit) {
 internal fun MiniBar(name: String, v: Float, col: Color, label: String? = null, bold: Boolean = false) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(name, Modifier.width(150.dp), color = if (bold) BP.warm else BP.dim, fontSize = 12.sp, maxLines = 1, fontWeight = if (bold) FontWeight.Bold else FontWeight.Normal)
-        Box(Modifier.weight(1f).height(7.dp).clip(RoundedCornerShape(4.dp)).background(Color(0xFF1E2440))) { Box(Modifier.fillMaxWidth(v.coerceIn(0.02f, 1f)).height(7.dp).background(col)) }
+        Box(Modifier.weight(1f).height(7.dp).clip(com.nizam.app.ui.design.labShape(4.dp)).background(Color(0xFF1E2440))) { Box(Modifier.fillMaxWidth(v.coerceIn(0.02f, 1f)).height(7.dp).background(col)) }
         Text(label ?: "${(v * 100).toInt()}", Modifier.width(38.dp).padding(start = 6.dp), color = BP.text, fontFamily = BP.mono, fontSize = 11.sp)
     }
 }
@@ -599,12 +599,12 @@ fun BeingChat(container: AppContainer, modifier: Modifier = Modifier, maxHeight:
                 Box(Modifier.size(30.dp, 40.dp)) { Robot(look, Pose.THINK, Face.THINKING, Modifier.fillMaxSize()) }
                 Spacer(Modifier.width(6.dp))
                 val t = rememberClock()
-                Text("•••".mapIndexed { i, ch -> if (((t * 3).toInt() % 3) == i) '●' else '•' }.joinToString(" "), Modifier.clip(RoundedCornerShape(18.dp)).background(Color(0xFF1F2742))
+                Text("•••".mapIndexed { i, ch -> if (((t * 3).toInt() % 3) == i) '●' else '•' }.joinToString(" "), Modifier.clip(com.nizam.app.ui.design.labShape(18.dp)).background(Color(0xFF1F2742))
                     .padding(horizontal = 14.dp, vertical = 9.dp), color = BP.dim, fontSize = 14.sp)
             }
         }
         Row(Modifier.fillMaxWidth().padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-            OutlinedTextField(said, { said = it }, Modifier.weight(1f), singleLine = false, maxLines = 4, placeholder = { Text("Message ${Being.name(c)}") }, shape = RoundedCornerShape(24.dp),
+            OutlinedTextField(said, { said = it }, Modifier.weight(1f), singleLine = false, maxLines = 4, placeholder = { Text("Message ${Being.name(c)}") }, shape = com.nizam.app.ui.design.labShape(24.dp),
                 trailingIcon = { com.nizam.app.feature.nx.MicButton({ heard -> said = heard }) },
                 keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Send),
                 keyboardActions = androidx.compose.foundation.text.KeyboardActions(onSend = { send() }),
@@ -649,12 +649,12 @@ fun RoomScene(container: AppContainer?, height: Dp, botW: Dp, mode: Mode, modifi
         val floorH = if (small) 22.dp else 52.dp
         // window to the real sky
         Box(Modifier.offset(x = w - (if (small) 78.dp else 118.dp), y = if (small) 12.dp else 22.dp).size(if (small) 56.dp else 88.dp, if (small) 40.dp else 66.dp)
-            .clip(RoundedCornerShape(5.dp)).background(Brush.verticalGradient(sky)).border(if (small) 3.dp else 4.dp, Color(0xFF4A3B66), RoundedCornerShape(5.dp))) {
+            .clip(com.nizam.app.ui.design.labShape(5.dp)).background(Brush.verticalGradient(sky)).border(if (small) 3.dp else 4.dp, Color(0xFF4A3B66), com.nizam.app.ui.design.labShape(5.dp))) {
             Text(if (h !in 6..18) "✦ · ✧" else "☀", Modifier.padding(6.dp), color = if (h !in 6..18) Color.White.copy(alpha = 0.8f) else Color(0xFFFFE08A), fontSize = if (small) 9.sp else 14.sp)
         }
         if (showFurniture) {
             // its latest painting on the wall
-            art?.let { a -> Box(Modifier.offset(x = 18.dp, y = 16.dp).size(48.dp).clip(RoundedCornerShape(3.dp)).background(Color(0xFF6B4F3A)).padding(4.dp)) { PixelArt(a, Modifier.fillMaxSize()) } }
+            art?.let { a -> Box(Modifier.offset(x = 18.dp, y = 16.dp).size(48.dp).clip(com.nizam.app.ui.design.labShape(3.dp)).background(Color(0xFF6B4F3A)).padding(4.dp)) { PixelArt(a, Modifier.fillMaxSize()) } }
             // shelf
             Box(Modifier.offset(x = if (art != null) 80.dp else 16.dp, y = 62.dp).size(w * 0.42f, 4.dp).background(Color(0xFF6B4F3A)))
             Row(Modifier.offset(x = if (art != null) 84.dp else 20.dp, y = 36.dp).width(w * 0.42f), horizontalArrangement = Arrangement.spacedBy(3.dp)) {
@@ -693,7 +693,7 @@ fun BeingWindow(container: AppContainer, onOpen: (String) -> Unit, modifier: Mod
     val c = LocalContext.current
     val v = Being.version
     if (!Being.born(c)) {
-        Row(modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Color(0xFF1A1630)).clickable { onOpen("nx/being") }.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(18.dp)).background(Color(0xFF1A1630)).clickable { onOpen("nx/being") }.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("🥚", fontSize = 26.sp); Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) { Text("Something is about to hatch", color = BP.text, fontWeight = FontWeight.SemiBold); Text("A little robot with a life of its own. Tap to meet it.", color = BP.dim, fontSize = 12.sp) }
         }
@@ -701,7 +701,7 @@ fun BeingWindow(container: AppContainer, onOpen: (String) -> Unit, modifier: Mod
     }
     var chat by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { Being.upgradeBody(c); while (true) { Being.liveIfDue(c); delay(60_000); Being.version++ } } }
-    Column(modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Color(0xFF141026)).combinedClickable(onClick = { chat = true }, onLongClick = { onOpen("nx/being") })) {
+    Column(modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(20.dp)).background(Color(0xFF141026)).combinedClickable(onClick = { chat = true }, onLongClick = { onOpen("nx/being") })) {
         RoomScene(container, 132.dp, 40.dp, Mode.WINDOW, showFurniture = false)
         Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(Being.name(c), color = BP.text, fontWeight = FontWeight.Bold, fontSize = 14.sp)

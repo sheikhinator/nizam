@@ -71,7 +71,7 @@ fun StatusIsland(modifier: Modifier = Modifier) {
         if (a != null) {
             val (label, p) = a
             Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)
-                .clip(RoundedCornerShape(16.dp)).background(wash(MaterialTheme.colorScheme.primary, 0.14f))
+                .clip(com.nizam.app.ui.design.labShape(16.dp)).background(wash(MaterialTheme.colorScheme.primary, 0.14f))
                 .padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Outlined.Downloading, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.size(8.dp))
@@ -123,7 +123,7 @@ fun QuickCaptureFab(container: AppContainer, modifier: Modifier = Modifier) {
         ModalBottomSheet(onDismissRequest = { open = false }, sheetState = sheet) {
             Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("Throw anything in", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(wash(MaterialTheme.colorScheme.onSurface, 0.06f)).padding(start = 14.dp, end = 4.dp, top = 14.dp, bottom = 14.dp),
+                Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(wash(MaterialTheme.colorScheme.onSurface, 0.06f)).padding(start = 14.dp, end = 4.dp, top = 14.dp, bottom = 14.dp),
                     verticalAlignment = Alignment.CenterVertically) {
                     Box(Modifier.weight(1f)) {
                         BasicTextField(text, { text = it }, Modifier.fillMaxWidth(), textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
@@ -143,7 +143,7 @@ fun QuickCaptureFab(container: AppContainer, modifier: Modifier = Modifier) {
                         result = "Saved as a ${o.optString("kind", "note")}: ${o.optString("title").ifBlank { text.take(40) }}"
                         text = ""; busy = false
                     }
-                }.clip(RoundedCornerShape(14.dp)).background(MaterialTheme.colorScheme.primary).padding(vertical = 12.dp),
+                }.clip(com.nizam.app.ui.design.labShape(14.dp)).background(MaterialTheme.colorScheme.primary).padding(vertical = 12.dp),
                     horizontalArrangement = Arrangement.Center) {
                     Text(if (busy) "Filing it…" else "Save", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.SemiBold)
                 }

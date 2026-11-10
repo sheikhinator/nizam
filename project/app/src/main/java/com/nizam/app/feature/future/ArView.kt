@@ -147,7 +147,7 @@ fun ArViewScreen() {
                     (here?.let { "GPS ±${it.accuracy.roundToInt()} m" } ?: "finding you…"), color = Color.White, style = MaterialTheme.typography.labelLarge)
             }
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
-                OutlinedTextField(query, { query = it }, singleLine = true, modifier = Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(Color.Black.copy(alpha = 0.5f)),
+                OutlinedTextField(query, { query = it }, singleLine = true, modifier = Modifier.weight(1f).clip(com.nizam.app.ui.design.labShape(16.dp)).background(Color.Black.copy(alpha = 0.5f)),
                     placeholder = { Text("Find a place to point at…", color = Color.White.copy(alpha = 0.7f)) })
                 Text("Go", color = Color.White, modifier = Modifier.clickable(enabled = query.isNotBlank()) {
                     scope.launch {
@@ -160,7 +160,7 @@ fun ArViewScreen() {
         }
         Row(Modifier.align(Alignment.BottomCenter).padding(16.dp).horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Hold the phone upright and turn slowly. Save places in Maps to see them here.", color = Color.White,
-                style = MaterialTheme.typography.bodySmall, modifier = Modifier.clip(RoundedCornerShape(12.dp)).background(Color.Black.copy(alpha = 0.55f)).padding(10.dp))
+                style = MaterialTheme.typography.bodySmall, modifier = Modifier.clip(com.nizam.app.ui.design.labShape(12.dp)).background(Color.Black.copy(alpha = 0.55f)).padding(10.dp))
         }
     }
 }

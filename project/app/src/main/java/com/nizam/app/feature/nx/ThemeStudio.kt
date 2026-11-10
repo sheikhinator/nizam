@@ -123,8 +123,8 @@ fun ThemeStudioScreen(container: AppContainer) {
             Column(Modifier.padding(horizontal = Space.page)) {
                 (listOf(null) + ATLAS_THEMES).chunked(4).forEach { row -> Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     row.forEach { t -> Column(Modifier.weight(1f).pressable { scope.launch { container.settingsRepository.setAccent(t?.key ?: "") } }, horizontalAlignment = Alignment.CenterHorizontally) {
-                        Box(Modifier.size(54.dp).clip(RoundedCornerShape(16.dp)).background(t?.surface ?: MaterialTheme.colorScheme.background)
-                            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp)), contentAlignment = Alignment.Center) {
+                        Box(Modifier.size(54.dp).clip(com.nizam.app.ui.design.labShape(16.dp)).background(t?.surface ?: MaterialTheme.colorScheme.background)
+                            .border(1.dp, MaterialTheme.colorScheme.outline, com.nizam.app.ui.design.labShape(16.dp)), contentAlignment = Alignment.Center) {
                             Row { Box(Modifier.size(14.dp).clip(CircleShape).background(t?.primary ?: MaterialTheme.colorScheme.primary))
                                 Box(Modifier.width(3.dp)); Box(Modifier.size(14.dp).clip(CircleShape).background(t?.accent ?: MaterialTheme.colorScheme.tertiary)) }
                         }
@@ -137,9 +137,9 @@ fun ThemeStudioScreen(container: AppContainer) {
         item("ch") { SectionHeader("Make your own theme") }
         item("maker") { Column(Modifier.padding(horizontal = Space.page)) {
             val c = custom.value
-            Row(Modifier.fillMaxWidth().height(48.dp).clip(RoundedCornerShape(14.dp))) {
+            Row(Modifier.fillMaxWidth().height(48.dp).clip(com.nizam.app.ui.design.labShape(14.dp))) {
                 listOf("surface", "card", "ink", "inkMuted", "primary", "accent").forEach { k -> Box(Modifier.weight(1f).height(48.dp).background(hsv(c[k]!!)).pressable { editing = k }
-                    .border(if (editing == k) 3.dp else 0.dp, Color.White, RoundedCornerShape(0.dp))) }
+                    .border(if (editing == k) 3.dp else 0.dp, Color.White, com.nizam.app.ui.design.labShape(0.dp))) }
             }
             Text("Editing: ${mapOf("surface" to "Background", "card" to "Cards", "ink" to "Text", "inkMuted" to "Soft text", "primary" to "Main colour", "accent" to "Accent")[editing]}",
                 style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 8.dp))

@@ -155,7 +155,7 @@ private fun QuickRing(currentRoute: String?) {
                 val a = -Math.PI / 2 + 2 * Math.PI * i / items.size
                 val r = radius * anim.value
                 Box(Modifier.offset(x = (r.value * cos(a).toFloat()).dp, y = (r.value * sin(a).toFloat()).dp).width(92.dp)
-                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.95f), RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.95f), com.nizam.app.ui.design.labShape(16.dp))
                     .clickable { Feel.ringOpen = false; com.nizam.app.ui.screens.search.AtlasNav.go?.invoke(route) }
                     .padding(horizontal = 8.dp, vertical = 10.dp), contentAlignment = Alignment.Center) {
                     Text(label, style = MaterialTheme.typography.labelMedium, maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)

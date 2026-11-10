@@ -144,9 +144,9 @@ fun StyleGenScreen(container: AppContainer, open: (String) -> Unit) {
             Group {
                 Text(o.optString("label"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 // live mini preview of the generated theme
-                Box(Modifier.fillMaxWidth().padding(top = 8.dp).clip(RoundedCornerShape(18.dp)).background(StyleGen.color(o.optString("surface"))).padding(14.dp)) {
+                Box(Modifier.fillMaxWidth().padding(top = 8.dp).clip(com.nizam.app.ui.design.labShape(18.dp)).background(StyleGen.color(o.optString("surface"))).padding(14.dp)) {
                     Column {
-                        Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(StyleGen.color(o.optString("card"))).padding(12.dp)) {
+                        Box(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(StyleGen.color(o.optString("card"))).padding(12.dp)) {
                             Column {
                                 Text("Assalam o alaikum", color = StyleGen.color(o.optString("ink")), style = MaterialTheme.typography.titleMedium)
                                 Text("This is how your Atlas will look.", color = StyleGen.color(o.optString("inkMuted")), style = MaterialTheme.typography.bodySmall)

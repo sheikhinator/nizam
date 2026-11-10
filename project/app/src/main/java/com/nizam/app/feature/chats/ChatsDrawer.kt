@@ -96,7 +96,7 @@ fun ChatsDrawer(container: AppContainer, onNewChat: (projectId: String?) -> Unit
         val id = o.optString("id")
         val isCurrent = id == current
         Box {
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
+            Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp))
                 .background(if (isCurrent) cs.primary.copy(alpha = 0.12f) else androidx.compose.ui.graphics.Color.Transparent)
                 .combinedClickable(onClick = { open(o) }, onLongClick = { menuFor = id }).padding(horizontal = 10.dp, vertical = 10.dp)) {
                 androidx.compose.foundation.layout.Row(verticalAlignment = Alignment.CenterVertically) {
@@ -140,7 +140,7 @@ fun ChatsDrawer(container: AppContainer, onNewChat: (projectId: String?) -> Unit
             }
         }
         OutlinedTextField(q, { q = it }, placeholder = { Text("Search all chats") }, leadingIcon = { Icon(Icons.Outlined.Search, null) }, singleLine = true,
-            shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth().padding(top = 14.dp))
+            shape = com.nizam.app.ui.design.labShape(16.dp), modifier = Modifier.fillMaxWidth().padding(top = 14.dp))
         // ── sections ──
         androidx.compose.foundation.layout.Row(Modifier.fillMaxWidth().padding(top = 12.dp).horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             listOf("chats" to "Chats", "projects" to "Projects", "code" to "💻 Code", "archived" to "Archived").forEach { (k, l) ->
@@ -169,7 +169,7 @@ fun ChatsDrawer(container: AppContainer, onNewChat: (projectId: String?) -> Unit
                     }
                     ChatHistory.suggestion(c)?.let { (word, ids) ->
                         item("suggest") {
-                            Column(Modifier.fillMaxWidth().padding(vertical = 6.dp).clip(RoundedCornerShape(16.dp)).background(cs.primary.copy(alpha = 0.08f)).padding(12.dp)) {
+                            Column(Modifier.fillMaxWidth().padding(vertical = 6.dp).clip(com.nizam.app.ui.design.labShape(16.dp)).background(cs.primary.copy(alpha = 0.08f)).padding(12.dp)) {
                                 Text("💡 ${ids.size} chats are about “$word”", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
                                 Text("Gather them into a project so Atlas keeps the shared context.", style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant)
                                 androidx.compose.foundation.layout.Row {
@@ -199,7 +199,7 @@ fun ChatsDrawer(container: AppContainer, onNewChat: (projectId: String?) -> Unit
                         if (projects.isEmpty()) item("pe") { Empty("Projects keep related chats together, with instructions and notes every chat in them knows about. Long-press a chat → Move to project, or tap + New project.") }
                         projects.forEach { pr -> item(pr.optString("id")) {
                             val n = all.count { it.optString("project") == pr.optString("id") }
-                            Column(Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(16.dp)).background(cs.surfaceVariant.copy(alpha = 0.5f))
+                            Column(Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(com.nizam.app.ui.design.labShape(16.dp)).background(cs.surfaceVariant.copy(alpha = 0.5f))
                                 .clickable { openProject = pr.optString("id") }.padding(14.dp)) {
                                 Text("${pr.optString("emoji")} ${pr.optString("name")}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                                 Text("$n chat${if (n == 1) "" else "s"}" + (pr.optString("instructions").takeIf { it.isNotBlank() }?.let { " · $it" } ?: ""),
@@ -226,7 +226,7 @@ fun ChatsDrawer(container: AppContainer, onNewChat: (projectId: String?) -> Unit
                 }
                 "code" -> {
                     item("codehead") {
-                        Column(Modifier.fillMaxWidth().padding(vertical = 6.dp).clip(RoundedCornerShape(18.dp)).background(cs.primary.copy(alpha = 0.10f)).padding(14.dp)) {
+                        Column(Modifier.fillMaxWidth().padding(vertical = 6.dp).clip(com.nizam.app.ui.design.labShape(18.dp)).background(cs.primary.copy(alpha = 0.10f)).padding(14.dp)) {
                             Text("✳ Atlas Code", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                             Text("Your coding agent: any GitHub repo, edits with diffs, a real Linux terminal, commits, pull requests and CI. Coding sessions and code chats gather here.",
                                 style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant)

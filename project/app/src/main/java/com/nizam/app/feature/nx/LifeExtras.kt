@@ -224,7 +224,7 @@ fun MoodMusicScreen(open: (String) -> Unit) {
     AtlasScreen(title = "Mood music", subtitle = mood?.let { "Feeling $it" } ?: "How are you feeling?", hub = Hub.Media) {
         item("m") { Column(Modifier.padding(horizontal = Space.page)) {
             Art.MOODS.chunked(5).forEach { row -> Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                row.forEach { (art, name) -> Column(Modifier.clip(RoundedCornerShape(16.dp)).background(if (mood == name) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else androidx.compose.ui.graphics.Color.Transparent)
+                row.forEach { (art, name) -> Column(Modifier.clip(com.nizam.app.ui.design.labShape(16.dp)).background(if (mood == name) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else androidx.compose.ui.graphics.Color.Transparent)
                     .clickable { mood = name }.padding(6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     Art3D(art, 48.dp, float = mood == name); Text(name, style = MaterialTheme.typography.labelSmall)
                 } }
@@ -284,7 +284,7 @@ fun TimeLapseScreen() {
         } }
         if (loading >= 0f) item("l") { LinearProgressIndicator({ loading }, Modifier.fillMaxWidth().padding(Space.page)) }
         if (frames.isNotEmpty()) {
-            item("v") { Box(Modifier.padding(Space.page).fillMaxWidth().aspectRatio(0.8f).clip(RoundedCornerShape(24.dp)).background(androidx.compose.ui.graphics.Color.Black)) {
+            item("v") { Box(Modifier.padding(Space.page).fillMaxWidth().aspectRatio(0.8f).clip(com.nizam.app.ui.design.labShape(24.dp)).background(androidx.compose.ui.graphics.Color.Black)) {
                 Crossfade(idx, animationSpec = tween((600 / speed).toInt().coerceAtLeast(60)), label = "tl") { i ->
                     frames.getOrNull(i)?.let { Image(it.second.asImageBitmap(), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop) } }
                 val t = frames.getOrNull(idx)?.first ?: 0L
@@ -539,7 +539,7 @@ private fun DubPlayer(video: Uri, cues: List<Cue>, lang: String, original: Float
         }
     } }
     AndroidView({ ctx -> androidx.media3.ui.PlayerView(ctx).apply { this.player = player } },
-        Modifier.padding(Space.page).fillMaxWidth().aspectRatio(16 / 9f).clip(RoundedCornerShape(18.dp)))
+        Modifier.padding(Space.page).fillMaxWidth().aspectRatio(16 / 9f).clip(com.nizam.app.ui.design.labShape(18.dp)))
 }
 
 // ─────────────────────────────── Face groups ───────────────────────────────

@@ -125,7 +125,7 @@ fun AtlasArcadeScreen() {
             val crashStage = remember { prefs.getString("exit_stage", null) }
             LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { prefs.edit().remove("launching").remove("exit_stage").apply() } }
             crashed?.let { name ->
-                Column(Modifier.fillMaxWidth().padding(16.dp, 0.dp, 16.dp, 8.dp).clip(RoundedCornerShape(18.dp)).background(Neo.card).border(1.dp, Neo.pink.copy(alpha = 0.4f), RoundedCornerShape(18.dp)).padding(14.dp)) {
+                Column(Modifier.fillMaxWidth().padding(16.dp, 0.dp, 16.dp, 8.dp).clip(com.nizam.app.ui.design.labShape(18.dp)).background(Neo.card).border(1.dp, Neo.pink.copy(alpha = 0.4f), com.nizam.app.ui.design.labShape(18.dp)).padding(14.dp)) {
                     Text("The last game closed unexpectedly", fontWeight = FontWeight.SemiBold)
                     Text("$name${crashStage?.let { " · while $it" } ?: ""}. Heavy consoles (PSP, N64, Dreamcast) can run out of memory on some phones; try the game again or a lighter console.",
                         fontSize = 13.sp, color = Neo.muted)
@@ -146,12 +146,12 @@ fun AtlasArcadeScreen() {
 @Composable
 private fun GameCard(g: ArcadeGame, width: androidx.compose.ui.unit.Dp?, onPlay: () -> Unit, onMenu: () -> Unit) {
     val s = sys(g)
-    Column((if (width != null) Modifier.width(width) else Modifier.fillMaxWidth()).clip(RoundedCornerShape(18.dp)).combinedClickable(onClick = onPlay, onLongClick = onMenu)) {
+    Column((if (width != null) Modifier.width(width) else Modifier.fillMaxWidth()).clip(com.nizam.app.ui.design.labShape(18.dp)).combinedClickable(onClick = onPlay, onLongClick = onMenu)) {
         Box {
-            Cover(g, Modifier.fillMaxWidth().aspectRatio(0.78f).clip(RoundedCornerShape(18.dp)))
+            Cover(g, Modifier.fillMaxWidth().aspectRatio(0.78f).clip(com.nizam.app.ui.design.labShape(18.dp)))
             Box(Modifier.align(Alignment.BottomStart).fillMaxWidth().height(4.dp).background(Color(s?.color ?: 0xFF444444)))
             if (g.fav) Icon(Icons.Filled.Star, null, Modifier.align(Alignment.TopEnd).padding(6.dp).size(18.dp), tint = Color(0xFFFFC857))
-            Text(s?.short ?: "", Modifier.align(Alignment.TopStart).padding(6.dp).clip(RoundedCornerShape(8.dp)).background(Color(0xAA000000)).padding(horizontal = 6.dp, vertical = 2.dp),
+            Text(s?.short ?: "", Modifier.align(Alignment.TopStart).padding(6.dp).clip(com.nizam.app.ui.design.labShape(8.dp)).background(Color(0xAA000000)).padding(horizontal = 6.dp, vertical = 2.dp),
                 color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
         }
         Text(g.title, Modifier.padding(top = 6.dp, start = 2.dp), maxLines = 2, overflow = TextOverflow.Ellipsis, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Neo.ink)
@@ -218,7 +218,7 @@ private fun PlayTab(games: List<ArcadeGame>, changed: () -> Unit, toStore: () ->
         } else LazyColumn(contentPadding = PaddingValues(bottom = 110.dp)) {
             val last = games.filter { it.last > 0 }.maxByOrNull { it.last }
             if (last != null && filter == null && q.isBlank()) item("hero") {
-                Box(Modifier.padding(horizontal = 16.dp).fillMaxWidth().height(190.dp).clip(RoundedCornerShape(26.dp)).clickable { play(last) }) {
+                Box(Modifier.padding(horizontal = 16.dp).fillMaxWidth().height(190.dp).clip(com.nizam.app.ui.design.labShape(26.dp)).clickable { play(last) }) {
                     Cover(last, Modifier.matchParentSize().blur(18.dp))
                     Box(Modifier.matchParentSize().background(Brush.horizontalGradient(listOf(Color(0xEE0B0B12), Color(0x990B0B12), Color(0x330B0B12)))))
                     Row(Modifier.matchParentSize().padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -233,7 +233,7 @@ private fun PlayTab(games: List<ArcadeGame>, changed: () -> Unit, toStore: () ->
                                 Text(" Resume", color = Color.White, fontWeight = FontWeight.Bold)
                             }
                         }
-                        Cover(last, Modifier.width(104.dp).aspectRatio(0.78f).clip(RoundedCornerShape(16.dp)).border(2.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(16.dp)))
+                        Cover(last, Modifier.width(104.dp).aspectRatio(0.78f).clip(com.nizam.app.ui.design.labShape(16.dp)).border(2.dp, Color.White.copy(alpha = 0.15f), com.nizam.app.ui.design.labShape(16.dp)))
                     }
                 }
             }
@@ -371,7 +371,7 @@ private fun Store(changed: () -> Unit) {
         Row(Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf("GB" to "Game Boy", "GBC" to "Game Boy Color", "GBA" to "GBA", "NES" to "NES").forEach { (id, label) -> FilterChip(platform == id, { platform = id }, label = { Text(label) }) }
         }
-        OutlinedTextField(q, { q = it }, placeholder = { Text("Search these games") }, leadingIcon = { Icon(Icons.Filled.Search, null) }, singleLine = true, shape = RoundedCornerShape(28.dp), modifier = Modifier.fillMaxWidth().padding(16.dp, 8.dp))
+        OutlinedTextField(q, { q = it }, placeholder = { Text("Search these games") }, leadingIcon = { Icon(Icons.Filled.Search, null) }, singleLine = true, shape = com.nizam.app.ui.design.labShape(28.dp), modifier = Modifier.fillMaxWidth().padding(16.dp, 8.dp))
         val shown = items.filter { q.isBlank() || it.title.contains(q, true) || it.tags.any { t -> t.contains(q, true) } }
         if (error.isNotEmpty()) Row(Modifier.padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) { Text(error, Modifier.weight(1f), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall); TextButton(onClick = { load(items.isEmpty()) }) { Text("Retry") } }
         LazyVerticalGrid(GridCells.Adaptive(150.dp), contentPadding = PaddingValues(16.dp, 4.dp, 16.dp, 32.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -379,8 +379,8 @@ private fun Store(changed: () -> Unit) {
                 val key = e.slug + e.platform
                 val id = e.slug + "-" + e.platform.lowercase()
                 val have = id in installed
-                Column(Modifier.clip(RoundedCornerShape(16.dp)).clickable { detail = e }) {
-                    Box(Modifier.fillMaxWidth().aspectRatio(1.1f).clip(RoundedCornerShape(16.dp)).background(Color(0xFF1B1B22)), contentAlignment = Alignment.Center) {
+                Column(Modifier.clip(com.nizam.app.ui.design.labShape(16.dp)).clickable { detail = e }) {
+                    Box(Modifier.fillMaxWidth().aspectRatio(1.1f).clip(com.nizam.app.ui.design.labShape(16.dp)).background(Color(0xFF1B1B22)), contentAlignment = Alignment.Center) {
                         Text(e.platform, color = Color.White.copy(alpha = 0.5f), fontWeight = FontWeight.Black, fontSize = 20.sp)
                         HomebrewHub.coverUrl(e)?.let { AsyncImage(it, null, Modifier.matchParentSize(), contentScale = ContentScale.Crop, filterQuality = FilterQuality.None) }
                     }
@@ -406,7 +406,7 @@ private fun Store(changed: () -> Unit) {
         val id = e.slug + "-" + e.platform.lowercase()
         AlertDialog(onDismissRequest = { detail = null }, title = { Text(e.title) },
             text = { Column(Modifier.heightIn(max = 380.dp).verticalScrollSimple()) {
-                HomebrewHub.coverUrl(e)?.let { AsyncImage(it, null, Modifier.fillMaxWidth().heightIn(max = 180.dp).clip(RoundedCornerShape(12.dp)), contentScale = ContentScale.Fit, filterQuality = FilterQuality.None) }
+                HomebrewHub.coverUrl(e)?.let { AsyncImage(it, null, Modifier.fillMaxWidth().heightIn(max = 180.dp).clip(com.nizam.app.ui.design.labShape(12.dp)), contentScale = ContentScale.Fit, filterQuality = FilterQuality.None) }
                 Text("by ${e.developer}", Modifier.padding(top = 10.dp), fontWeight = FontWeight.SemiBold)
                 if (e.tags.isNotEmpty()) Text(e.tags.take(6).joinToString(" · "), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(e.description.ifBlank { "No description." }, Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodySmall)
@@ -446,8 +446,8 @@ private fun ConsolesTab(changed: () -> Unit) {
     }
     LazyColumn(contentPadding = PaddingValues(16.dp, 0.dp, 16.dp, 40.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         item("all") {
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(Brush.linearGradient(listOf(Neo.violet.copy(alpha = 0.35f), Neo.cyan.copy(alpha = 0.18f))))
-                .border(1.dp, Neo.line, RoundedCornerShape(22.dp)).padding(18.dp)) {
+            Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(22.dp)).background(Brush.linearGradient(listOf(Neo.violet.copy(alpha = 0.35f), Neo.cyan.copy(alpha = 0.18f))))
+                .border(1.dp, Neo.line, com.nizam.app.ui.design.labShape(22.dp)).padding(18.dp)) {
                 Text("$readyCount of ${ArcadeSystems.all.size} consoles ready", fontSize = 20.sp, fontWeight = FontWeight.Black)
                 Text(if (readyCount == ArcadeSystems.all.size) "Every emulator is on this phone. Add games and play."
                     else "Emulators normally come built in. Missing ones download once (0.1–16 MB each) and stay on the phone.", color = Neo.muted, fontSize = 13.sp)
@@ -466,9 +466,9 @@ private fun ConsolesTab(changed: () -> Unit) {
                 val ready = remember(rev, dl.size) { ArcadeSystems.coreReady(ctx, s) }
                 val source = remember(rev, dl.size) { ArcadeCores.source(ctx, s) }
                 val p = dl[s.id]
-                Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Neo.card).border(1.dp, Neo.line, RoundedCornerShape(18.dp)).padding(14.dp)) {
+                Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(18.dp)).background(Neo.card).border(1.dp, Neo.line, com.nizam.app.ui.design.labShape(18.dp)).padding(14.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(Modifier.size(38.dp).clip(RoundedCornerShape(12.dp)).background(Color(s.color)), contentAlignment = Alignment.Center) {
+                        Box(Modifier.size(38.dp).clip(com.nizam.app.ui.design.labShape(12.dp)).background(Color(s.color)), contentAlignment = Alignment.Center) {
                             Text(s.short.take(4), color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Black)
                         }
                         Column(Modifier.weight(1f).padding(horizontal = 12.dp)) {

@@ -139,7 +139,7 @@ fun MarkdownView(
     }
 
     Column(Modifier.fillMaxWidth()) {
-        if (props.isNotEmpty()) Column(Modifier.fillMaxWidth().padding(bottom = 12.dp).clip(RoundedCornerShape(8.dp)).background(cs.surfaceVariant.copy(alpha = 0.6f)).padding(10.dp)) {
+        if (props.isNotEmpty()) Column(Modifier.fillMaxWidth().padding(bottom = 12.dp).clip(com.nizam.app.ui.design.labShape(8.dp)).background(cs.surfaceVariant.copy(alpha = 0.6f)).padding(10.dp)) {
             Text("Properties", style = MaterialTheme.typography.labelSmall, color = cs.onSurfaceVariant)
             props.forEach { (k, v) -> Row(Modifier.padding(top = 4.dp)) {
                 Text(k, style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant, modifier = Modifier.width(96.dp))
@@ -154,7 +154,7 @@ fun MarkdownView(
                     val lang = t.removePrefix("```").trim()
                     val block = mutableListOf<String>(); i++
                     while (i < lines.size && !lines[i].trim().startsWith("```")) { block += lines[i]; i++ }
-                    Column(Modifier.fillMaxWidth().padding(vertical = 6.dp).clip(RoundedCornerShape(8.dp)).background(codeBg).padding(12.dp)) {
+                    Column(Modifier.fillMaxWidth().padding(vertical = 6.dp).clip(com.nizam.app.ui.design.labShape(8.dp)).background(codeBg).padding(12.dp)) {
                         if (lang.isNotBlank()) Text(lang, style = MaterialTheme.typography.labelSmall, color = cs.onSurfaceVariant)
                         Text(block.joinToString("\n"), style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
                             modifier = Modifier.horizontalScroll(rememberScrollState()))
@@ -176,7 +176,7 @@ fun MarkdownView(
                     val tint = when (kind) { null -> cs.outline; "warning", "caution", "attention" -> Color(0xFFE0A030)
                         "danger", "error", "bug", "failure" -> cs.error; "tip", "success", "check", "done" -> Color(0xFF3DAA6D)
                         "question", "help", "faq" -> Color(0xFFD08A30); else -> accent }
-                    Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min).padding(vertical = 6.dp).clip(RoundedCornerShape(6.dp))
+                    Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min).padding(vertical = 6.dp).clip(com.nizam.app.ui.design.labShape(6.dp))
                         .background(if (kind != null) tint.copy(alpha = 0.10f) else Color.Transparent)) {
                         Box(Modifier.width(3.dp).fillMaxHeight().background(tint))
                         Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
@@ -222,7 +222,7 @@ fun MarkdownView(
                 t.startsWith("![[") && t.endsWith("]]") -> {
                     val target = Md.WIKI.find(t)?.groupValues?.get(1)?.trim().orEmpty()
                     val inner = if (depth < 2) embed(target) else null
-                    Column(Modifier.fillMaxWidth().padding(vertical = 6.dp).clip(RoundedCornerShape(8.dp)).background(cs.surfaceVariant.copy(alpha = 0.5f))
+                    Column(Modifier.fillMaxWidth().padding(vertical = 6.dp).clip(com.nizam.app.ui.design.labShape(8.dp)).background(cs.surfaceVariant.copy(alpha = 0.5f))
                         .clickable { onLink(target) }.padding(12.dp)) {
                         Text(target, style = MaterialTheme.typography.labelMedium, color = accent)
                         if (inner != null) MarkdownView(inner, onLink, onTag, onUrl, {}, embed, depth + 1)

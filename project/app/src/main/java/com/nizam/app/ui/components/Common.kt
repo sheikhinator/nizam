@@ -51,7 +51,7 @@ fun SpineSection(
             modifier = Modifier
                 .width(4.dp)
                 .height(if (trailing == null) 44.dp else 52.dp)
-                .background(spineColor, RoundedCornerShape(2.dp))
+                .background(spineColor, com.nizam.app.ui.design.labShape(2.dp))
         )
         Spacer(Modifier.width(14.dp))
         Column(modifier = Modifier.fillMaxWidth()) {

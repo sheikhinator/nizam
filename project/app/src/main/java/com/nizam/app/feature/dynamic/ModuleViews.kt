@@ -114,11 +114,11 @@ fun ModuleViewsScreen(container: AppContainer) {
                     (field.options + "").forEach { stage ->
                         val cards = entries.filter { it.value(field.key) == stage }
                         if (stage.isBlank() && cards.isEmpty()) return@forEach
-                        Column(Modifier.width(220.dp).clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(10.dp),
+                        Column(Modifier.width(220.dp).clip(com.nizam.app.ui.design.labShape(16.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(10.dp),
                             verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Text("${stage.ifBlank { "No ${field.label.lowercase()}" }} · ${cards.size}", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                             cards.take(30).forEach { e ->
-                                Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surface).padding(8.dp)) {
+                                Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(12.dp)).background(MaterialTheme.colorScheme.surface).padding(8.dp)) {
                                     Text(e.title.ifBlank { "Record #${e.id}" }, style = MaterialTheme.typography.bodyMedium)
                                     Row(Modifier.horizontalScroll(rememberScrollState())) {
                                         field.options.filter { it != stage && ModuleRules.canMove(c, spec.key, field.key, stage, it) }.forEach { to ->
@@ -147,7 +147,7 @@ fun ModuleViewsScreen(container: AppContainer) {
                 entries.chunked(2).forEach { pair ->
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         pair.forEach { e ->
-                            Column(Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(parseColour(spec.colorHex, MaterialTheme.colorScheme.primary).copy(alpha = 0.14f)).padding(12.dp)) {
+                            Column(Modifier.weight(1f).clip(com.nizam.app.ui.design.labShape(16.dp)).background(parseColour(spec.colorHex, MaterialTheme.colorScheme.primary).copy(alpha = 0.14f)).padding(12.dp)) {
                                 Text(spec.emoji + " " + e.title.ifBlank { "Record #${e.id}" }, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
                                 spec.fields.take(3).forEach { f -> e.value(f.key).takeIf { it.isNotBlank() }?.let { Text("${f.label}: $it${f.suffix}", style = MaterialTheme.typography.labelSmall) } }
                             }

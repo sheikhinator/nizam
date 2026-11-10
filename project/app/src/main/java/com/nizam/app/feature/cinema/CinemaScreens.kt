@@ -81,7 +81,7 @@ private val LANGS = linkedMapOf("Any" to null, "English" to "en", "Urdu" to "ur"
 
 @Composable
 private fun Poster(url: String?, title: String, modifier: Modifier = Modifier) {
-    Box(modifier.aspectRatio(2f / 3f).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surface),
+    Box(modifier.aspectRatio(2f / 3f).clip(com.nizam.app.ui.design.labShape(12.dp)).background(MaterialTheme.colorScheme.surface),
         contentAlignment = Alignment.Center) {
         if (url != null) AsyncImage(url, title, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
         else Text(title, style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(8.dp))
@@ -355,7 +355,7 @@ fun FilmScreen(onFilm: (Int) -> Unit, onPlay: () -> Unit) {
                     list.forEach { p ->
                         Column(Modifier.width(64.dp).clickable(role = Role.Button) { det.providerLink?.let { open(it) } },
                             horizontalAlignment = Alignment.CenterHorizontally) {
-                            AsyncImage(p.logo, p.name, modifier = Modifier.size(44.dp).clip(RoundedCornerShape(10.dp)))
+                            AsyncImage(p.logo, p.name, modifier = Modifier.size(44.dp).clip(com.nizam.app.ui.design.labShape(10.dp)))
                             Text(p.name, style = MaterialTheme.typography.labelSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
                         }
                     }

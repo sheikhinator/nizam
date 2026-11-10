@@ -203,7 +203,7 @@ fun AutoRulesScreen(container: AppContainer) {
                 if (rules.isEmpty()) Text("No rules yet. Make one in New.")
                 rules.forEach { r ->
                     var out by remember(r.id) { mutableStateOf<String?>(null) }
-                    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(12.dp)) {
+                    Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(12.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(r.name, Modifier.weight(1f), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                             Switch(r.enabled, { on -> AutoRules.upsert(c, r.copy(enabled = on)); rules = AutoRules.all(c) })

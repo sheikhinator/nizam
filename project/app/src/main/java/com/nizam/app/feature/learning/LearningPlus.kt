@@ -77,7 +77,7 @@ fun LearningBoost(container: AppContainer, track: Track, sessions: List<StudySes
         // target
         val target = track.targetHours * 60
         Text("Toward ${track.targetHours}h: ${total / 60}h ${total % 60}m", fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 6.dp))
-        Box(Modifier.fillMaxWidth().padding(top = 4.dp).height(6.dp).clip(RoundedCornerShape(3.dp)).background(cs.surfaceVariant)) {
+        Box(Modifier.fillMaxWidth().padding(top = 4.dp).height(6.dp).clip(com.nizam.app.ui.design.labShape(3.dp)).background(cs.surfaceVariant)) {
             Box(Modifier.fillMaxWidth((total.toFloat() / target).coerceIn(0.01f, 1f)).height(6.dp).background(cs.primary))
         }
         val eta = if (perWeek > 0 && total < target) LocalDate.now().plusDays(((target - total) / perWeek * 7).toLong()) else null
@@ -154,7 +154,7 @@ private fun QuickQuiz(container: AppContainer, track: Track) {
     Text("Q${idx + 1}. ${card.front}", fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 8.dp))
     opts.forEach { o ->
         val right = o == card.back
-        Text(o, Modifier.fillMaxWidth().padding(vertical = 3.dp).clip(RoundedCornerShape(10.dp))
+        Text(o, Modifier.fillMaxWidth().padding(vertical = 3.dp).clip(com.nizam.app.ui.design.labShape(10.dp))
             .background(when { picked == null -> cs.surfaceVariant.copy(alpha = 0.5f); right -> Color(0xFF2E9E6A).copy(alpha = 0.35f); o == picked -> cs.error.copy(alpha = 0.3f); else -> cs.surfaceVariant.copy(alpha = 0.3f) })
             .clickable(enabled = picked == null) { picked = o; if (right) score++ }.padding(10.dp), style = MaterialTheme.typography.bodySmall)
     }

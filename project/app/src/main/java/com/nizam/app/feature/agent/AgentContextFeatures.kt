@@ -265,7 +265,7 @@ fun RunContextPreviewDialog(
                 Text("Only included sections enter the request. Edit sensitive text or switch a section off before Atlas sends anything.",
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 parts.forEach { part ->
-                    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
+                    Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(12.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant).padding(10.dp)) {
                         Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                             Column(Modifier.weight(1f)) {
@@ -354,7 +354,7 @@ fun RunContextReceiptScreen() {
         Text("Run context receipt", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Text("Review what Atlas included in recent agent requests. Receipts are encrypted on this device and the last 20 are kept.",
             style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(14.dp),
+        Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(18.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text("Context included by default", fontWeight = FontWeight.SemiBold)
             ContextToggle("Personal profile", "Details you saved for the agent.", policy.personal) {
@@ -384,7 +384,7 @@ fun RunContextReceiptScreen() {
         receipts.forEach { receipt ->
             val id = receipt.optString("id")
             val open = expanded == id
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
+            Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant).clickable { expanded = if (open) "" else id }.padding(12.dp)) {
                 Text(receipt.optString("request").ifBlank { "Agent request" }, fontWeight = FontWeight.SemiBold, maxLines = 3)
                 Text(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(Date(receipt.optLong("at"))),
@@ -434,7 +434,7 @@ fun AssumptionCheckpointScreen() {
         Text("Assumption checkpoint", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Text("When the agent reports an important inferred detail before an outside action, it pauses and asks you to correct or confirm it. Existing approval gates still apply.",
             style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(14.dp)) {
+        Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(16.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(14.dp)) {
             ContextToggle("Pause on reported assumptions", "Default on. Turn off only if you prefer the existing approval flow without this extra checkpoint.", enabled) {
                 enabled = it
                 AssumptionCheckpoint.setEnabled(c, it)
@@ -446,7 +446,7 @@ fun AssumptionCheckpointScreen() {
         }
         if (history.isEmpty()) Text("No assumptions have needed a checkpoint.")
         history.forEach { item ->
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(12.dp)) {
+            Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(12.dp)) {
                 Text(item.optString("request"), fontWeight = FontWeight.SemiBold)
                 Text(when (item.optString("status")) {
                     "waiting" -> "Waiting for your run-scoped clarification"

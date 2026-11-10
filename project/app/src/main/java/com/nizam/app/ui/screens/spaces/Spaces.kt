@@ -140,7 +140,7 @@ private fun SpacesHomeBody(container: AppContainer, open: (String) -> Unit) {
             Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 12.dp, top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 // Today is home: everywhere else gets a real back arrow, not just a chip you have to notice.
                 if (pager.currentPage != 0) {
-                    Box(Modifier.size(40.dp).clip(RoundedCornerShape(20.dp)).pressable { scope.launch { pager.animateScrollToPage(0) } },
+                    Box(Modifier.size(40.dp).clip(com.nizam.app.ui.design.labShape(20.dp)).pressable { scope.launch { pager.animateScrollToPage(0) } },
                         contentAlignment = Alignment.Center) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Back to Today", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
@@ -149,7 +149,7 @@ private fun SpacesHomeBody(container: AppContainer, open: (String) -> Unit) {
                     Text(here.name, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = accent)
                     Text(subtitle(here), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Box(Modifier.size(44.dp).clip(RoundedCornerShape(22.dp)).background(wash(accent, 0.16f)).pressable { searching = !searching; if (!searching) q = "" },
+                Box(Modifier.size(44.dp).clip(com.nizam.app.ui.design.labShape(22.dp)).background(wash(accent, 0.16f)).pressable { searching = !searching; if (!searching) q = "" },
                     contentAlignment = Alignment.Center) {
                     Icon(if (searching) Icons.Outlined.Close else Icons.Outlined.Search, "Search", tint = accent)
                 }
@@ -162,7 +162,7 @@ private fun SpacesHomeBody(container: AppContainer, open: (String) -> Unit) {
                     val s = spaces[i]; val on = i == pager.currentPage
                     val tint = (s as? Space.Life)?.hub?.tint() ?: MaterialTheme.colorScheme.primary
                     val bg by animateColorAsState(if (on) wash(tint, 0.24f) else wash(MaterialTheme.colorScheme.onSurface, 0.06f), label = "chip")
-                    Row(Modifier.clip(RoundedCornerShape(20.dp)).background(bg).pressable { scope.launch { pager.animateScrollToPage(i) } }
+                    Row(Modifier.clip(com.nizam.app.ui.design.labShape(20.dp)).background(bg).pressable { scope.launch { pager.animateScrollToPage(i) } }
                         .padding(horizontal = 14.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(s.icon, null, tint = if (on) tint else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
                         if (on) { Spacer(Modifier.size(6.dp)); Text(s.name, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold, color = tint) }
@@ -255,7 +255,7 @@ private fun SpacePage(hub: Hub, open: (String) -> Unit) {
 
 @Composable
 private fun Hero(f: Feature, tint: Color, modifier: Modifier, onLongClick: () -> Unit = {}, onClick: () -> Unit) {
-    Column(modifier.height(116.dp).clip(RoundedCornerShape(24.dp))
+    Column(modifier.height(116.dp).clip(com.nizam.app.ui.design.labShape(24.dp))
         .background(Brush.linearGradient(listOf(wash(tint, 0.28f), wash(tint, 0.10f))))
         .pointerInput(f.route) { detectTapGestures(onTap = { onClick() }, onLongPress = { onLongClick() }) }.padding(14.dp),
         verticalArrangement = Arrangement.SpaceBetween) {
@@ -269,7 +269,7 @@ private fun Hero(f: Feature, tint: Color, modifier: Modifier, onLongClick: () ->
 
 @Composable
 private fun Tile(f: Feature, tint: Color, modifier: Modifier, onLongClick: () -> Unit = {}, onClick: () -> Unit) {
-    Column(modifier.height(92.dp).clip(RoundedCornerShape(20.dp)).background(wash(tint, 0.10f))
+    Column(modifier.height(92.dp).clip(com.nizam.app.ui.design.labShape(20.dp)).background(wash(tint, 0.10f))
         .pointerInput(f.route) { detectTapGestures(onTap = { onClick() }, onLongPress = { onLongClick() }) }.padding(10.dp),
         verticalArrangement = Arrangement.SpaceBetween) {
         com.nizam.app.ui.design.LivingIcon(f.icon, tint, size = 34.dp, iconSize = 20.dp)
@@ -279,7 +279,7 @@ private fun Tile(f: Feature, tint: Color, modifier: Modifier, onLongClick: () ->
 
 @Composable
 private fun Chip(f: Feature, tint: Color, modifier: Modifier, onLongClick: () -> Unit = {}, onClick: () -> Unit) {
-    Column(modifier.clip(RoundedCornerShape(16.dp)).background(wash(tint, 0.14f))
+    Column(modifier.clip(com.nizam.app.ui.design.labShape(16.dp)).background(wash(tint, 0.14f))
         .pointerInput(f.route) { detectTapGestures(onTap = { onClick() }, onLongPress = { onLongClick() }) }.padding(horizontal = 8.dp, vertical = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally) {
         com.nizam.app.ui.design.LivingIcon(f.icon, tint, size = 30.dp, iconSize = 18.dp)
@@ -290,7 +290,7 @@ private fun Chip(f: Feature, tint: Color, modifier: Modifier, onLongClick: () ->
 @Composable
 private fun Wide(f: Feature, onClick: () -> Unit) {
     val tint = f.hub.tint()
-    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(wash(tint, 0.10f)).pressable { onClick() }.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(18.dp)).background(wash(tint, 0.10f)).pressable { onClick() }.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
         Icon(f.icon, null, tint = tint, modifier = Modifier.size(24.dp))
         Spacer(Modifier.size(12.dp))
         Column(Modifier.weight(1f)) {
@@ -312,14 +312,14 @@ private fun Dock(modifier: Modifier, accent: Color, onAsk: () -> Unit, onTalk: (
     val mindState = when { halo.active -> OrbState.Working; expert != null -> OrbState.Thinking; else -> OrbState.Idle }
     val st = com.nizam.app.ui.style.UiStyles.now()
     if (st.sci) { com.nizam.app.ui.style.SciDock(modifier.windowInsetsPadding(WindowInsets.navigationBars), onSearch, onAsk, onTalk, onLycho, onAll); return }
-    val shape = RoundedCornerShape(32.dp)
+    val shape = androidx.compose.foundation.shape.RoundedCornerShape(32.dp)
     val dockHeight = 64.dp
     val skin = Modifier.liquidGlass(shape)
     Row(modifier.windowInsetsPadding(WindowInsets.navigationBars).padding(bottom = 12.dp).height(dockHeight)
         .shadow(16.dp, shape).then(skin).padding(horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         if (container != null) com.nizam.app.feature.safe.RefreshButton(container, null, size = 40.dp)
-        Box(Modifier.size(44.dp).clip(RoundedCornerShape(22.dp)).pressable { onSearch() }, contentAlignment = Alignment.Center) {
+        Box(Modifier.size(44.dp).clip(com.nizam.app.ui.design.labShape(22.dp)).pressable { onSearch() }, contentAlignment = Alignment.Center) {
             Icon(Icons.Outlined.Search, "Search", tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Box(Modifier.size(56.dp).pointerInput(Unit) { detectTapGestures(onTap = { onAsk() }, onLongPress = { onTalk() }) }, contentAlignment = Alignment.Center) {
@@ -328,7 +328,7 @@ private fun Dock(modifier: Modifier, accent: Color, onAsk: () -> Unit, onTalk: (
         Box(Modifier.size(56.dp).pointerInput(Unit) { detectTapGestures(onTap = { onLycho() }, onLongPress = { onLychoHold() }) }, contentAlignment = Alignment.Center) {
             com.nizam.app.ui.design.LychoOrb(mindState, Modifier.parallax(0.6f), diameter = 50.dp)
         }
-        Box(Modifier.size(44.dp).clip(RoundedCornerShape(22.dp)).pressable { onAll() }, contentAlignment = Alignment.Center) {
+        Box(Modifier.size(44.dp).clip(com.nizam.app.ui.design.labShape(22.dp)).pressable { onAll() }, contentAlignment = Alignment.Center) {
             Icon(Icons.Outlined.Apps, "All tools", tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }

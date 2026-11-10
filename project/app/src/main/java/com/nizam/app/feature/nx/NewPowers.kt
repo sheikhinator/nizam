@@ -291,16 +291,16 @@ fun GhostScreen(container: AppContainer) {
                 Text(r.label, fontWeight = FontWeight.Medium)
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
                     Text("You", Modifier.width(48.dp), style = MaterialTheme.typography.labelMedium)
-                    Box(Modifier.weight(1f).height(12.dp).background(cs.surfaceVariant, RoundedCornerShape(6.dp))) {
+                    Box(Modifier.weight(1f).height(12.dp).background(cs.surfaceVariant, com.nizam.app.ui.design.labShape(6.dp))) {
                         Box(Modifier.fillMaxWidth((r.you / max).toFloat().coerceIn(0.02f, 1f)).height(12.dp)
-                            .background(if (winning) Color(0xFF2E9E6A) else Color(0xFFE8A13A), RoundedCornerShape(6.dp)))
+                            .background(if (winning) Color(0xFF2E9E6A) else Color(0xFFE8A13A), com.nizam.app.ui.design.labShape(6.dp)))
                     }
                     Text(short(r.you) + r.unit.substringBefore(" ("), Modifier.width(80.dp).padding(start = 8.dp), style = MaterialTheme.typography.labelMedium)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
                     Text("👻", Modifier.width(48.dp))
-                    Box(Modifier.weight(1f).height(12.dp).background(cs.surfaceVariant, RoundedCornerShape(6.dp))) {
-                        Box(Modifier.fillMaxWidth((r.ghost / max).toFloat().coerceIn(0.02f, 1f)).height(12.dp).background(cs.onSurfaceVariant.copy(alpha = 0.45f), RoundedCornerShape(6.dp)))
+                    Box(Modifier.weight(1f).height(12.dp).background(cs.surfaceVariant, com.nizam.app.ui.design.labShape(6.dp))) {
+                        Box(Modifier.fillMaxWidth((r.ghost / max).toFloat().coerceIn(0.02f, 1f)).height(12.dp).background(cs.onSurfaceVariant.copy(alpha = 0.45f), com.nizam.app.ui.design.labShape(6.dp)))
                     }
                     Text(short(r.ghost) + r.unit.substringBefore(" ("), Modifier.width(80.dp).padding(start = 8.dp), style = MaterialTheme.typography.labelMedium, color = cs.onSurfaceVariant)
                 }
@@ -471,7 +471,7 @@ class AtlasCallActivity : ComponentActivity() {
                 val scope = com.nizam.app.ui.design.rememberSafeScope()
                 LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { delay(45_000); if (!answered) finish() } }
                 val pulse = rememberInfiniteTransition(label = "ring").animateFloat(1f, 1.12f, infiniteRepeatable(tween(700, easing = LinearEasing), RepeatMode.Reverse), label = "p")
-                Column(Modifier.fillMaxSize().background(Color(0xFF070B14)).padding(28.dp).verticalScroll(rememberScrollState()),
+                Column(Modifier.fillMaxSize().background(com.nizam.app.ui.design.labBg(Color(0xFF070B14))).padding(28.dp).verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally) {
                     Spacer(Modifier.height(60.dp))
                     Text(if (answered) "On call with Atlas" else "Atlas is calling…", color = Color(0xFFB8C4D8), fontSize = 16.sp)

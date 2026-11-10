@@ -92,9 +92,9 @@ fun GuidedWalkthroughOverlay(
     Popup(alignment = Alignment.TopCenter, onDismissRequest = onExit, properties = PopupProperties(focusable = false)) {
         Column(
             Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 8.dp)
-                .clip(RoundedCornerShape(18.dp))
+                .clip(com.nizam.app.ui.design.labShape(18.dp))
                 .background(MaterialTheme.colorScheme.surface)
-                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(18.dp))
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, com.nizam.app.ui.design.labShape(18.dp))
                 .padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -122,7 +122,7 @@ fun GuidedWalkthroughOverlay(
 @Composable
 private fun BacklogCard(content: @Composable () -> Unit) {
     Column(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp))
+        Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(18.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant).padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) { content() }
@@ -490,7 +490,7 @@ fun LifeEventWorkspaceScreen(container: AppContainer, open: (String) -> Unit) {
             if (links.length() == 0) Text("No links pinned yet.")
             (0 until links.length()).forEach { index ->
                 val link = links.optJSONObject(index) ?: JSONObject()
-                Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(8.dp),
+                Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(8.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f).clickable { link.optString("route").takeIf { it.isNotBlank() }?.let(open) }) {
                         Text(link.optString("title"), fontWeight = FontWeight.SemiBold)
@@ -562,7 +562,7 @@ fun LifeEventWorkspaceScreen(container: AppContainer, open: (String) -> Unit) {
             val milestones = active.optJSONArray("milestones") ?: JSONArray()
             (0 until milestones.length()).forEach { index ->
                 val milestone = milestones.optJSONObject(index) ?: JSONObject()
-                Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(8.dp),
+                Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Checkbox(checked = milestone.optBoolean("done"), enabled = !archived, onCheckedChange = { checked ->
                         val updated = JSONArray()

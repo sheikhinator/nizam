@@ -119,7 +119,7 @@ fun VillageScreen() {
     val days = remember(v) { Village.days(c).all().sortedByDescending { it.optLong("t") } }
     Column {
         if (!Being.born(c)) { OCard { OText("Your being hasn't hatched yet. Open Your Atlas being first; then it gets neighbours.") }; return@Column }
-        Box(Modifier.fillMaxWidth().height(170.dp).clip(RoundedCornerShape(20.dp)).background(Brush.verticalGradient(listOf(Color(0xFF7EC8F2), Color(0xFFBFE6C4))))) {
+        Box(Modifier.fillMaxWidth().height(170.dp).clip(com.nizam.app.ui.design.labShape(20.dp)).background(Brush.verticalGradient(listOf(Color(0xFF7EC8F2), Color(0xFFBFE6C4))))) {
             Box(Modifier.fillMaxWidth().height(40.dp).align(Alignment.BottomCenter).background(Color(0xFF6FA86A)))
             Row(Modifier.align(Alignment.BottomStart).horizontalScroll(rememberScrollState()).padding(horizontal = 8.dp, vertical = 14.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.Bottom) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) { Robot(Body.look(c), Pose.WAVE, Face.HAPPY, Modifier.size(48.dp, 68.dp)); Text(Being.name(c), fontSize = 10.sp, color = Color.Black) }
@@ -251,7 +251,7 @@ fun OracleTheatreScreen() {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf(p.optString("a") to a, p.optString("b") to b).forEach { (label, scenes) -> Column(Modifier.weight(1f)) {
                     Text(label, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                    scenes.take(scene + 1).forEach { s -> Column(Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(14.dp)).background(Color(0xFF151A2C)).padding(10.dp)) {
+                    scenes.take(scene + 1).forEach { s -> Column(Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(com.nizam.app.ui.design.labShape(14.dp)).background(com.nizam.app.ui.design.labBg(Color(0xFF151A2C))).padding(10.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) { Text(s.optString("emoji"), fontSize = 26.sp)
                             Robot(Body.look(c), when (s.optString("mood")) { "happy", "excited" -> Pose.CELEBRATE; "sad" -> Pose.SAD; "thinking" -> Pose.THINK; else -> Pose.IDLE },
                                 when (s.optString("mood")) { "happy", "excited" -> Face.HAPPY; "sad" -> Face.SAD; "thinking" -> Face.THINKING; else -> Face.NORMAL }, Modifier.size(34.dp, 48.dp)) }
@@ -281,7 +281,7 @@ fun FocusTunnelScreen() {
         OChips(tasks.map { it.title.take(40) }, task?.title?.take(40) ?: "") { t -> task = tasks.firstOrNull { it.title.take(40) == t } }
         OChips(listOf("15", "25", "45", "60", "90"), mins) { mins = it }
         OBtn("Enter the tunnel", task != null) { endAt = System.currentTimeMillis() + (mins.toIntOrNull() ?: 25) * 60_000L; Being.say(c, "Okay, heads down. I'll work too.", "calm") }
-    } else Box(Modifier.fillMaxWidth().height(560.dp).clip(RoundedCornerShape(24.dp)).background(Color(0xFF05060B))) {
+    } else Box(Modifier.fillMaxWidth().height(560.dp).clip(com.nizam.app.ui.design.labShape(24.dp)).background(com.nizam.app.ui.design.labBg(Color(0xFF05060B)))) {
         val t = rememberInfiniteTransition(label = "tunnel").animateFloat(0f, 1f, infiniteRepeatable(tween(4000, easing = LinearEasing)), label = "z")
         Canvas(Modifier.fillMaxSize()) { for (i in 0 until 9) { val k = ((i + t.value) / 9f); val s = k * k
             drawRoundRect(Color(0xFF8BE9FD).copy(alpha = (1 - k) * 0.35f), Offset(size.width / 2 * (1 - s), size.height / 2 * (1 - s)), Size(size.width * s, size.height * s), CornerRadius(40f * s), style = Stroke(2f)) } }

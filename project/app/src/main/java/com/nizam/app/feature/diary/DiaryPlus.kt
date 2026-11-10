@@ -83,7 +83,7 @@ fun DiaryBoost(container: AppContainer, entries: List<DiaryEntry>, checkIns: Lis
                     val day = weekStart.plusDays(i.toLong())
                     Box(Modifier.weight(1f).padding(2.dp).aspectRatio(1f).background(
                         if (day.isAfter(today)) Color.Transparent else moodColor(moodBy[day.toString()] ?: 0.0, cs.surfaceVariant.copy(alpha = 0.6f)),
-                        RoundedCornerShape(5.dp)), contentAlignment = Alignment.Center) {
+                        com.nizam.app.ui.design.labShape(5.dp)), contentAlignment = Alignment.Center) {
                         if (!day.isAfter(today)) Text("${day.dayOfMonth}", style = MaterialTheme.typography.labelSmall,
                             color = if (day.toString() in written) Color.White else cs.onSurfaceVariant)
                     }

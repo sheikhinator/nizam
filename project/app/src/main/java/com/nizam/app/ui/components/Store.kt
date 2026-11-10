@@ -45,7 +45,7 @@ import com.nizam.app.ui.theme.DisplayFamily
 fun PressableCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    shape: RoundedCornerShape = RoundedCornerShape(10.dp),
+    shape: RoundedCornerShape = com.nizam.app.ui.design.labShape(10.dp),
     colour: Color? = null,
     content: @Composable () -> Unit
 ) {
@@ -120,7 +120,7 @@ fun SectionHeader(title: String, subtitle: String? = null, action: String? = nul
 /** A full-width feature card with artwork gradient — the App Store "Today" look. */
 @Composable
 fun HeroCard(emoji: String, kicker: String, title: String, blurb: String, tint: Color, onClick: () -> Unit) {
-    PressableCard(onClick, Modifier.fillMaxWidth(), RoundedCornerShape(26.dp)) {
+    PressableCard(onClick, Modifier.fillMaxWidth(), com.nizam.app.ui.design.labShape(26.dp)) {
         Column {
             Box(
                 Modifier.fillMaxWidth().height(132.dp)
@@ -141,7 +141,7 @@ fun HeroCard(emoji: String, kicker: String, title: String, blurb: String, tint: 
 /** An App Store list row: icon, name, blurb, and a pill button. */
 @Composable
 fun AppRow(emoji: String, name: String, blurb: String, tint: Color, action: String = "Open", onClick: () -> Unit) {
-    PressableCard(onClick, Modifier.fillMaxWidth(), RoundedCornerShape(20.dp)) {
+    PressableCard(onClick, Modifier.fillMaxWidth(), com.nizam.app.ui.design.labShape(20.dp)) {
         Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
             AppIcon(emoji, tint)
             Spacer(Modifier.width(14.dp))

@@ -192,7 +192,7 @@ fun MoneyInsights(container: AppContainer, month: List<Txn>, categories: List<St
                     Text(b.category, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
                     Text("${fmtAmount(used)} / ${fmtAmount(b.monthlyAmount)}", style = MaterialTheme.typography.bodySmall, color = col)
                 }
-                Box(Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)).background(cs.surfaceVariant)) {
+                Box(Modifier.fillMaxWidth().height(6.dp).clip(com.nizam.app.ui.design.labShape(3.dp)).background(cs.surfaceVariant)) {
                     Box(Modifier.fillMaxWidth(frac.coerceIn(0.01f, 1f)).height(6.dp).background(col))
                 }
                 if (frac >= 0.8f) Text(if (frac >= 1f) "Over budget" else "${fmtAmount(b.monthlyAmount - used)} left · ${fmtAmount((b.monthlyAmount - used) / daysLeft)} a day",

@@ -141,7 +141,7 @@ object O {
 // ─────────────────────────── a tiny UI kit so every Omni screen looks the same ───────────────────────────
 @Composable
 fun OCard(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, content: @Composable ColumnScope.() -> Unit) {
-    Column(modifier.fillMaxWidth().padding(vertical = 5.dp).clip(RoundedCornerShape(18.dp)).background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f))
+    Column(modifier.fillMaxWidth().padding(vertical = 5.dp).clip(com.nizam.app.ui.design.labShape(18.dp)).background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f))
         .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier).padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp), content = content)
 }
 @Composable fun OTitle(t: String) = Text(t, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
@@ -153,7 +153,7 @@ fun OCard(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, content:
     OutlinedTextField(v, onChange, Modifier.fillMaxWidth(), label = { Text(label) }, minLines = lines, maxLines = maxOf(lines, 6),
         trailingIcon = { com.nizam.app.feature.nx.MicButton({ onChange(if (v.isBlank()) it else "$v $it") }) })
 @Composable fun ORow(content: @Composable () -> Unit) = Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { content() }
-@Composable fun OBar(frac: Float, color: Color = MaterialTheme.colorScheme.primary) = Box(Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)).background(MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))) {
+@Composable fun OBar(frac: Float, color: Color = MaterialTheme.colorScheme.primary) = Box(Modifier.fillMaxWidth().height(8.dp).clip(com.nizam.app.ui.design.labShape(4.dp)).background(MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))) {
     Box(Modifier.fillMaxWidth(frac.coerceIn(0.01f, 1f)).height(8.dp).background(color)) }
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable fun OChips(options: List<String>, selected: String, onPick: (String) -> Unit) =

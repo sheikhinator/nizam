@@ -290,7 +290,7 @@ fun RuneNodeView(n: JSONObject, env: RuneEnv, index: Int, outer: Modifier, stagg
         "circle", "ring" -> CircleShape
         "pill" -> RoundedCornerShape(50)
         "blob" -> RoundedCornerShape(topStartPercent = 62, topEndPercent = 38, bottomEndPercent = 70, bottomStartPercent = 30)
-        "diamond" -> RoundedCornerShape(4.dp)
+        "diamond" -> com.nizam.app.ui.design.labShape(4.dp)
         else -> RoundedCornerShape(r.dp)
     } else RoundedCornerShape(r.dp)
 

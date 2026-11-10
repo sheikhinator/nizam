@@ -217,7 +217,7 @@ fun CouncilScreen(container: AppContainer) {
                         modifier = Modifier
                             .background(
                                 if (on) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-                                RoundedCornerShape(20.dp)
+                                com.nizam.app.ui.design.labShape(20.dp)
                             )
                             .clickable(role = Role.Button) { mode = m }
                             .padding(horizontal = 12.dp, vertical = 7.dp)
@@ -337,8 +337,8 @@ fun CouncilScreen(container: AppContainer) {
             Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp, vertical = 10.dp)
-                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(28.dp))
-                .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(28.dp))
+                .background(MaterialTheme.colorScheme.surface, com.nizam.app.ui.design.labShape(28.dp))
+                .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, com.nizam.app.ui.design.labShape(28.dp))
                 .padding(start = 6.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {

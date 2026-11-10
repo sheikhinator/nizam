@@ -121,8 +121,8 @@ fun RuneIconPicker(current: String, style: String, onPick: (String) -> Unit) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             list.forEach { nm ->
                 val v = remember(nm, style) { RuneIconLib.vector(nm, style) }
-                if (v != null) Box(Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(if (RuneIconLib.pascal(current) == nm) m.primary.copy(alpha = 0.25f) else m.surfaceVariant)
-                    .border(1.dp, m.outline.copy(alpha = 0.25f), RoundedCornerShape(12.dp)).clickable { onPick(nm) }, Alignment.Center) { Icon(v, nm, Modifier.size(24.dp), m.onSurface) }
+                if (v != null) Box(Modifier.size(44.dp).clip(com.nizam.app.ui.design.labShape(12.dp)).background(if (RuneIconLib.pascal(current) == nm) m.primary.copy(alpha = 0.25f) else m.surfaceVariant)
+                    .border(1.dp, m.outline.copy(alpha = 0.25f), com.nizam.app.ui.design.labShape(12.dp)).clickable { onPick(nm) }, Alignment.Center) { Icon(v, nm, Modifier.size(24.dp), m.onSurface) }
             }
         }
     }

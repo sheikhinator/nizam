@@ -272,8 +272,8 @@ private fun SkeletonTiles(n: Int = 4) {
     val a = rememberInfiniteTransition(label = "sk").animateFloat(0.05f, 0.14f, infiniteRepeatable(tween(800), RepeatMode.Reverse), label = "a").value
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         repeat(n) { Column(Modifier.width(136.dp)) {
-            Box(Modifier.size(136.dp).clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = a)))
-            Box(Modifier.padding(top = 8.dp).width(110.dp).height(10.dp).clip(RoundedCornerShape(5.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = a)))
+            Box(Modifier.size(136.dp).clip(com.nizam.app.ui.design.labShape(16.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = a)))
+            Box(Modifier.padding(top = 8.dp).width(110.dp).height(10.dp).clip(com.nizam.app.ui.design.labShape(5.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = a)))
         } }
     }
 }
@@ -283,10 +283,10 @@ private fun SkeletonRows(n: Int = 5) {
     val a = rememberInfiniteTransition(label = "sk").animateFloat(0.05f, 0.14f, infiniteRepeatable(tween(800), RepeatMode.Reverse), label = "a").value
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         repeat(n) { Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(60.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = a)))
+            Box(Modifier.size(60.dp).clip(com.nizam.app.ui.design.labShape(12.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = a)))
             Column(Modifier.padding(start = 12.dp)) {
-                Box(Modifier.width(200.dp).height(12.dp).clip(RoundedCornerShape(6.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = a)))
-                Box(Modifier.padding(top = 8.dp).width(120.dp).height(10.dp).clip(RoundedCornerShape(5.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = a)))
+                Box(Modifier.width(200.dp).height(12.dp).clip(com.nizam.app.ui.design.labShape(6.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = a)))
+                Box(Modifier.padding(top = 8.dp).width(120.dp).height(10.dp).clip(com.nizam.app.ui.design.labShape(5.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = a)))
             }
         } }
     }
@@ -309,7 +309,7 @@ private fun ShowTile(s: Show, onClick: () -> Unit, rank: Int? = null) {
 @Composable
 private fun ShowRow(s: Show, onClick: () -> Unit) {
     val c = MaterialTheme.colorScheme
-    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).clickable(role = Role.Button) { onClick() }.padding(vertical = 8.dp),
+    Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(18.dp)).clickable(role = Role.Button) { onClick() }.padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically) {
         Cover(s.image, s.title, Modifier.size(64.dp), corner = 14.dp)
         Column(Modifier.weight(1f).padding(horizontal = 12.dp)) {
@@ -338,7 +338,7 @@ private fun EpisodeCard(ep: Episode, store: PodcastStore, refresh: Int, onChange
     var open by remember { mutableStateOf(false) }
     val livePos = if (isCurrent) Playback.positionMs else pos
     val progress = if (dur > 0) (livePos.toFloat() / dur).coerceIn(0f, 1f) else 0f
-    Column(Modifier.fillMaxWidth().padding(vertical = 5.dp).clip(RoundedCornerShape(20.dp))
+    Column(Modifier.fillMaxWidth().padding(vertical = 5.dp).clip(com.nizam.app.ui.design.labShape(20.dp))
         .background(if (isCurrent) c.primary.copy(alpha = 0.08f) else c.onSurface.copy(alpha = 0.035f))
         .clickable(role = Role.Button) { open = !open }.padding(12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -355,7 +355,7 @@ private fun EpisodeCard(ep: Episode, store: PodcastStore, refresh: Int, onChange
                 if (isCurrent) Playback.toggle() else { Playback.start(c2, ep, store); onChange() }
             }, size = 46.dp, progress = if (played) 0f else progress, buffering = isCurrent && Playback.buffering && !Playback.isPlaying)
         }
-        if (progress > 0.01f && !played) Box(Modifier.padding(top = 10.dp).fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)).background(c.onSurface.copy(alpha = 0.08f))) {
+        if (progress > 0.01f && !played) Box(Modifier.padding(top = 10.dp).fillMaxWidth().height(4.dp).clip(com.nizam.app.ui.design.labShape(2.dp)).background(c.onSurface.copy(alpha = 0.08f))) {
             Box(Modifier.fillMaxWidth(progress).fillMaxHeight().background(brand()))
         }
         Row(Modifier.padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -472,7 +472,7 @@ private fun ListenTab(store: PodcastStore, refresh: Int, onChange: () -> Unit, o
 @Composable
 private fun ContinueCard(ep: Episode, pos: Long, dur: Long, onPlay: () -> Unit) {
     val playing = Playback.current?.id == ep.id && Playback.isPlaying
-    Box(Modifier.width(260.dp).height(150.dp).shadow(8.dp, RoundedCornerShape(24.dp)).clip(RoundedCornerShape(24.dp))) {
+    Box(Modifier.width(260.dp).height(150.dp).shadow(8.dp, com.nizam.app.ui.design.labShape(24.dp)).clip(com.nizam.app.ui.design.labShape(24.dp))) {
         AsyncImage(ep.image, null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize().blur(24.dp))
         Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.25f), Color.Black.copy(alpha = 0.78f)))))
         Row(Modifier.fillMaxSize().padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -517,8 +517,8 @@ private fun DiscoverTab(open: (Show) -> Unit) {
     LazyColumn(contentPadding = BOTTOM) {
         item {
             val cs = MaterialTheme.colorScheme
-            Row(Modifier.fillMaxWidth().padding(top = 6.dp).clip(RoundedCornerShape(26.dp)).background(cs.onSurface.copy(alpha = 0.06f))
-                .border(0.8.dp, cs.outline.copy(alpha = 0.2f), RoundedCornerShape(26.dp)).padding(horizontal = 16.dp, vertical = 12.dp),
+            Row(Modifier.fillMaxWidth().padding(top = 6.dp).clip(com.nizam.app.ui.design.labShape(26.dp)).background(cs.onSurface.copy(alpha = 0.06f))
+                .border(0.8.dp, cs.outline.copy(alpha = 0.2f), com.nizam.app.ui.design.labShape(26.dp)).padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Outlined.Search, null, tint = cs.primary, modifier = Modifier.size(22.dp)); Spacer(Modifier.width(10.dp))
                 Box(Modifier.weight(1f)) {
@@ -575,7 +575,7 @@ private fun SourcesCard(country: String, onCountry: (String) -> Unit) {
     val c = LocalContext.current
     var key by remember { mutableStateOf(PodcastSources.indexKeys(c)?.first ?: "") }
     var secret by remember { mutableStateOf(PodcastSources.indexKeys(c)?.second ?: "") }
-    Column(Modifier.fillMaxWidth().padding(top = 10.dp).clip(RoundedCornerShape(20.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)).padding(14.dp)) {
+    Column(Modifier.fillMaxWidth().padding(top = 10.dp).clip(com.nizam.app.ui.design.labShape(20.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)).padding(14.dp)) {
         Text("Chart country", style = MaterialTheme.typography.labelLarge)
         Row(Modifier.horizontalScroll(rememberScrollState()).padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             COUNTRIES.forEach { (k, _) -> PillButton(k.uppercase(), Icons.Outlined.Language.takeIf { k == country }, on = k == country) { onCountry(k) } }
@@ -683,7 +683,7 @@ private fun MiniPlayer(onOpenPlayer: () -> Unit, modifier: Modifier) {
         if (ep == null) return@AnimatedVisibility
         val pos = Playback.positionMs
         val dur = if (Playback.durationMs > 0) Playback.durationMs else ep.durationSec * 1000L
-        val shape = RoundedCornerShape(24.dp)
+        val shape = com.nizam.app.ui.design.labShape(24.dp)
         Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp).fillMaxWidth().shadow(14.dp, shape).liquidGlass(shape)
             .clickable(role = Role.Button) { onOpenPlayer() }) {
             Row(Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -798,7 +798,7 @@ fun PodcastPlayerScreen() {
             if (marks.isNotEmpty()) {
                 SectionHead("Bookmarks")
                 marks.forEach { (at, text) ->
-                    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable(role = Role.Button) { Playback.seekTo(at) }.padding(vertical = 6.dp),
+                    Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(12.dp)).clickable(role = Role.Button) { Playback.seekTo(at) }.padding(vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically) {
                         Text(clock(at), style = MonoNumber, color = cs.primary, modifier = Modifier.clip(RoundedCornerShape(50))
                             .background(cs.primary.copy(alpha = 0.1f)).padding(horizontal = 10.dp, vertical = 3.dp))
@@ -807,7 +807,7 @@ fun PodcastPlayerScreen() {
                 }
             }
             AnimatedVisibility(panel == "ai" || summary != null) {
-                Column(Modifier.padding(top = 14.dp).fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(cs.primary.copy(alpha = 0.06f)).padding(14.dp)) {
+                Column(Modifier.padding(top = 14.dp).fillMaxWidth().clip(com.nizam.app.ui.design.labShape(22.dp)).background(cs.primary.copy(alpha = 0.06f)).padding(14.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Art3D("sparkles", 30.dp, float = false, shadow = false)
                         Text("Atlas on this episode", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(start = 6.dp))

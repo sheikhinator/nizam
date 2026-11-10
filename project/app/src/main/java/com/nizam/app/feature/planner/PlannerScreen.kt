@@ -70,7 +70,7 @@ fun PlannerScreen(container: AppContainer) {
             Row(Modifier.fillMaxWidth().padding(top = 8.dp)) {
                 Text("${b.start}\n${b.end}", style = MonoNumber, modifier = Modifier.width(56.dp),
                     color = if (current) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
-                Box(Modifier.width(4.dp).height(44.dp).background(colourFor(b.kind), RoundedCornerShape(2.dp)))
+                Box(Modifier.width(4.dp).height(44.dp).background(colourFor(b.kind), com.nizam.app.ui.design.labShape(2.dp)))
                 Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
                     Text(b.title, style = MaterialTheme.typography.bodyLarge,

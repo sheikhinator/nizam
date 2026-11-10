@@ -134,11 +134,11 @@ fun TerminalScreen() {
                 val on = i == Terminals.current
                 Text("${i + 1} · ${t.title}", color = if (on) Color.Black else Color(0xFFCBD5E1), fontFamily = FontFamily.Monospace,
                     style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(if (on) Color(0xFF5EEAD4) else Color(0xFF1E2430))
+                    modifier = Modifier.clip(com.nizam.app.ui.design.labShape(8.dp)).background(if (on) Color(0xFF5EEAD4) else Color(0xFF1E2430))
                         .clickable { Terminals.current = i; Terminals.view?.attachSession(t.session) }.padding(horizontal = 10.dp, vertical = 5.dp))
             }
             Text("＋", color = Color(0xFF5EEAD4), modifier = Modifier.clip(CircleShape).clickable { Terminals.open(c, LinuxEnv.preferred(c)) }.padding(8.dp))
-            Text("Linux ⚙", color = Color(0xFF94A3B8), style = MaterialTheme.typography.labelMedium, modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable { showSetup = !showSetup }.padding(8.dp))
+            Text("Linux ⚙", color = Color(0xFF94A3B8), style = MaterialTheme.typography.labelMedium, modifier = Modifier.clip(com.nizam.app.ui.design.labShape(8.dp)).clickable { showSetup = !showSetup }.padding(8.dp))
         }
 
         if (showSetup || (ready.isEmpty() && Terminals.tabs.isEmpty())) {
@@ -150,7 +150,7 @@ fun TerminalScreen() {
                 LinuxEnv.Distro.values().forEach { d ->
                     val inst = LinuxEnv.installed(c, d)
                     val p = progress?.takeIf { it.distro == d.id }
-                    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color(0xFF151A23)).border(1.dp, Color(0xFF263041), RoundedCornerShape(16.dp)).padding(14.dp)) {
+                    Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(16.dp)).background(Color(0xFF151A23)).border(1.dp, Color(0xFF263041), com.nizam.app.ui.design.labShape(16.dp)).padding(14.dp)) {
                         Text((if (d == LinuxEnv.Distro.ALPINE) "🏔  " else "🟠  ") + d.title + if (inst) "  ✓" else "", color = Color.White, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                         Text(d.blurb, color = Color(0xFF94A3B8), style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace)
                         if (p != null && p.stage != "Ready") {
@@ -238,7 +238,7 @@ private fun ExtraKeys() {
     Row(Modifier.fillMaxWidth().background(Color(0xFF151A23)).horizontalScroll(rememberScrollState()).padding(vertical = 4.dp, horizontal = 4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         keys.forEach { (label, seq) ->
             val on = (label == "CTRL" && Terminals.ctrl) || (label == "ALT" && Terminals.alt)
-            Box(Modifier.clip(RoundedCornerShape(8.dp)).background(if (on) Color(0xFF5EEAD4) else Color(0xFF1E2430)).clickable {
+            Box(Modifier.clip(com.nizam.app.ui.design.labShape(8.dp)).background(if (on) Color(0xFF5EEAD4) else Color(0xFF1E2430)).clickable {
                 when (label) {
                     "CTRL" -> Terminals.ctrl = !Terminals.ctrl
                     "ALT" -> Terminals.alt = !Terminals.alt

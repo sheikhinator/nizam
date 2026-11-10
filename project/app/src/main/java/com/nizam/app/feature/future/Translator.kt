@@ -88,7 +88,7 @@ fun TranslatorScreen(container: AppContainer) {
 
     showToThem?.let { t ->
         // full-screen card turned toward the other person
-        Box(Modifier.fillMaxSize().background(Color(0xFF0B0F1A)).clickable { showToThem = null }.padding(24.dp), contentAlignment = Alignment.Center) {
+        Box(Modifier.fillMaxSize().background(com.nizam.app.ui.design.labBg(Color(0xFF0B0F1A))).clickable { showToThem = null }.padding(24.dp), contentAlignment = Alignment.Center) {
             Text(t, color = Color.White, style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center, modifier = Modifier.rotate(180f))
             Text("Tap to close", color = Color.White.copy(alpha = 0.5f), modifier = Modifier.align(Alignment.BottomCenter))
         }
@@ -107,7 +107,7 @@ fun TranslatorScreen(container: AppContainer) {
             })
         LazyColumn(Modifier.weight(1f).padding(top = 8.dp)) {
             items(log) { (me, said, out) ->
-                Column(Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(14.dp))
+                Column(Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(com.nizam.app.ui.design.labShape(14.dp))
                     .background(if (me) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceVariant).padding(12.dp),
                     horizontalAlignment = if (me) Alignment.End else Alignment.Start) {
                     Text(said, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -119,7 +119,7 @@ fun TranslatorScreen(container: AppContainer) {
         Row(Modifier.fillMaxWidth().padding(vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             listOf(Triple("🎤 $mine", Color(0xFF1A73E8)) { runCatching { listenMine.launch(intent(mine, "Speak $mine")) }; Unit },
                 Triple("🎤 $theirs", Color(0xFF0F9D58)) { runCatching { listenTheirs.launch(intent(theirs, "Speak $theirs")) }; Unit }).forEach { (label, col, go) ->
-                Box(Modifier.weight(1f).height(64.dp).clip(RoundedCornerShape(18.dp)).background(col).clickable(enabled = !busy) { go() }, contentAlignment = Alignment.Center) {
+                Box(Modifier.weight(1f).height(64.dp).clip(com.nizam.app.ui.design.labShape(18.dp)).background(col).clickable(enabled = !busy) { go() }, contentAlignment = Alignment.Center) {
                     Text(label, color = Color.White, style = MaterialTheme.typography.titleMedium)
                 }
             }

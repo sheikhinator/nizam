@@ -151,7 +151,7 @@ class CircleActivity : ComponentActivity() {
 
                     Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth().clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
                         .background(MaterialTheme.colorScheme.background).navigationBarsPadding().imePadding().padding(16.dp)) {
-                        crop?.let { Image(it.asImageBitmap(), null, contentScale = ContentScale.Fit, modifier = Modifier.heightIn(max = 110.dp).clip(RoundedCornerShape(10.dp))) }
+                        crop?.let { Image(it.asImageBitmap(), null, contentScale = ContentScale.Fit, modifier = Modifier.heightIn(max = 110.dp).clip(com.nizam.app.ui.design.labShape(10.dp))) }
                         Row(Modifier.horizontalScroll(rememberScrollState()).padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             listOf(
                                 "Do it for me" to {

@@ -122,7 +122,7 @@ private fun OrderBox(container: AppContainer) {
     var urdu by remember { mutableStateOf(false) }
     Card(colors = CardDefaults.cardColors(containerColor = Color.Transparent)) {
         Column(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp))
+            Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(22.dp))
                 .background(Brush.linearGradient(listOf(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.tertiaryContainer)))
                 .padding(16.dp).animateContentSize()
         ) {
@@ -144,7 +144,7 @@ private fun OrderBox(container: AppContainer) {
                 Text("Ideas", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 10.dp))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(top = 4.dp)) {
                     items(IDEAS) { (k, idea) ->
-                        Box(Modifier.width(200.dp).clip(RoundedCornerShape(14.dp)).background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f))
+                        Box(Modifier.width(200.dp).clip(com.nizam.app.ui.design.labShape(14.dp)).background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f))
                             .clickable { text = idea; kind = k }.padding(10.dp)) {
                             Text("${k.emoji}  $idea", style = MaterialTheme.typography.bodySmall, maxLines = 3, overflow = TextOverflow.Ellipsis)
                         }
@@ -181,7 +181,7 @@ private fun ShelfTile(c: android.content.Context, item: Deliverables.Item, onOpe
         Box(Modifier.fillMaxWidth().aspectRatio(0.8f).background(MaterialTheme.colorScheme.surfaceVariant), contentAlignment = Alignment.Center) {
             thumb?.let { Image(it.asImageBitmap(), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }
                 ?: Text(item.kind.emoji, fontSize = 44.sp)
-            Text(item.kind.label, Modifier.align(Alignment.TopStart).padding(8.dp).clip(RoundedCornerShape(8.dp))
+            Text(item.kind.label, Modifier.align(Alignment.TopStart).padding(8.dp).clip(com.nizam.app.ui.design.labShape(8.dp))
                 .background(Color.Black.copy(alpha = 0.55f)).padding(horizontal = 8.dp, vertical = 3.dp), color = Color.White, style = MaterialTheme.typography.labelSmall)
         }
         Column(Modifier.padding(10.dp)) {
@@ -269,7 +269,7 @@ private fun ImageGallery(item: Deliverables.Item, c: android.content.Context) {
         items(images) { f ->
             val bmp by produceState<Bitmap?>(null, f) { value = withContext(Dispatchers.IO) { BitmapFactory.decodeFile(f.absolutePath) } }
             Column {
-                bmp?.let { Image(it.asImageBitmap(), null, Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)), contentScale = ContentScale.FillWidth) }
+                bmp?.let { Image(it.asImageBitmap(), null, Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(16.dp)), contentScale = ContentScale.FillWidth) }
                 Row {
                     TextButton(onClick = { runCatching { c.startActivity(android.content.Intent.createChooser(Deliverables.shareIntent(c, f), "Share").addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) } }) { Text("Share this one") }
                     TextButton(onClick = { runCatching { setWallpaper(c, f) } }) { Text("Set as wallpaper") }
@@ -337,7 +337,7 @@ private fun AudioView(f: File, item: Deliverables.Item) {
     DisposableEffect(f) { onDispose { player.release() } }
     val script = remember(item) { File(item.dir(c), "script.md").takeIf { it.exists() }?.readText().orEmpty() }
     Column(Modifier.fillMaxSize().padding(16.dp)) {
-        Box(Modifier.fillMaxWidth().height(160.dp).clip(RoundedCornerShape(24.dp))
+        Box(Modifier.fillMaxWidth().height(160.dp).clip(com.nizam.app.ui.design.labShape(24.dp))
             .background(Brush.linearGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.tertiary))), contentAlignment = Alignment.Center) {
             Button(onClick = { if (playing) player.pause() else player.start(); playing = !playing }) { Text(if (playing) "⏸ Pause" else "▶ Play · ${player.duration / 60000}:${"%02d".format(player.duration / 1000 % 60)}") }
         }

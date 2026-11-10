@@ -86,11 +86,11 @@ fun schemeFor(p: AtlasPalette): ColorScheme {
 
 // Soft, even corners: one language for fields, cards and sheets.
 val NizamShapes = Shapes(
-    extraSmall = RoundedCornerShape(8.dp),
-    small = RoundedCornerShape(12.dp),
-    medium = RoundedCornerShape(16.dp),
-    large = RoundedCornerShape(20.dp),
-    extraLarge = RoundedCornerShape(28.dp)
+    extraSmall = com.nizam.app.ui.design.labShape(8.dp),
+    small = com.nizam.app.ui.design.labShape(12.dp),
+    medium = com.nizam.app.ui.design.labShape(16.dp),
+    large = com.nizam.app.ui.design.labShape(20.dp),
+    extraLarge = com.nizam.app.ui.design.labShape(28.dp)
 )
 
 @Composable
@@ -147,7 +147,7 @@ fun NizamTheme(
     MaterialTheme(
         colorScheme = scheme,
         typography = type,
-        shapes = if (lab) Shapes(RoundedCornerShape(2.dp), RoundedCornerShape(2.dp), RoundedCornerShape(2.dp), RoundedCornerShape(2.dp), RoundedCornerShape(2.dp)) else NizamShapes
+        shapes = if (lab) Shapes(com.nizam.app.ui.design.labShape(2.dp), com.nizam.app.ui.design.labShape(2.dp), com.nizam.app.ui.design.labShape(2.dp), com.nizam.app.ui.design.labShape(2.dp), com.nizam.app.ui.design.labShape(2.dp)) else NizamShapes
     ) {
         val view = androidx.compose.ui.platform.LocalView.current
         androidx.compose.runtime.DisposableEffect(comfort.keepAwake) {

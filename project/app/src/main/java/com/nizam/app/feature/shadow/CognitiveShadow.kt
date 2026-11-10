@@ -107,8 +107,8 @@ fun CognitiveShadowScreen() {
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(22.dp))
-                    .luminex(RoundedCornerShape(22.dp), Ascend.reactorIce, 0.7f)
+                    .clip(com.nizam.app.ui.design.labShape(22.dp))
+                    .luminex(com.nizam.app.ui.design.labShape(22.dp), Ascend.reactorIce, 0.7f)
                     .padding(16.dp)
             ) {
                 androidx.compose.material3.OutlinedTextField(
@@ -172,8 +172,8 @@ fun CognitiveShadowScreen() {
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(22.dp))
-                    .luminex(RoundedCornerShape(22.dp), Ascend.reactorViolet, 0.7f)
+                    .clip(com.nizam.app.ui.design.labShape(22.dp))
+                    .luminex(com.nizam.app.ui.design.labShape(22.dp), Ascend.reactorViolet, 0.7f)
                     .padding(20.dp)
             ) {
                 Text("SIT WITH THIS", color = Ascend.reactorViolet, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
@@ -202,8 +202,8 @@ private fun Voice(label: String, body: String, accent: Color) {
     Column(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .luminex(RoundedCornerShape(20.dp), accent, 0.6f)
+            .clip(com.nizam.app.ui.design.labShape(20.dp))
+            .luminex(com.nizam.app.ui.design.labShape(20.dp), accent, 0.6f)
             .padding(18.dp)
     ) {
         Text(label, color = accent, fontSize = 9.sp, fontWeight = FontWeight.SemiBold)

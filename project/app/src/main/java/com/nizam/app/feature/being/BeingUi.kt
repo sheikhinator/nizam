@@ -50,7 +50,7 @@ private fun Pill(t: String, on: Boolean, onClick: () -> Unit) =
 
 @Composable
 private fun Card(onClick: (() -> Unit)? = null, content: @Composable () -> Unit) {
-    Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(BP.panel).border(1.dp, BP.line, RoundedCornerShape(16.dp))
+    Box(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(16.dp)).background(BP.panel).border(1.dp, BP.line, com.nizam.app.ui.design.labShape(16.dp))
         .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier).padding(14.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) { content() }
     }
@@ -78,7 +78,7 @@ fun BeingScreen(container: AppContainer, onOpen: (String) -> Unit) {
                 Text("🥚", fontSize = 48.sp)
                 Text("Something is about to hatch inside Atlas.", color = BP.text, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
                 Text("A little robot that picks its own name, personality and voice, and lives its own life here: exploring, learning, making things, using its own computer. It never sees your data.", color = BP.dim)
-                Text(if (busy) "Hatching…" else "Let it hatch", Modifier.clip(RoundedCornerShape(12.dp)).background(BP.glow).clickable(enabled = !busy) {
+                Text(if (busy) "Hatching…" else "Let it hatch", Modifier.clip(com.nizam.app.ui.design.labShape(12.dp)).background(BP.glow).clickable(enabled = !busy) {
                     busy = true; scope.launch { runCatching { Being.birth(container, c) }; busy = false; Being.version++ }
                 }.padding(horizontal = 18.dp, vertical = 10.dp), color = BP.bg, fontWeight = FontWeight.Bold)
             } else Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -89,8 +89,8 @@ fun BeingScreen(container: AppContainer, onOpen: (String) -> Unit) {
                 }
                 RoomScene(container, 300.dp, 80.dp, Mode.ROOM)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("🏠  Enter its 3D home", Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(BP.glow).clickable { onOpen("nx/being3d") }.padding(horizontal = 16.dp, vertical = 12.dp), color = BP.bg, fontWeight = FontWeight.Bold)
-                    Text("🔓  Freedom", Modifier.clip(RoundedCornerShape(12.dp)).background(BP.glow.copy(alpha = 0.18f)).clickable { onOpen("nx/beingfreedom") }.padding(horizontal = 16.dp, vertical = 12.dp), color = BP.text, fontWeight = FontWeight.SemiBold)
+                    Text("🏠  Enter its 3D home", Modifier.weight(1f).clip(com.nizam.app.ui.design.labShape(12.dp)).background(BP.glow).clickable { onOpen("nx/being3d") }.padding(horizontal = 16.dp, vertical = 12.dp), color = BP.bg, fontWeight = FontWeight.Bold)
+                    Text("🔓  Freedom", Modifier.clip(com.nizam.app.ui.design.labShape(12.dp)).background(BP.glow.copy(alpha = 0.18f)).clickable { onOpen("nx/beingfreedom") }.padding(horizontal = 16.dp, vertical = 12.dp), color = BP.text, fontWeight = FontWeight.SemiBold)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { mindOpen = true }) {
                     Text(remember(v) { Being.icon(c) } + "  ", fontSize = 16.sp)
@@ -201,7 +201,7 @@ private fun WorkCard(w: JSONObject, onOpen: (String) -> Unit) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) { Small((KIND_LABEL[w.optString("kind")] ?: w.optString("kind")) + " · " + ago(w.optLong("t")) + (w.optString("tool_title").takeIf { it.isNotBlank() }?.let { " · with $it" } ?: ""))
                 Text(w.optString("title"), color = BP.text, fontWeight = FontWeight.SemiBold) }
-            if (w.optString("kind") == "art") Box(Modifier.size(64.dp).clip(RoundedCornerShape(6.dp))) { PixelArt(w, Modifier.fillMaxSize()) }
+            if (w.optString("kind") == "art") Box(Modifier.size(64.dp).clip(com.nizam.app.ui.design.labShape(6.dp))) { PixelArt(w, Modifier.fillMaxSize()) }
         }
         if (w.optString("kind") == "art" && open) Box(Modifier.fillMaxWidth().height(260.dp), contentAlignment = Alignment.Center) { PixelArt(w, Modifier.size(256.dp)) }
         val body = w.optString("body")

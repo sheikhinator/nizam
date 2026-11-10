@@ -182,7 +182,7 @@ private fun Home(engine: ChatEngine, rev: Int, go: (String) -> Unit, openChat: (
                 IconButton(onClick = { go("settings") }) { Icon(Icons.Filled.Settings, "Settings") }
             }
             OutlinedTextField(q, { q = it }, placeholder = { Text("Search chats") }, leadingIcon = { Icon(Icons.Filled.Search, null) }, singleLine = true,
-                shape = RoundedCornerShape(28.dp), modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp))
+                shape = com.nizam.app.ui.design.labShape(28.dp), modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp))
             if (engine.requests.isNotEmpty()) {
                 Card(onClick = { go("requests") }, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
@@ -267,7 +267,7 @@ private fun ChatScreen(engine: ChatEngine, pub: String, rev: Int, back: () -> Un
         Surface(tonalElevation = 3.dp) {
             Row(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 4.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = back) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
-                Row(Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).clickable(onClick = info).padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.weight(1f).clip(com.nizam.app.ui.design.labShape(12.dp)).clickable(onClick = info).padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
                     Avatar(c.name, 40)
                     Spacer(Modifier.width(10.dp))
                     Column {
@@ -313,7 +313,7 @@ private fun ChatScreen(engine: ChatEngine, pub: String, rev: Int, back: () -> Un
             }
         }
         Row(Modifier.fillMaxWidth().navigationBarsPadding().padding(8.dp), verticalAlignment = Alignment.Bottom) {
-            OutlinedTextField(text, { text = it }, placeholder = { Text("Message") }, shape = RoundedCornerShape(26.dp), maxLines = 5, modifier = Modifier.weight(1f))
+            OutlinedTextField(text, { text = it }, placeholder = { Text("Message") }, shape = com.nizam.app.ui.design.labShape(26.dp), maxLines = 5, modifier = Modifier.weight(1f))
             Spacer(Modifier.width(8.dp))
             FilledIconButton(onClick = {
                 val e = editing
@@ -357,7 +357,7 @@ private fun Bubble(m: Msg, quoted: Msg?, me: String, otherName: String, onLong: 
     val shape = RoundedCornerShape(18.dp, 18.dp, if (mine) 4.dp else 18.dp, if (mine) 18.dp else 4.dp)
     Column(Modifier.fillMaxWidth(), horizontalAlignment = if (mine) Alignment.End else Alignment.Start) {
         Column(Modifier.widthIn(max = 300.dp).clip(shape).background(bg).combinedClickable(onClick = {}, onLongClick = onLong).padding(horizontal = 12.dp, vertical = 8.dp)) {
-            if (quoted != null) Row(Modifier.padding(bottom = 6.dp).clip(RoundedCornerShape(8.dp)).background(fg.copy(alpha = 0.08f)).height(IntrinsicSize.Min)) {
+            if (quoted != null) Row(Modifier.padding(bottom = 6.dp).clip(com.nizam.app.ui.design.labShape(8.dp)).background(fg.copy(alpha = 0.08f)).height(IntrinsicSize.Min)) {
                 Box(Modifier.width(3.dp).fillMaxHeight().background(MaterialTheme.colorScheme.primary))
                 Column(Modifier.padding(8.dp)) {
                     Text(if (quoted.mine) "You" else otherName, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
@@ -375,7 +375,7 @@ private fun Bubble(m: Msg, quoted: Msg?, me: String, otherName: String, onLong: 
         }
         if (m.reactions.isNotEmpty()) {
             val grouped = m.reactions.values.groupingBy { it }.eachCount()
-            Row(Modifier.offset(y = (-6).dp).padding(horizontal = 8.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surface).padding(horizontal = 6.dp, vertical = 1.dp)) {
+            Row(Modifier.offset(y = (-6).dp).padding(horizontal = 8.dp).clip(com.nizam.app.ui.design.labShape(12.dp)).background(MaterialTheme.colorScheme.surface).padding(horizontal = 6.dp, vertical = 1.dp)) {
                 grouped.forEach { (e, n) -> Text(if (n > 1) "$e$n " else "$e ", fontSize = 13.sp) }
             }
         }
@@ -483,7 +483,7 @@ private fun MyId(engine: ChatEngine, back: () -> Unit) {
         Spacer(Modifier.height(10.dp))
         Text("@${engine.myName}", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(18.dp))
-        Box(Modifier.clip(RoundedCornerShape(20.dp)).background(Color.White).padding(14.dp)) { Image(bmp, "Your Atlas ID as a QR code", Modifier.size(230.dp)) }
+        Box(Modifier.clip(com.nizam.app.ui.design.labShape(20.dp)).background(Color.White).padding(14.dp)) { Image(bmp, "Your Atlas ID as a QR code", Modifier.size(230.dp)) }
         Spacer(Modifier.height(14.dp))
         Text(id.take(14) + "…" + id.takeLast(8), fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(18.dp))

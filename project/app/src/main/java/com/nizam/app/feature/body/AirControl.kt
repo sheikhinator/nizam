@@ -121,7 +121,7 @@ private fun AirReader(pages: List<String>, close: () -> Unit) {
     }
     Column(Modifier.fillMaxSize().statusBarsPadding().padding(16.dp)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(110.dp, 140.dp).clip(RoundedCornerShape(16.dp)).background(Color.Black)) {
+            Box(Modifier.size(110.dp, 140.dp).clip(com.nizam.app.ui.design.labShape(16.dp)).background(Color.Black)) {
                 AndroidView(factory = { ctx ->
                     val view = PreviewView(ctx)
                     val future = ProcessCameraProvider.getInstance(ctx)

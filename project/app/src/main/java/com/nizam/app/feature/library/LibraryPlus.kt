@@ -75,7 +75,7 @@ fun LibraryBoost(container: AppContainer, books: List<Book>, open: (Book) -> Uni
     val cs = MaterialTheme.colorScheme
     Column(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         books.filter { it.status == "READING" && it.fileUri.isNotBlank() }.maxByOrNull { it.progressPercent * 1000L + it.lastPage }?.let { b ->
-            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(cs.primary.copy(alpha = 0.12f)).clickable { open(b) }.padding(14.dp),
+            Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(16.dp)).background(cs.primary.copy(alpha = 0.12f)).clickable { open(b) }.padding(14.dp),
                 verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text("Continue reading", style = MaterialTheme.typography.labelLarge, color = cs.primary)
@@ -88,7 +88,7 @@ fun LibraryBoost(container: AppContainer, books: List<Book>, open: (Book) -> Uni
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text("${LocalDate.now().year} goal: $done of $goal books", fontWeight = FontWeight.SemiBold)
-                Box(Modifier.fillMaxWidth().padding(top = 4.dp).height(6.dp).clip(RoundedCornerShape(3.dp)).background(cs.surfaceVariant)) {
+                Box(Modifier.fillMaxWidth().padding(top = 4.dp).height(6.dp).clip(com.nizam.app.ui.design.labShape(3.dp)).background(cs.surfaceVariant)) {
                     Box(Modifier.fillMaxWidth((done.toFloat() / goal).coerceIn(0.01f, 1f)).height(6.dp).background(cs.primary))
                 }
                 Text("$week pages this week · ${if (streak > 0) "🔥 $streak-day reading streak" else "read a page today to start a streak"}",

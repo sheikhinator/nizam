@@ -163,7 +163,7 @@ fun RuneFillEditor(label: String, spec: String, theme: RuneTheme, onChange: (Str
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 GRADIENTS.forEach { g ->
                     val gs = FillSpec.parse(g, theme)
-                    Box(Modifier.size(width = 56.dp, height = 36.dp).clip(RoundedCornerShape(10.dp)).runeFill(g, RoundedCornerShape(10.dp), theme, 1f, true).clickable { onChange(g) })
+                    Box(Modifier.size(width = 56.dp, height = 36.dp).clip(com.nizam.app.ui.design.labShape(10.dp)).runeFill(g, com.nizam.app.ui.design.labShape(10.dp), theme, 1f, true).clickable { onChange(g) })
                     if (gs == null) Unit
                 }
             }

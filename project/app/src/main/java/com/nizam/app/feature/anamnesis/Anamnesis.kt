@@ -70,8 +70,8 @@ fun AnamnesisScreen() {
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(22.dp))
-                    .luminex(RoundedCornerShape(22.dp), Ascend.reactorIce, 0.7f)
+                    .clip(com.nizam.app.ui.design.labShape(22.dp))
+                    .luminex(com.nizam.app.ui.design.labShape(22.dp), Ascend.reactorIce, 0.7f)
                     .padding(20.dp)
             ) {
                 Text("THIS CHAPTER", color = Ascend.reactorIce, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
@@ -159,9 +159,9 @@ private fun Chapter(title: String, body: String, accent: Color) {
     Column(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(22.dp))
-            .luminex(RoundedCornerShape(22.dp), accent, 0.7f)
-            .reactorGlow(accent, 0.28f, RoundedCornerShape(22.dp))
+            .clip(com.nizam.app.ui.design.labShape(22.dp))
+            .luminex(com.nizam.app.ui.design.labShape(22.dp), accent, 0.7f)
+            .reactorGlow(accent, 0.28f, com.nizam.app.ui.design.labShape(22.dp))
             .padding(20.dp)
     ) {
         Text(title.uppercase(), color = accent, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)

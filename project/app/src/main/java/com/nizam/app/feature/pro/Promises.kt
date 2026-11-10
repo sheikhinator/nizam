@@ -291,7 +291,7 @@ fun PromisesScreen(container: AppContainer) {
 
 @Composable
 internal fun Stat(label: String, value: String, color: Color, modifier: Modifier) {
-    Column(modifier.clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(vertical = 12.dp, horizontal = 10.dp)) {
+    Column(modifier.clip(com.nizam.app.ui.design.labShape(16.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(vertical = 12.dp, horizontal = 10.dp)) {
         Text(value, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = color)
         Text(label, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
@@ -299,7 +299,7 @@ internal fun Stat(label: String, value: String, color: Color, modifier: Modifier
 
 @Composable
 internal fun Card2(content: @Composable () -> Unit) {
-    Column(Modifier.padding(horizontal = 16.dp, vertical = 5.dp).fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(14.dp),
+    Column(Modifier.padding(horizontal = 16.dp, vertical = 5.dp).fillMaxWidth().clip(com.nizam.app.ui.design.labShape(16.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(3.dp)) { content() }
 }
 

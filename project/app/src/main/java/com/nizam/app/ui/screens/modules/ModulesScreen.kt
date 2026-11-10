@@ -532,7 +532,7 @@ fun ModulesScreen(container: AppContainer, onOpen: (String) -> Unit) {
                     moduleFields.forEachIndexed { index, field ->
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
+                            shape = com.nizam.app.ui.design.labShape(12.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                         ) {
                             Column(Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {

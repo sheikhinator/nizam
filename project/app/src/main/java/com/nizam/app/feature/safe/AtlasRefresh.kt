@@ -266,7 +266,7 @@ fun RefreshOverlay(modifier: Modifier = Modifier) {
     AnimatedVisibility(visible, modifier, enter = fadeIn() + slideInVertically { -it }, exit = fadeOut() + slideOutVertically { -it }) {
         val c = MaterialTheme.colorScheme
         Column(Modifier.statusBarsPadding().padding(top = 8.dp, start = 16.dp, end = 16.dp).widthIn(max = 460.dp).fillMaxWidth()
-            .clip(RoundedCornerShape(22.dp)).background(c.surface.copy(alpha = 0.97f)).border(1.dp, c.primary.copy(alpha = 0.3f), RoundedCornerShape(22.dp))
+            .clip(com.nizam.app.ui.design.labShape(22.dp)).background(c.surface.copy(alpha = 0.97f)).border(1.dp, c.primary.copy(alpha = 0.3f), com.nizam.app.ui.design.labShape(22.dp))
             .clickable { AtlasRefresh.dismiss() }.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(if (st.running) "Refreshing Atlas…" else "All fresh ✨", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             st.steps.forEach { s ->
@@ -292,7 +292,7 @@ private fun UpdatePrompt(modifier: Modifier) {
         val up = u ?: return@AnimatedVisibility
         val c = MaterialTheme.colorScheme
         Column(Modifier.statusBarsPadding().padding(top = 8.dp, start = 16.dp, end = 16.dp).widthIn(max = 460.dp).fillMaxWidth()
-            .clip(RoundedCornerShape(22.dp)).background(c.surface.copy(alpha = 0.98f)).border(1.dp, c.primary.copy(alpha = 0.5f), RoundedCornerShape(22.dp))
+            .clip(com.nizam.app.ui.design.labShape(22.dp)).background(c.surface.copy(alpha = 0.98f)).border(1.dp, c.primary.copy(alpha = 0.5f), com.nizam.app.ui.design.labShape(22.dp))
             .padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(if (up.done) "Tap Install on Android's prompt" else "Atlas ${up.info.tag} is ready", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             val mine = com.nizam.app.feature.platform2.Updater.myBuild

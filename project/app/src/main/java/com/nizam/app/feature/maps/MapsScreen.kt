@@ -418,7 +418,7 @@ fun MapsScreen() {
         Column(Modifier.fillMaxWidth().padding(12.dp)) {
             if (navigating && route != null) {
                 val next = route.steps.getOrNull(stepIdx); val after = route.steps.getOrNull(stepIdx + 1)
-                Surface(shape = RoundedCornerShape(20.dp), color = GO_GREEN, modifier = Modifier.fillMaxWidth().shadow(10.dp, RoundedCornerShape(20.dp))) {
+                Surface(shape = com.nizam.app.ui.design.labShape(20.dp), color = GO_GREEN, modifier = Modifier.fillMaxWidth().shadow(10.dp, com.nizam.app.ui.design.labShape(20.dp))) {
                     Column {
                         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(70.dp)) {
@@ -438,7 +438,7 @@ fun MapsScreen() {
                 }
             } else if (dest != null && !pickingStart) {
                 // Google-style directions card: from / to / swap, then a tab per way of travelling with its time
-                Surface(shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxWidth().shadow(8.dp, RoundedCornerShape(20.dp))) {
+                Surface(shape = com.nizam.app.ui.design.labShape(20.dp), color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxWidth().shadow(8.dp, com.nizam.app.ui.design.labShape(20.dp))) {
                     Column(Modifier.padding(14.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Column(Modifier.weight(1f)) {
@@ -466,7 +466,7 @@ fun MapsScreen() {
                     }
                 }
             } else {
-                Surface(shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxWidth().shadow(6.dp, RoundedCornerShape(28.dp))) {
+                Surface(shape = com.nizam.app.ui.design.labShape(28.dp), color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxWidth().shadow(6.dp, com.nizam.app.ui.design.labShape(28.dp))) {
                     Row(Modifier.padding(horizontal = 16.dp, vertical = 13.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(if (pickingStart) Icons.Rounded.TripOrigin else Icons.Rounded.Search, null, tint = if (pickingStart) routeBlue else MaterialTheme.colorScheme.onSurfaceVariant)
                         Box(Modifier.weight(1f).padding(horizontal = 10.dp)) {
@@ -484,7 +484,7 @@ fun MapsScreen() {
                 }
                 // suggestions / recents / saved
                 AnimatedVisibility(focused && (suggestions.isNotEmpty() || query.isBlank()), enter = fadeIn(), exit = fadeOut()) {
-                    Surface(shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxWidth().padding(top = 6.dp).shadow(4.dp, RoundedCornerShape(20.dp))) {
+                    Surface(shape = com.nizam.app.ui.design.labShape(20.dp), color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxWidth().padding(top = 6.dp).shadow(4.dp, com.nizam.app.ui.design.labShape(20.dp))) {
                         Column(Modifier.heightIn(max = 380.dp).verticalScroll(rememberScrollState()).padding(vertical = 6.dp)) {
                             val here = me.myLocation
                             if (query.isBlank()) {
@@ -543,7 +543,7 @@ fun MapsScreen() {
                     if (routing && routes.isEmpty()) Text("Finding the best routes…", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     routes.forEachIndexed { i, r ->
                         val on = i == routeIdx
-                        Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(if (on) routeBlue.copy(alpha = 0.08f) else Color.Transparent)
+                        Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(if (on) routeBlue.copy(alpha = 0.08f) else Color.Transparent)
                             .clickable { routeIdx = i; drawRoutes() }.padding(horizontal = 12.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                             Column(Modifier.weight(1f)) {
                                 Text(Geo.duration(r.durationS), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold,
@@ -612,7 +612,7 @@ fun MapsScreen() {
                             if (web != null) RoundAction(Icons.Rounded.Language, "Website") { runCatching { c.startActivity(Intent(Intent.ACTION_VIEW,
                                 Uri.parse(if (web.startsWith("http")) web else "https://$web"))) } }
                         }
-                        wikiImg?.let { AsyncImage(it, p.name, contentScale = ContentScale.Crop, modifier = Modifier.padding(top = 14.dp).fillMaxWidth().aspectRatio(16f / 9f).clip(RoundedCornerShape(16.dp))) }
+                        wikiImg?.let { AsyncImage(it, p.name, contentScale = ContentScale.Crop, modifier = Modifier.padding(top = 14.dp).fillMaxWidth().aspectRatio(16f / 9f).clip(com.nizam.app.ui.design.labShape(16.dp))) }
                         wikiText?.let { Text(it, style = MaterialTheme.typography.bodyMedium, maxLines = if (more) 20 else 3, overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.padding(top = 10.dp).clickable { more = !more }) }
                         HorizontalDivider(Modifier.padding(vertical = 10.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -645,7 +645,7 @@ fun MapsScreen() {
                     Column(Modifier.heightIn(max = 300.dp).verticalScroll(rememberScrollState()).padding(top = 6.dp)) {
                         results.forEach { p ->
                             val h = Hours.status(p.tags["opening_hours"])
-                            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable { select(p) }.padding(vertical = 10.dp, horizontal = 4.dp),
+                            Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(12.dp)).clickable { select(p) }.padding(vertical = 10.dp, horizontal = 4.dp),
                                 verticalAlignment = Alignment.CenterVertically) {
                                 Column(Modifier.weight(1f)) {
                                     Text(p.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -692,9 +692,9 @@ fun MapsScreen() {
             androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.padding(top = 8.dp)) {
                 MapStyles.NAMES.forEach { n ->
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clip(RoundedCornerShape(14.dp)).clickable { style = n; MapPrefs.setStyle(c, n) }) {
-                        Box(Modifier.size(width = 92.dp, height = 64.dp).clip(RoundedCornerShape(14.dp)).background(swatch[n] ?: Color.Gray)
-                            .border(if (style == n) 3.dp else 0.dp, if (style == n) routeBlue else Color.Transparent, RoundedCornerShape(14.dp)))
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clip(com.nizam.app.ui.design.labShape(14.dp)).clickable { style = n; MapPrefs.setStyle(c, n) }) {
+                        Box(Modifier.size(width = 92.dp, height = 64.dp).clip(com.nizam.app.ui.design.labShape(14.dp)).background(swatch[n] ?: Color.Gray)
+                            .border(if (style == n) 3.dp else 0.dp, if (style == n) routeBlue else Color.Transparent, com.nizam.app.ui.design.labShape(14.dp)))
                         Text(n, style = MaterialTheme.typography.labelMedium, color = if (style == n) routeBlue else MaterialTheme.colorScheme.onSurface,
                             textAlign = TextAlign.Center, modifier = Modifier.padding(top = 4.dp))
                     }
@@ -729,7 +729,7 @@ private fun SwitchRow(title: String, sub: String?, on: Boolean, onChange: (Boole
 
 @Composable
 private fun EndpointRow(icon: ImageVector, tint: Color, text: String, onClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
+    Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
         .clickable(onClick = onClick).padding(horizontal = 12.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
         Icon(icon, null, tint = tint, modifier = Modifier.size(18.dp))
         Text(text, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(start = 10.dp))
@@ -739,7 +739,7 @@ private fun EndpointRow(icon: ImageVector, tint: Color, text: String, onClick: (
 @Composable
 private fun RoundAction(icon: ImageVector, label: String, filled: Boolean = false, onClick: () -> Unit) {
     val blue = Color(0xFF1A73E8)
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clip(RoundedCornerShape(16.dp)).clickable(onClick = onClick).padding(4.dp)) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clip(com.nizam.app.ui.design.labShape(16.dp)).clickable(onClick = onClick).padding(4.dp)) {
         Box(Modifier.size(48.dp).clip(CircleShape).background(if (filled) blue else blue.copy(alpha = 0.12f)), contentAlignment = Alignment.Center) {
             Icon(icon, null, tint = if (filled) Color.White else blue)
         }

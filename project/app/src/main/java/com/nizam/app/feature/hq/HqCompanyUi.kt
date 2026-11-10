@@ -70,7 +70,7 @@ private fun Chip(text: String, color: Color, filled: Boolean = true) {
 
 @Composable
 private fun Kpi(label: String, value: String, sub: String, modifier: Modifier) {
-    Column(modifier.clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(12.dp)) {
+    Column(modifier.clip(com.nizam.app.ui.design.labShape(16.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(12.dp)) {
         Text(label, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.SemiBold)
         Text(value, fontSize = 22.sp, fontWeight = FontWeight.Bold)
         if (sub.isNotBlank()) Text(sub, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -151,7 +151,7 @@ private fun Overview(container: AppContainer, openAgent: (String) -> Unit, openH
         if (cap > 0) LinearProgressIndicator(progress = { (today.toFloat() / cap).coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth().padding(top = 8.dp))
         best?.let { b ->
             Spacer(Modifier.height(12.dp))
-            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color(0x22F59E0B)).clickable { openAgent(b.id) }.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(16.dp)).background(Color(0x22F59E0B)).clickable { openAgent(b.id) }.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text("🏆", fontSize = 26.sp); Spacer(Modifier.width(10.dp))
                 Column { Text("Star of the week", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant); Text("${b.emoji} ${b.name} · ${stars(stats[b.id]?.stars ?: 0f)}", fontWeight = FontWeight.Bold) }
             }
@@ -175,7 +175,7 @@ private fun Overview(container: AppContainer, openAgent: (String) -> Unit, openH
         Text("Suggestions", fontWeight = FontWeight.Bold, fontSize = 13.sp)
         if (proposals.isEmpty()) Text("Nothing to decide right now.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         proposals.forEach { p ->
-            Column(Modifier.fillMaxWidth().padding(top = 6.dp).clip(RoundedCornerShape(14.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(10.dp)) {
+            Column(Modifier.fillMaxWidth().padding(top = 6.dp).clip(com.nizam.app.ui.design.labShape(14.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(10.dp)) {
                 Text(p.text, fontSize = 13.sp)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 4.dp)) {
                     when (p.kind) {
@@ -212,7 +212,7 @@ private fun People(container: AppContainer, openAgent: (String) -> Unit, openHir
         val p = prof[a.id] ?: return
         val s = st[a.id]
         val busy = Crew.busyAgents.containsKey(a.id)
-        Row(Modifier.fillMaxWidth().padding(start = (indent * 18).dp, top = 6.dp).clip(RoundedCornerShape(14.dp))
+        Row(Modifier.fillMaxWidth().padding(start = (indent * 18).dp, top = 6.dp).clip(com.nizam.app.ui.design.labShape(14.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant).clickable { openAgent(a.id) }.padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(38.dp).clip(CircleShape).background(Color(0xFF000000.toInt() or (a.color and 0xFFFFFF).toInt()).copy(alpha = 0.25f)), contentAlignment = Alignment.Center) { Text(a.emoji, fontSize = 20.sp) }
             Spacer(Modifier.width(10.dp))
@@ -227,7 +227,7 @@ private fun People(container: AppContainer, openAgent: (String) -> Unit, openHir
     }
     LazyColumn(Modifier.fillMaxWidth()) {
         item {
-            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color(0x22EAB308)).padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(Color(0x22EAB308)).padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text("👑", fontSize = 22.sp); Spacer(Modifier.width(10.dp))
                 Column { Text("You", fontWeight = FontWeight.Bold); Text("Owner · everyone works for you", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
             }
@@ -251,7 +251,7 @@ private fun BoardTab(container: AppContainer, open: (String) -> Unit) {
     Row(Modifier.fillMaxSize2().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         listOf(Triple("Backlog", board.backlog, Color(0xFF64748B)), Triple("Doing", board.doing, Color(0xFF3B82F6)),
             Triple("Review", board.review, Color(0xFFF59E0B)), Triple("Done", board.done, Color(0xFF22C55E))).forEach { (name, cards, col) ->
-            Column(Modifier.width(220.dp).fillMaxHeight().clip(RoundedCornerShape(16.dp)).background(col.copy(alpha = 0.08f)).padding(8.dp)) {
+            Column(Modifier.width(220.dp).fillMaxHeight().clip(com.nizam.app.ui.design.labShape(16.dp)).background(col.copy(alpha = 0.08f)).padding(8.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(Modifier.size(8.dp).clip(CircleShape).background(col)); Spacer(Modifier.width(6.dp))
                     Text("$name · ${cards.size}", fontWeight = FontWeight.Bold, fontSize = 13.sp)
@@ -259,8 +259,8 @@ private fun BoardTab(container: AppContainer, open: (String) -> Unit) {
                 LazyColumn(Modifier.fillMaxWidth().padding(top = 6.dp)) {
                     if (cards.isEmpty()) item { Text("Nothing here.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                     items(cards) { card ->
-                        Column(Modifier.fillMaxWidth().padding(bottom = 6.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surface)
-                            .border(if (card.urgent) 1.5.dp else 0.dp, if (card.urgent) Color(0xFFEF4444) else Color.Transparent, RoundedCornerShape(12.dp))
+                        Column(Modifier.fillMaxWidth().padding(bottom = 6.dp).clip(com.nizam.app.ui.design.labShape(12.dp)).background(MaterialTheme.colorScheme.surface)
+                            .border(if (card.urgent) 1.5.dp else 0.dp, if (card.urgent) Color(0xFFEF4444) else Color.Transparent, com.nizam.app.ui.design.labShape(12.dp))
                             .clickable { if (card.thread != null) open("nx/crew") }.padding(8.dp)) {
                             if (card.urgent) Text("🔥 Urgent", color = Color(0xFFEF4444), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                             Text(card.title, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, maxLines = 3, overflow = TextOverflow.Ellipsis)
@@ -307,7 +307,7 @@ private fun WikiTab(container: AppContainer) {
         if (entries.isEmpty()) item { Text("Nothing written yet — it fills up as the team works.", modifier = Modifier.padding(top = 10.dp)) }
         items(entries.take(80), key = { it.optString("id") }) { e ->
             val id = e.optString("id")
-            Column(Modifier.fillMaxWidth().padding(top = 8.dp).clip(RoundedCornerShape(14.dp)).background(MaterialTheme.colorScheme.surfaceVariant)
+            Column(Modifier.fillMaxWidth().padding(top = 8.dp).clip(com.nizam.app.ui.design.labShape(14.dp)).background(MaterialTheme.colorScheme.surfaceVariant)
                 .clickable { openId = if (openId == id) null else id }.padding(10.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Chip(e.optString("kind"), Color(0xFF6366F1), filled = false); Spacer(Modifier.width(6.dp))

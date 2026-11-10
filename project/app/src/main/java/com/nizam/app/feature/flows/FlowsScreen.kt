@@ -50,7 +50,7 @@ private fun trigSentence(f: JSONObject): String = FlowKinds.sentence(FlowKinds.t
 
 @Composable
 private fun Box2(content: @Composable () -> Unit) {
-    Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), RoundedCornerShape(14.dp)).padding(12.dp),
+    Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), com.nizam.app.ui.design.labShape(14.dp)).padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)) { content() }
 }
 

@@ -179,7 +179,7 @@ fun PalaceScreen(container: AppContainer) {
         val walls = list.chunked(6)
         val shown = walls.getOrElse(wall.coerceIn(0, (walls.size - 1).coerceAtLeast(0))) { emptyList() }
         val tint = colours[room % colours.size]
-        Box(Modifier.weight(1f).fillMaxWidth().padding(18.dp).clip(RoundedCornerShape(28.dp))
+        Box(Modifier.weight(1f).fillMaxWidth().padding(18.dp).clip(com.nizam.app.ui.design.labShape(28.dp))
             .background(Brush.verticalGradient(listOf(tint.copy(alpha = 0.35f), Color(0xFF1F1A17), Color(0xFF3B2F2A))))
             .pointerInput(walls.size) { detectHorizontalDragGestures { ch, d -> ch.consume()
                 if (d < -30 && wall < walls.size - 1) wall++ else if (d > 30 && wall > 0) wall-- } }) {
@@ -189,8 +189,8 @@ fun PalaceScreen(container: AppContainer) {
                 Spacer(Modifier.height(12.dp))
                 shown.chunked(2).forEachIndexed { shelf, pair ->
                     Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        pair.forEach { n -> Column(Modifier.weight(1f).height(110.dp).graphicsLayer { rotationX = 6f - shelf * 4f }.clip(RoundedCornerShape(14.dp))
-                            .background(Color(0xFFFFF7E6)).border(3.dp, Color(0xFF8B5E3C), RoundedCornerShape(14.dp)).clickable { open = n }.padding(10.dp)) {
+                        pair.forEach { n -> Column(Modifier.weight(1f).height(110.dp).graphicsLayer { rotationX = 6f - shelf * 4f }.clip(com.nizam.app.ui.design.labShape(14.dp))
+                            .background(Color(0xFFFFF7E6)).border(3.dp, Color(0xFF8B5E3C), com.nizam.app.ui.design.labShape(14.dp)).clickable { open = n }.padding(10.dp)) {
                             Text(n.title, color = Color(0xFF3B2F2A), fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis, fontSize = 13.sp)
                             Text(n.body.take(90), color = Color(0xFF6B5A4E), fontSize = 11.sp, maxLines = 4, overflow = TextOverflow.Ellipsis)
                         } }
@@ -257,7 +257,7 @@ fun BossScreen(container: AppContainer) {
                         Text(b.optString("goal"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
-                LinearProgressIndicator({ left.toFloat() / max }, Modifier.fillMaxWidth().height(12.dp).padding(top = 8.dp).clip(RoundedCornerShape(6.dp)), color = Color(0xFFEF4444))
+                LinearProgressIndicator({ left.toFloat() / max }, Modifier.fillMaxWidth().height(12.dp).padding(top = 8.dp).clip(com.nizam.app.ui.design.labShape(6.dp)), color = Color(0xFFEF4444))
                 Text("$left / $max HP · you've dealt $d", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 4.dp))
                 Row(Modifier.padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     Capsule("⚔️ Log a hit (+15)", false) { Bosses.store(c).update(b.optString("id")) { it.put("manual", it.optInt("manual") + 15) }

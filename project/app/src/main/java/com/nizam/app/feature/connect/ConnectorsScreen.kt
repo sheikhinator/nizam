@@ -105,7 +105,7 @@ fun ConnectorsScreen(container: AppContainer) {
         } }
         item {
             val cs = MaterialTheme.colorScheme
-            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(cs.onSurface.copy(alpha = 0.06f)).padding(horizontal = 16.dp, vertical = 12.dp),
+            Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(24.dp)).background(cs.onSurface.copy(alpha = 0.06f)).padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Outlined.Search, null, tint = cs.primary); Spacer(Modifier.width(8.dp))
                 Box(Modifier.weight(1f)) {
@@ -119,7 +119,7 @@ fun ConnectorsScreen(container: AppContainer) {
             val scope = com.nizam.app.ui.design.rememberSafeScope()
             var health by remember { mutableStateOf<Map<String, Pair<Boolean, String>>?>(null) }
             var checking by remember { mutableStateOf(false) }
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f)).padding(14.dp)) {
+            Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(20.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f)).padding(14.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("Connection health", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
                     Button(onClick = { checking = true; scope.launch { health = Connectors.testAll(c); checking = false } }, enabled = !checking) {
@@ -131,7 +131,7 @@ fun ConnectorsScreen(container: AppContainer) {
             }
         }
         if (cat == "Popular" && q.isBlank()) item {
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(Brush.linearGradient(listOf(Color(0xFFF97316).copy(alpha = 0.18f), Color(0xFF8B5CF6).copy(alpha = 0.12f)))).padding(16.dp)) {
+            Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(22.dp)).background(Brush.linearGradient(listOf(Color(0xFFF97316).copy(alpha = 0.18f), Color(0xFF8B5CF6).copy(alpha = 0.12f)))).padding(16.dp)) {
                 Text("⚡ One link, thousands of apps", style = MaterialTheme.typography.titleMedium)
                 Text("Gmail, Google Sheets, Outlook, Instagram, LinkedIn and other sign-in-only apps connect through an automation hub. Connect Zapier, Composio or Pipedream once and every app you add there becomes a tool for Atlas.",
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -155,8 +155,8 @@ fun ConnectorsScreen(container: AppContainer) {
 private fun Tile(s: Service, on: Boolean, modifier: Modifier, onClick: () -> Unit) {
     val badge = when (s.kind) { "device" -> "Built in"; "app" -> if (on) "Installed" else "App"; "hub" -> if (on) "Via hub" else "Needs a hub"; "mcp" -> if (on) "Connected" else "MCP"; else -> if (on) "Connected" else "Connect" }
     val badgeColour = if (on) Color(0xFF16A34A) else MaterialTheme.colorScheme.onSurfaceVariant
-    Column(modifier.clip(RoundedCornerShape(20.dp)).background(if (on) colourOf(s).copy(alpha = 0.10f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f))
-        .border(1.dp, if (on) colourOf(s).copy(alpha = 0.35f) else Color.Transparent, RoundedCornerShape(20.dp)).clickable { onClick() }.padding(12.dp)) {
+    Column(modifier.clip(com.nizam.app.ui.design.labShape(20.dp)).background(if (on) colourOf(s).copy(alpha = 0.10f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f))
+        .border(1.dp, if (on) colourOf(s).copy(alpha = 0.35f) else Color.Transparent, com.nizam.app.ui.design.labShape(20.dp)).clickable { onClick() }.padding(12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Logo(s, 40)
             Spacer(Modifier.weight(1f))

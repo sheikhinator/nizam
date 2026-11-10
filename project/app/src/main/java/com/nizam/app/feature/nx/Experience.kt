@@ -129,7 +129,7 @@ fun StoriesScreen(container: AppContainer, open: (String) -> Unit) {
     Box(Modifier.fillMaxSize().background(Brush.verticalGradient(p.colors)).pointerInput(ps.size) {
         detectTapGestures { o -> if (o.x < size.width / 3) { if (i > 0) i-- } else if (i < ps.lastIndex) i++ else open("today") } }) {
         Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            ps.indices.forEach { k -> LinearProgressIndicator(progress = { if (k < i) 1f else if (k == i) progress else 0f }, modifier = Modifier.weight(1f).height(3.dp).clip(RoundedCornerShape(2.dp)),
+            ps.indices.forEach { k -> LinearProgressIndicator(progress = { if (k < i) 1f else if (k == i) progress else 0f }, modifier = Modifier.weight(1f).height(3.dp).clip(com.nizam.app.ui.design.labShape(2.dp)),
                 color = Color.White, trackColor = Color.White.copy(alpha = 0.3f)) }
         }
         Column(Modifier.align(Alignment.Center).padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -209,7 +209,7 @@ fun MoodWheelScreen() {
         item("grid") { Column(Modifier.padding(horizontal = Space.page)) {
             (0 until 30).reversed().chunked(6).forEach { row -> Row(Modifier.padding(vertical = 3.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 row.forEach { d -> val date = LocalDate.now().minusDays(d.toLong()); val m = p.getString("today_$date", null)
-                    Column(Modifier.weight(1f).clip(RoundedCornerShape(10.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(Modifier.weight(1f).clip(com.nizam.app.ui.design.labShape(10.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                         if (m != null) Art3D(Art.MOODS.firstOrNull { it.second == m }?.first ?: "neutral_face", 30.dp, float = false, shadow = false) else Box(Modifier.size(30.dp))
                         Text("${date.dayOfMonth}", style = MaterialTheme.typography.labelSmall)
                     } }
@@ -236,7 +236,7 @@ fun VisionBoardScreen() {
         } }
         if (items.isEmpty()) item("e") { EmptyState(EmptySpec(Icons.Outlined.Dashboard, "Your board is empty", "Add pictures of the goals and places that pull you forward.")) }
         items.chunked(2).forEachIndexed { r, row -> item("v$r") { Row(Modifier.padding(horizontal = Space.page, vertical = 5.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            row.forEachIndexed { k, v -> Box(Modifier.weight(1f).aspectRatio(if ((r + k) % 2 == 0) 0.8f else 1.1f).clip(RoundedCornerShape(20.dp))) {
+            row.forEachIndexed { k, v -> Box(Modifier.weight(1f).aspectRatio(if ((r + k) % 2 == 0) 0.8f else 1.1f).clip(com.nizam.app.ui.design.labShape(20.dp))) {
                 coil.compose.AsyncImage(Uri.parse(v.optString("uri")), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
                 if (v.optString("cap").isNotBlank()) Text(v.optString("cap"), Modifier.align(Alignment.BottomStart).fillMaxWidth()
                     .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.6f)))).padding(10.dp), color = Color.White, fontWeight = FontWeight.Bold)
@@ -267,7 +267,7 @@ fun WisdomScreen(container: AppContainer) {
     var intent by remember { mutableStateOf(p.getString("intent_$today", "").orEmpty()) }
     var reflect by remember { mutableStateOf<String?>(null) }
     AtlasScreen(title = "Daily wisdom", subtitle = LocalDate.now().dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() }, hub = Hub.Deen) {
-        item("w") { Box(Modifier.fillMaxWidth().padding(horizontal = Space.page).clip(RoundedCornerShape(28.dp))
+        item("w") { Box(Modifier.fillMaxWidth().padding(horizontal = Space.page).clip(com.nizam.app.ui.design.labShape(28.dp))
             .background(Brush.linearGradient(listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.35f), MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f)))).padding(24.dp)) {
             Column {
                 Art3D("light_bulb", 72.dp)

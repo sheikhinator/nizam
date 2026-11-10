@@ -173,7 +173,7 @@ fun AppChatScreen(container: AppContainer, open: (String) -> Unit) {
         }
 
         Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            OutlinedTextField(input, { input = it }, placeholder = { Text("Message ${p.name}…") }, modifier = Modifier.weight(1f), maxLines = 5, shape = RoundedCornerShape(22.dp), enabled = !busy)
+            OutlinedTextField(input, { input = it }, placeholder = { Text("Message ${p.name}…") }, modifier = Modifier.weight(1f), maxLines = 5, shape = com.nizam.app.ui.design.labShape(22.dp), enabled = !busy)
             IconButton(enabled = !busy && input.isNotBlank(), onClick = {
                 val text = input.trim(); input = ""
                 store.add(JSONObject().put("t", System.currentTimeMillis()).put("role", "u").put("text", text)); tick++
