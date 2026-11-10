@@ -37,6 +37,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -53,7 +55,16 @@ class SciPal(val bg: Color, val panel: Color, val line: Color, val dim: Color, v
 
 val SciDark = SciPal(Color(0xFF0A0D12), Color(0xFF0F1319), Color(0x1FFFFFFF), Color(0xFF7D8896), Color(0xFFDFE5EE), Color(0xFF3FC3F0), Color(0xFFF2B25C), Color(0xFF5FD38D), Color(0xFFFF6B7A), Color(0xFFB48CFF))
 val SciPaper = SciPal(Color(0xFFF4F2EC), Color(0xFFFBFAF6), Color(0x29000000), Color(0xFF6B6F76), Color(0xFF16181C), Color(0xFF0B6FB8), Color(0xFFB9602F), Color(0xFF2E7D4F), Color(0xFFC0392B), Color(0xFF6A4BB5))
-val LocalSci = compositionLocalOf { SciDark }
+/** Atlas Lab takes its colours from whatever theme is active: your palette, accent, wallpaper colours, light or dark. */
+fun sciFrom(c: androidx.compose.material3.ColorScheme): SciPal {
+    val light = c.background.luminance() > 0.5f
+    return SciPal(bg = c.background, panel = c.onBackground.copy(alpha = if (light) 0.035f else 0.045f).compositeOver(c.background), line = c.onBackground.copy(alpha = if (light) 0.16f else 0.13f),
+        dim = c.onSurfaceVariant, text = c.onBackground, a = c.primary, w = c.secondary, g = if (light) Color(0xFF2E7D4F) else Color(0xFF5FD38D), r = if (light) Color(0xFFC0392B) else Color(0xFFFF6B7A), v = c.tertiary)
+}
+
+object LocalSci {
+    val current: SciPal @Composable get() { val c = androidx.compose.material3.MaterialTheme.colorScheme; return remember(c) { sciFrom(c) } }
+}
 
 @Composable
 fun M(t: String, size: Int = 12, color: Color = LocalSci.current.text, bold: Boolean = false, modifier: Modifier = Modifier, mono: Boolean = true, maxLines: Int = Int.MAX_VALUE, spacing: Float = 0f, serif: Boolean = false) {

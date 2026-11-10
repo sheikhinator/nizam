@@ -97,23 +97,9 @@ private fun adaptiveOrder(c: android.content.Context): List<Hub> {
 @Composable
 fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
     // the Command Bridge is a dark cockpit whatever the theme; every other style follows your theme
-    if (com.nizam.app.ui.style.UiStyles.now() == com.nizam.app.ui.style.UiStyle.BRIDGE) {
-        val K = com.nizam.app.ui.style.StyleKit
-        MaterialTheme(colorScheme = androidx.compose.material3.darkColorScheme(primary = K.bridgeCyan, onPrimary = Color.Black, background = K.bridgeInk,
-            surface = K.bridgePanel, surfaceVariant = K.bridgePanel, onSurface = K.bridgeText, onBackground = K.bridgeText, onSurfaceVariant = K.bridgeDim,
-            outlineVariant = K.bridgeLine), typography = MaterialTheme.typography) {
-            Box(Modifier.fillMaxSize().background(K.bridgeInk)) { SpacesHomeBody(container, open) }
-        }
-    } else if (com.nizam.app.ui.style.UiStyles.now().sci) {
-        // the scientific styles change everything: colours, the top bar and the dock
-        val S = if (com.nizam.app.ui.style.UiStyles.now() == com.nizam.app.ui.style.UiStyle.PAPER) com.nizam.app.ui.style.SciPaper else com.nizam.app.ui.style.SciDark
-        val scheme = if (S === com.nizam.app.ui.style.SciPaper) androidx.compose.material3.lightColorScheme(primary = S.a, onPrimary = Color.White, background = S.bg, surface = S.panel, surfaceVariant = S.panel,
-            onSurface = S.text, onBackground = S.text, onSurfaceVariant = S.dim, outlineVariant = S.line, secondary = S.w, tertiary = S.v)
-            else androidx.compose.material3.darkColorScheme(primary = S.a, onPrimary = S.bg, background = S.bg, surface = S.panel, surfaceVariant = S.panel,
-            onSurface = S.text, onBackground = S.text, onSurfaceVariant = S.dim, outlineVariant = S.line, secondary = S.w, tertiary = S.v)
-        MaterialTheme(colorScheme = scheme, typography = MaterialTheme.typography) {
-            androidx.compose.runtime.CompositionLocalProvider(com.nizam.app.ui.style.LocalSci provides S) { Box(Modifier.fillMaxSize().background(S.bg)) { SpacesHomeBody(container, open) } }
-        }
+    if (com.nizam.app.ui.style.UiStyles.now().sci) {
+        // Atlas Lab: flat panels in your own theme colours, its own top bar and dock
+        Box(Modifier.fillMaxSize().background(com.nizam.app.ui.style.LocalSci.current.bg)) { SpacesHomeBody(container, open) }
     } else SpacesHomeBody(container, open)
 }
 
@@ -160,13 +146,7 @@ private fun SpacesHomeBody(container: AppContainer, open: (String) -> Unit) {
                     }
                 }
                 Column(Modifier.weight(1f).padding(start = if (pager.currentPage != 0) 4.dp else 0.dp)) {
-                    when (uiStyle) {
-                        com.nizam.app.ui.style.UiStyle.BRIDGE -> Text(here.name.uppercase(), fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                            style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = accent, letterSpacing = androidx.compose.ui.unit.TextUnit(2f, androidx.compose.ui.unit.TextUnitType.Sp))
-                        com.nizam.app.ui.style.UiStyle.MAGAZINE -> Text(here.name, fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
-                            style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
-                        else -> Text(here.name, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = accent)
-                    }
+                    Text(here.name, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = accent)
                     Text(subtitle(here), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Box(Modifier.size(44.dp).clip(RoundedCornerShape(22.dp)).background(wash(accent, 0.16f)).pressable { searching = !searching; if (!searching) q = "" },
@@ -203,8 +183,7 @@ private fun SpacesHomeBody(container: AppContainer, open: (String) -> Unit) {
                     when (val s = spaces[page]) {
                         Space.Today -> Box(Modifier.fillMaxSize().padding(bottom = 88.dp)) { TodayScreen(container) { openOrPeek(it) } }
                         Space.You -> Box(Modifier.fillMaxSize().padding(bottom = 88.dp)) { MeScreen(container) { openOrPeek(it) } }
-                        is Space.Life -> if (uiStyle == com.nizam.app.ui.style.UiStyle.CLASSIC || uiStyle.sci) SpacePage(s.hub, ::openOrPeek)
-                            else com.nizam.app.ui.style.StyledSpacePage(uiStyle, s.hub, ::openOrPeek)
+                        is Space.Life -> if (uiStyle.sci) com.nizam.app.ui.style.LabHub(s.hub, container, ::openOrPeek) else SpacePage(s.hub, ::openOrPeek)
                     }
                 }
             }
@@ -333,15 +312,11 @@ private fun Dock(modifier: Modifier, accent: Color, onAsk: () -> Unit, onTalk: (
     val mindState = when { halo.active -> OrbState.Working; expert != null -> OrbState.Thinking; else -> OrbState.Idle }
     val st = com.nizam.app.ui.style.UiStyles.now()
     if (st.sci) { com.nizam.app.ui.style.SciDock(modifier.windowInsetsPadding(WindowInsets.navigationBars), onSearch, onAsk, onTalk, onLycho, onAll); return }
-    val shape = when (st) { com.nizam.app.ui.style.UiStyle.BRIDGE -> RoundedCornerShape(10.dp); com.nizam.app.ui.style.UiStyle.MAGAZINE -> RoundedCornerShape(4.dp); else -> RoundedCornerShape(32.dp) }
-    val dockHeight = when (st) { com.nizam.app.ui.style.UiStyle.DECK -> 72.dp; com.nizam.app.ui.style.UiStyle.MAGAZINE -> 58.dp; else -> 64.dp }
-    val skin = when (st) {
-        com.nizam.app.ui.style.UiStyle.BRIDGE -> Modifier.background(com.nizam.app.ui.style.StyleKit.bridgePanel, shape).border(1.dp, com.nizam.app.ui.style.StyleKit.bridgeCyan.copy(alpha = 0.5f), shape)
-        com.nizam.app.ui.style.UiStyle.MAGAZINE -> Modifier.background(MaterialTheme.colorScheme.surface, shape).border(1.dp, MaterialTheme.colorScheme.onSurface, shape)
-        else -> Modifier.liquidGlass(shape)
-    }
+    val shape = RoundedCornerShape(32.dp)
+    val dockHeight = 64.dp
+    val skin = Modifier.liquidGlass(shape)
     Row(modifier.windowInsetsPadding(WindowInsets.navigationBars).padding(bottom = 12.dp).height(dockHeight)
-        .shadow(if (st == com.nizam.app.ui.style.UiStyle.LAYERS) 30.dp else 16.dp, shape).then(skin).padding(horizontal = 14.dp),
+        .shadow(16.dp, shape).then(skin).padding(horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         if (container != null) com.nizam.app.feature.safe.RefreshButton(container, null, size = 40.dp)
         Box(Modifier.size(44.dp).clip(RoundedCornerShape(22.dp)).pressable { onSearch() }, contentAlignment = Alignment.Center) {

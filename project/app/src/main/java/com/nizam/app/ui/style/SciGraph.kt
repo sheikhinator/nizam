@@ -38,7 +38,8 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nizam.app.feature.sci.LifeGraph
-import com.nizam.app.ui.nav.Routes
+import androidx.compose.foundation.background
+import androidx.compose.runtime.getValue
 import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.sin
@@ -50,11 +51,19 @@ import kotlin.math.sqrt
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun GraphToday(x: Sci) {
+fun LifeGraphScreen(container: com.nizam.app.AppContainer, open: (String) -> Unit) {
+    val c = androidx.compose.ui.platform.LocalContext.current
+    val snap by androidx.compose.runtime.produceState(LifeGraph.cached) { value = runCatching { LifeGraph.load(container, c) }.getOrNull() ?: value }
+    val pal = LocalSci.current
+    androidx.compose.foundation.layout.Box(Modifier.fillMaxSize().background(pal.bg)) { LifeGraphBody(snap, open) }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun LifeGraphBody(snap: LifeGraph.Snapshot?, open: (String) -> Unit) {
     val p = LocalSci.current
-    val snap = x.snap
-    Column(Modifier.fillMaxSize().padding(horizontal = 14.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Head(x, "your life as a system · ${x.d.dateLine}")
+    Column(Modifier.fillMaxSize().padding(horizontal = 14.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Lab("your life as a system"); M("System graph", 24, bold = true, mono = false)
         if (snap == null) { M("reading your last 30 days…", 12, p.dim); return@Column }
         val nodes = snap.nodes; val n = nodes.size
         val u = androidx.compose.ui.platform.LocalDensity.current.density
@@ -129,15 +138,14 @@ internal fun GraphToday(x: Sci) {
                 val ns = snap.neighbours(nd.id)
                 Lab("linked to (${ns.size})")
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(2.dp)) { ns.take(10).forEach { (o, e) -> Act(o.label.take(18) + if (e.kind == "corr") " ${e.label}" else "", if (e.kind == "corr") (if (e.weight > 0) p.g else p.r) else p.a) { sel = index[o.id] } } }
-                Row { nd.route?.let { r -> Act("open ${nd.label.take(16)}", p.w) { x.open(r) } }; Act("clear") { sel = null } }
+                Row { nd.route?.let { r -> Act("open ${nd.label.take(16)}", p.w) { open(r) } }; Act("clear") { sel = null } }
             }
         } else Column {
             M("${n} nodes · ${links.size} links. Tap a node to see what it is linked to; drag nodes or the space.", 11, p.dim, mono = false)
             Row { M("── ", 10, p.g); M("move together  ", 10, p.dim); M("- - ", 10, p.r); M("move opposite  ", 10, p.dim); M("● ", 10, p.v); M("task ", 10, p.dim); M("● ", 10, p.w); M("promise ", 10, p.dim); M("● ", 10, p.g); M("person", 10, p.dim) }
             if (snap.corr.isEmpty()) M("No links between areas yet: Atlas draws one only after ${LifeGraph.MIN_DAYS} days where both areas have numbers.", 10, p.dim, mono = false)
         }
-        Row { Act("zoom +") { scale = (scale * 1.25f).coerceAtMost(3f) }; Act("zoom −") { scale = (scale / 1.25f).coerceAtLeast(0.4f) }; Act("centre") { pan = Offset.Zero; scale = 1f }; Act("now: " + (x.first?.title?.take(16) ?: "clear"), p.w) { x.open(Routes.TASKS) } }
-        CmdBar { x.open(Routes.ASK) }
-        Spacer(Modifier.height(96.dp))
+        Row { Act("zoom +") { scale = (scale * 1.25f).coerceAtMost(3f) }; Act("zoom −") { scale = (scale / 1.25f).coerceAtLeast(0.4f) }; Act("centre") { pan = Offset.Zero; scale = 1f } }
+        Spacer(Modifier.height(24.dp))
     }
 }
