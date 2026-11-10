@@ -162,7 +162,7 @@ private fun NotebookToday(x: Sci) {
     val p = LocalSci.current
     Head(x, x.d.dateLine)
     BeingLine(x)
-    HubStrip(x.open); CmdBar { x.open(Routes.ASK) }; Suggest(x)
+    CmdBar { x.open(Routes.ASK) }; Suggest(x)
     x.areas(p).forEach { a ->
         Column(Modifier.fillMaxWidth().clickable { x.open(a.route) }) {
             Box(Modifier.fillMaxWidth().height(1.dp).background(p.line))
@@ -216,7 +216,7 @@ private fun Tiles(x: Sci, fig: Boolean = false) {
 @Composable
 private fun InstrumentToday(x: Sci) {
     val p = LocalSci.current
-    Head(x, x.d.dateLine); HubStrip(x.open)
+    Head(x, x.d.dateLine)
     SciBox(Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             DayRing(x, Modifier.size(156.dp))
@@ -240,7 +240,7 @@ private fun PaperToday(x: Sci) {
     M(d.greeting, 28, serif = true, mono = false)
     M("${d.greeting}. ${x.prayersDone} of 5 prayers are done, ${d.openCount} task${if (d.openCount == 1) " is" else "s are"} open and ${money(d.spentToday, d.currency)} has been spent today." +
         (d.nextPrayer?.let { " ${it.first} is in ${countdown(it.second)}." } ?: ""), 14, p.dim, serif = true, mono = false)
-    BeingLine(x); HubStrip(x.open)
+    BeingLine(x)
     Tiles(x, fig = true)
     SciBox(Modifier.fillMaxWidth()) { Column(Modifier.padding(10.dp)) { Lab("Next action"); NowBlock(x) } }
     CmdBar { x.open(Routes.ASK) }; Suggest(x)
@@ -253,7 +253,7 @@ private fun PaperToday(x: Sci) {
 @Composable
 private fun HeatToday(x: Sci) {
     val p = LocalSci.current; val grow by rememberDrawIn(x.snap?.at, 1100)
-    Head(x, x.d.dateLine); HubStrip(x.open)
+    Head(x, x.d.dateLine)
     Row(Modifier.fillMaxWidth()) {
         Cell(onClick = { x.open(Routes.PRAYER) }) { Lab("Next prayer"); M(x.d.nextPrayer?.first ?: "–", 16, bold = true, mono = false); M(x.d.nextPrayer?.let { "T−" + countdown(it.second) } ?: "", 10, p.w) }
         Cell(1.4f) { Lab("Now", color = p.w); NowBlock(x) }
@@ -300,7 +300,6 @@ private fun TerminalToday(x: Sci) {
     Row(Modifier.padding(top = 4.dp)) { M("$ ", 12, p.g); M("atlas hint", 12) }
     x.snap?.corr?.firstOrNull()?.let { c -> M("${corrText(c).lowercase()} (r=${"%+.2f".format(c.r)}, n=${c.n})", 11, p.dim) } ?: M("no links between areas yet: needs ${LifeGraph.MIN_DAYS} days of numbers", 11, p.dim)
     Row { M("try: ", 11, p.dim); Suggest(x) }
-    HubStrip(x.open)
     CmdBar("$ ") { x.open(Routes.ASK) }
 }
 
@@ -343,7 +342,7 @@ private fun GitToday(x: Sci) {
     d.prayers.filter { it.second }.reversed().forEach { (n, _) -> Commit(0, p.a, 2, hash(n + d.dateLine), "$n prayed", "deen", { x.open(Routes.PRAYER) }) }
     val y = x.snap?.days?.dropLast(1)?.lastOrNull()
     if (y != null) M("yesterday: ${y.optInt("prayers")} prayers · ${y.optInt("tasks_done")} tasks · ${money(y.optDouble("spent", 0.0), d.currency)}", 10, p.dim, modifier = Modifier.clickable { x.open(Routes.INSIGHTS) })
-    HubStrip(x.open); CmdBar { x.open(Routes.ASK) }; Suggest(x)
+    CmdBar { x.open(Routes.ASK) }; Suggest(x)
 }
 
 // ───────────────────────── J · notebook cells ─────────────────────────
@@ -379,7 +378,7 @@ private fun CellsToday(x: Sci) {
     }
     CodeCell(5, "day.table()") { FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) { x.areas(p).forEach { a -> Row(Modifier.clickable { x.open(a.route) }) { M(a.label.lowercase() + " ", 11, p.dim); M(a.value, 11, a.color) } } } }
     CodeCell(6, "being.status()") { BeingLine(x) }
-    CmdBar("In [7]: ask or run anything") { x.open(Routes.ASK) }; Suggest(x); HubStrip(x.open)
+    CmdBar("In [7]: ask or run anything") { x.open(Routes.ASK) }; Suggest(x)
 }
 
 // ───────────────────────── K · process monitor ─────────────────────────
@@ -404,5 +403,5 @@ private fun ProcessToday(x: Sci) {
     if (d.doneToday > 0) Proc("work", "DONE", p.dim, "${d.doneToday} tasks closed", Routes.TASKS, true)
     if (d.sets > 0) Proc("body", "DONE", p.dim, "gym ${d.sets} sets", Routes.GYM, true)
     x.first?.let { f -> Row(Modifier.padding(top = 4.dp)) { M("running: ", 11, p.dim); Act("done", p.g) { x.done(f) }; Act("snooze 1h") { x.later(f) }; Act("open") { x.open(Routes.TASKS) } } }
-    HubStrip(x.open); CmdBar { x.open(Routes.ASK) }; Suggest(x); Notice(x)
+    CmdBar { x.open(Routes.ASK) }; Suggest(x); Notice(x)
 }

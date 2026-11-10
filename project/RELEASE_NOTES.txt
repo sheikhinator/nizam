@@ -1,1 +1,1 @@
-Six tools rebuilt as real, hand-built tools (each replaces several thin ones): Promises, Wants, Debt-free plan, Sleep, Vitals, Cravings. Also Atlas Rune and your Being's 3D home.
+New: nine scientific views of Today you can pick in Atlas styles (Lab Notebook, Instrument Panel, Paper Report, Heat Grid, Terminal, Git Log, Notebook Cells, Process Monitor, System Graph). Your current look stays the default.
