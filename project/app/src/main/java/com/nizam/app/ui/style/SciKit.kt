@@ -39,6 +39,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -172,5 +174,39 @@ fun SciBot(sizeDp: Dp = 30.dp) {
         r(4f, 7f, 26f, 18f, p.a, false); val eye = if (blink > 0.95f) 1f else 5f
         r(10f, 13f + (5f - eye) / 2f, 4f, eye, p.a, true); r(20f, 13f + (5f - eye) / 2f, 4f, eye, p.a, true)
         r(9f, 27f, 16f, 11f, p.a, false); r(11f, 38f, 4f, 7f, p.a, true); r(19f, 38f, 4f, 7f, p.a, true)
+    }
+}
+
+/** The top bar in the scientific styles: one strip of every space (Today, the hubs, You) plus search. Replaces the classic title and chip row. */
+@Composable
+fun SciTopBar(names: List<String>, current: Int, searching: Boolean, onPick: (Int) -> Unit, onSearch: () -> Unit) {
+    val p = LocalSci.current
+    val state = androidx.compose.foundation.lazy.rememberLazyListState()
+    LaunchedEffect(current) { runCatching { state.animateScrollToItem((current - 1).coerceAtLeast(0)) } }
+    Row(Modifier.fillMaxWidth().padding(start = 14.dp, end = 14.dp, top = 8.dp, bottom = 6.dp).border(1.dp, p.line).background(p.panel), verticalAlignment = Alignment.CenterVertically) {
+        androidx.compose.foundation.lazy.LazyRow(Modifier.weight(1f), state = state) {
+            items(names.size) { i -> val on = i == current
+                Column(Modifier.clickable { onPick(i) }.border(0.5.dp, p.line)) {
+                    Box(Modifier.width(1.dp).height(0.dp))
+                    M(names[i].uppercase(), 10, if (on) p.a else p.dim, bold = on, modifier = Modifier.background(if (on) p.a.copy(alpha = 0.10f) else Color.Transparent).padding(horizontal = 12.dp, vertical = 10.dp), spacing = 0.8f, maxLines = 1)
+                }
+            }
+        }
+        M(if (searching) "[x]" else "[find]", 11, p.a, modifier = Modifier.clickable(onClick = onSearch).padding(horizontal = 10.dp, vertical = 9.dp))
+    }
+}
+
+/** The dock in the scientific styles: four labelled cells. Hold ATLAS to talk. */
+@Composable
+fun SciDock(modifier: Modifier, onSearch: () -> Unit, onAsk: () -> Unit, onTalk: () -> Unit, onMind: () -> Unit, onAll: () -> Unit) {
+    val p = LocalSci.current; val pulse by rememberPulse()
+    Row(modifier.padding(start = 14.dp, end = 14.dp, bottom = 12.dp).fillMaxWidth().height(46.dp).background(p.panel).border(1.dp, p.line)) {
+        @Composable fun cell(label: String, color: Color, tap: () -> Unit, hold: (() -> Unit)? = null, dot: Boolean = false) {
+            Row(Modifier.weight(1f).height(46.dp).border(0.5.dp, p.line).pointerInput(Unit) { detectTapGestures(onTap = { tap() }, onLongPress = { hold?.invoke() }) }, Arrangement.Center, Alignment.CenterVertically) {
+                if (dot) Box(Modifier.size(7.dp).background(p.a.copy(alpha = 0.4f + 0.6f * pulse), androidx.compose.foundation.shape.CircleShape))
+                M((if (dot) " " else "") + label, 10, color, bold = dot, spacing = 1f, maxLines = 1)
+            }
+        }
+        cell("FIND", p.dim, onSearch); cell("ATLAS", p.a, onAsk, onTalk, dot = true); cell("MIND", p.dim, onMind); cell("ALL", p.dim, onAll)
     }
 }

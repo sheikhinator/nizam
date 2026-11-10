@@ -104,6 +104,16 @@ fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
             outlineVariant = K.bridgeLine), typography = MaterialTheme.typography) {
             Box(Modifier.fillMaxSize().background(K.bridgeInk)) { SpacesHomeBody(container, open) }
         }
+    } else if (com.nizam.app.ui.style.UiStyles.now().sci) {
+        // the scientific styles change everything: colours, the top bar and the dock
+        val S = if (com.nizam.app.ui.style.UiStyles.now() == com.nizam.app.ui.style.UiStyle.PAPER) com.nizam.app.ui.style.SciPaper else com.nizam.app.ui.style.SciDark
+        val scheme = if (S === com.nizam.app.ui.style.SciPaper) androidx.compose.material3.lightColorScheme(primary = S.a, onPrimary = Color.White, background = S.bg, surface = S.panel, surfaceVariant = S.panel,
+            onSurface = S.text, onBackground = S.text, onSurfaceVariant = S.dim, outlineVariant = S.line, secondary = S.w, tertiary = S.v)
+            else androidx.compose.material3.darkColorScheme(primary = S.a, onPrimary = S.bg, background = S.bg, surface = S.panel, surfaceVariant = S.panel,
+            onSurface = S.text, onBackground = S.text, onSurfaceVariant = S.dim, outlineVariant = S.line, secondary = S.w, tertiary = S.v)
+        MaterialTheme(colorScheme = scheme, typography = MaterialTheme.typography) {
+            androidx.compose.runtime.CompositionLocalProvider(com.nizam.app.ui.style.LocalSci provides S) { Box(Modifier.fillMaxSize().background(S.bg)) { SpacesHomeBody(container, open) } }
+        }
     } else SpacesHomeBody(container, open)
 }
 
@@ -140,6 +150,7 @@ private fun SpacesHomeBody(container: AppContainer, open: (String) -> Unit) {
     val spaceTint by animateColorAsState(accent, label = "spaceTint")
     Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(wash(spaceTint, 0.07f), MaterialTheme.colorScheme.background.copy(alpha = 0f))))) {
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars)) {
+            if (uiStyle.sci) com.nizam.app.ui.style.SciTopBar(spaces.map { it.name }, pager.currentPage, searching, { i -> scope.launch { pager.animateScrollToPage(i) } }, { searching = !searching; if (!searching) q = "" }) else {
             Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 12.dp, top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 // Today is home: everywhere else gets a real back arrow, not just a chip you have to notice.
                 if (pager.currentPage != 0) {
@@ -177,6 +188,7 @@ private fun SpacesHomeBody(container: AppContainer, open: (String) -> Unit) {
                         if (on) { Spacer(Modifier.size(6.dp)); Text(s.name, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold, color = tint) }
                     }
                 }
+            }
             }
             if (searching) {
                 OutlinedTextField(q, { q = it }, singleLine = true, placeholder = { Text("Search every tool in Atlas") },
@@ -320,6 +332,7 @@ private fun Dock(modifier: Modifier, accent: Color, onAsk: () -> Unit, onTalk: (
     val expert by com.nizam.app.feature.expertise.Expertise.current.collectAsState()
     val mindState = when { halo.active -> OrbState.Working; expert != null -> OrbState.Thinking; else -> OrbState.Idle }
     val st = com.nizam.app.ui.style.UiStyles.now()
+    if (st.sci) { com.nizam.app.ui.style.SciDock(modifier.windowInsetsPadding(WindowInsets.navigationBars), onSearch, onAsk, onTalk, onLycho, onAll); return }
     val shape = when (st) { com.nizam.app.ui.style.UiStyle.BRIDGE -> RoundedCornerShape(10.dp); com.nizam.app.ui.style.UiStyle.MAGAZINE -> RoundedCornerShape(4.dp); else -> RoundedCornerShape(32.dp) }
     val dockHeight = when (st) { com.nizam.app.ui.style.UiStyle.DECK -> 72.dp; com.nizam.app.ui.style.UiStyle.MAGAZINE -> 58.dp; else -> 64.dp }
     val skin = when (st) {

@@ -238,7 +238,7 @@ private fun PaperToday(x: Sci) {
     val p = LocalSci.current; val d = x.d
     Lab("Atlas · daily report · ${d.dateLine} · ${x.clock.take(5)}")
     M(d.greeting, 28, serif = true, mono = false)
-    M("${d.greeting}. ${x.prayersDone} of 5 prayers are done, ${d.openCount} task${if (d.openCount == 1) " is" else "s are"} open and ${money(d.spentToday, d.currency)} has been spent today." +
+    M("${x.prayersDone} of 5 prayers are done, ${d.openCount} task${if (d.openCount == 1) " is" else "s are"} open and ${money(d.spentToday, d.currency)} has been spent today." +
         (d.nextPrayer?.let { " ${it.first} is in ${countdown(it.second)}." } ?: ""), 14, p.dim, serif = true, mono = false)
     BeingLine(x)
     Tiles(x, fig = true)
