@@ -62,8 +62,8 @@ private fun sky(code: Int, night: Boolean): List<Color> = when {
 
 @Composable
 private fun GlassCard(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
-    Box(modifier.clip(RoundedCornerShape(26.dp)).background(Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.20f), Color.White.copy(alpha = 0.08f))))
-        .border(BorderStroke(1.dp, Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.45f), Color.White.copy(alpha = 0.08f)))), RoundedCornerShape(26.dp))) { content() }
+    Box(modifier.clip(com.nizam.app.ui.design.labShape(26.dp)).background(Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.20f), Color.White.copy(alpha = 0.08f))))
+        .border(BorderStroke(1.dp, Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.45f), Color.White.copy(alpha = 0.08f)))), com.nizam.app.ui.design.labShape(26.dp))) { content() }
 }
 
 @Composable
@@ -116,8 +116,8 @@ fun WeatherProScreen(container: AppContainer) {
                             LazyRow(contentPadding = PaddingValues(horizontal = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 items(24) { k -> val i = start + k
                                     val sel = k == 0
-                                    Column(Modifier.clip(RoundedCornerShape(30.dp)).background(if (sel) Color.White.copy(alpha = 0.28f) else Color.White.copy(alpha = 0.08f))
-                                        .border(BorderStroke(1.dp, Color.White.copy(alpha = if (sel) 0.6f else 0.15f)), RoundedCornerShape(30.dp)).padding(horizontal = 10.dp, vertical = 12.dp),
+                                    Column(Modifier.clip(com.nizam.app.ui.design.labShape(30.dp)).background(if (sel) Color.White.copy(alpha = 0.28f) else Color.White.copy(alpha = 0.08f))
+                                        .border(BorderStroke(1.dp, Color.White.copy(alpha = if (sel) 0.6f else 0.15f)), com.nizam.app.ui.design.labShape(30.dp)).padding(horizontal = 10.dp, vertical = 12.dp),
                                         horizontalAlignment = Alignment.CenterHorizontally) {
                                         Text(if (k == 0) "Now" else times?.optString(i).orEmpty().takeLast(5), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                                         Art3D(Art.forWeather(codes?.optInt(i) ?: 0, day?.optInt(i, 1) == 0), 40.dp, float = false, shadow = false)
@@ -160,9 +160,9 @@ fun WeatherProScreen(container: AppContainer) {
                                     Art3D(Art.forWeather(codes!!.optInt(i), false), 34.dp, float = false, shadow = false)
                                     Text("${rain!!.optInt(i)}%", color = Color(0xFF9FD8FF), fontSize = 12.sp, modifier = Modifier.width(40.dp).padding(start = 4.dp))
                                     Text("${mn!!.optDouble(i).toInt()}°", color = Color.White.copy(alpha = 0.7f), fontSize = 15.sp, modifier = Modifier.width(34.dp))
-                                    Box(Modifier.weight(1f).height(6.dp).clip(RoundedCornerShape(3.dp)).background(Color.White.copy(alpha = 0.15f))) {
+                                    Box(Modifier.weight(1f).height(6.dp).clip(com.nizam.app.ui.design.labShape(3.dp)).background(Color.White.copy(alpha = 0.15f))) {
                                         val a = ((mn.optDouble(i) - lo) / (hi - lo).coerceAtLeast(1.0)).toFloat(); val b = ((mx!!.optDouble(i) - lo) / (hi - lo).coerceAtLeast(1.0)).toFloat()
-                                        Row { Spacer(Modifier.weight(a.coerceIn(0.001f, 1f))); Box(Modifier.weight((b - a).coerceIn(0.05f, 1f)).height(6.dp).clip(RoundedCornerShape(3.dp))
+                                        Row { Spacer(Modifier.weight(a.coerceIn(0.001f, 1f))); Box(Modifier.weight((b - a).coerceIn(0.05f, 1f)).height(6.dp).clip(com.nizam.app.ui.design.labShape(3.dp))
                                             .background(Brush.horizontalGradient(listOf(Color(0xFF7FD4FF), Color(0xFFFFC857))))); Spacer(Modifier.weight((1f - b).coerceIn(0.001f, 1f))) }
                                     }
                                     Text("${mx!!.optDouble(i).toInt()}°", color = Color.White, fontSize = 15.sp, modifier = Modifier.padding(start = 8.dp))

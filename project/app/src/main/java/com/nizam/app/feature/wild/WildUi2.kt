@@ -170,7 +170,7 @@ fun TalkScreen(container: AppContainer, open: (String) -> Unit) {
     }
     val swell by animateFloatAsState(if (state == "listening") 1f + level * 0.35f else if (state == "speaking") 1.08f else 1f, label = "s")
     val cs = MaterialTheme.colorScheme
-    Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0xFF0B1020), cs.primary.copy(alpha = 0.35f), Color(0xFF0B1020))))
+    Box(Modifier.fillMaxSize().background((if (com.nizam.app.ui.style.UiStyles.now().sci) Brush.verticalGradient(listOf(cs.background, cs.background)) else Brush.verticalGradient(listOf(Color(0xFF0B1020), cs.primary.copy(alpha = 0.35f), Color(0xFF0B1020)))))
         .clickable {
             when (state) { "speaking" -> { tts?.stop(); listen() }; "listening" -> { rec?.stopListening(); state = "idle" }; "thinking" -> {}; else -> listen() }
         }) {
@@ -286,7 +286,7 @@ fun DrawCommandScreen(container: AppContainer) {
                 style = MaterialTheme.typography.bodySmall)
         } }
         item("h") { SectionHeader("Teach a shape") }
-        item("pad") { Box(Modifier.padding(horizontal = Space.page).fillMaxWidth().height(260.dp).clip(RoundedCornerShape(24.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f))) {
+        item("pad") { Box(Modifier.padding(horizontal = Space.page).fillMaxWidth().height(260.dp).clip(com.nizam.app.ui.design.labShape(24.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f))) {
             AndroidView({ ctx -> GestureOverlayView(ctx).apply {
                 gestureStrokeType = GestureOverlayView.GESTURE_STROKE_TYPE_MULTIPLE; fadeOffset = 1500; gestureColor = AColor.rgb(99, 102, 241); gestureStrokeWidth = 12f
                 addOnGesturePerformedListener { _, g -> last = g }

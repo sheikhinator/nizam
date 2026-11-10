@@ -208,7 +208,7 @@ fun DeedsTab() {
 
 @Composable
 private fun Stat(label: String, value: String, modifier: Modifier) {
-    Column(modifier.clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(12.dp)) {
+    Column(modifier.clip(com.nizam.app.ui.design.labShape(16.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(12.dp)) {
         Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }

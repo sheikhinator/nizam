@@ -54,7 +54,7 @@ fun SimpleAgenda(container: AppContainer, vm: TasksViewModel, tasks: List<Task>)
             val d = weekStart.plusDays(i.toLong())
             val sel = d == day
             val has = (byDay[d]?.isNotEmpty() == true) || (d == today && byDay.keys.any { it != null && it.isBefore(today) })
-            Column(Modifier.clip(RoundedCornerShape(14.dp)).background(if (sel) cs.primary else cs.surface.copy(alpha = 0f))
+            Column(Modifier.clip(com.nizam.app.ui.design.labShape(14.dp)).background(if (sel) cs.primary else cs.surface.copy(alpha = 0f))
                 .clickable { day = d; SimpleDay.day = d }.padding(horizontal = 8.dp, vertical = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(d.dayOfWeek.name.take(1), style = MaterialTheme.typography.labelSmall, color = if (sel) cs.onPrimary else cs.onSurfaceVariant)
                 Text("${d.dayOfMonth}", style = MaterialTheme.typography.titleMedium, fontWeight = if (d == today) FontWeight.Bold else FontWeight.Normal,

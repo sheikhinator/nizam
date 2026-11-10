@@ -221,7 +221,7 @@ fun RichText(text: String, modifier: Modifier = Modifier, onUrl: ((String) -> Un
                 }
                 is Block.Quote -> Callout(b.kind, inline(b.text, codeBg, cs.primary))
                 is Block.Table -> TableView(b, codeBg)
-                is Block.Image -> coil.compose.AsyncImage(b.url, b.alt, Modifier.fillMaxWidth().heightIn(max = 280.dp).clip(RoundedCornerShape(16.dp)).clickable { open(b.url) },
+                is Block.Image -> coil.compose.AsyncImage(b.url, b.alt, Modifier.fillMaxWidth().heightIn(max = 280.dp).clip(com.nizam.app.ui.design.labShape(16.dp)).clickable { open(b.url) },
                     contentScale = ContentScale.Fit)
                 Block.Rule -> Box(Modifier.fillMaxWidth().padding(vertical = 6.dp).height(1.dp).background(cs.outlineVariant))
                 is Block.Fence -> if (!NextSteps.isNextFence(b.lang)) Fence(b, codeBg)
@@ -248,7 +248,7 @@ private fun Callout(kind: String, text: AnnotatedString) {
         "NOTE" -> Triple("ℹ️", Color(0xFF4F95D8), "Note")
         else -> Triple("", MaterialTheme.colorScheme.outline, "")
     }
-    Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min).clip(RoundedCornerShape(14.dp)).background(color.copy(alpha = 0.10f))) {
+    Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min).clip(com.nizam.app.ui.design.labShape(14.dp)).background(color.copy(alpha = 0.10f))) {
         Box(Modifier.width(4.dp).fillMaxHeight().background(color))
         Column(Modifier.padding(12.dp)) {
             if (title.isNotEmpty()) Text("$icon  $title", style = MaterialTheme.typography.labelLarge, color = color, fontWeight = FontWeight.Bold)
@@ -267,7 +267,7 @@ private fun TableView(t: Block.Table, codeBg: Color) {
         val longest = (listOf(t.head.getOrNull(c).orEmpty()) + t.rows.map { it.getOrNull(c).orEmpty() }).maxOf { it.length }
         (longest * 7.5f + 28f).coerceIn(64f, 220f).dp
     }
-    Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).border(1.dp, cs.outlineVariant, RoundedCornerShape(14.dp))) {
+    Box(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).border(1.dp, cs.outlineVariant, com.nizam.app.ui.design.labShape(14.dp))) {
         Column(Modifier.horizontalScroll(rememberScrollState())) {
             Row(Modifier.background(cs.primary.copy(alpha = 0.12f))) {
                 (0 until cols).forEach { c ->
@@ -337,7 +337,7 @@ private fun Fence(f: Block.Fence, codeBg: Color) {
 @Composable
 private fun CodeBox(lang: String, body: String, bg: Color) {
     val clipboard = LocalClipboardManager.current
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(bg)) {
+    Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(12.dp)).background(bg)) {
         Row(Modifier.fillMaxWidth().padding(start = 12.dp, top = 8.dp, end = 12.dp)) {
             Text(lang.ifBlank { "code" }, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
             Text("copy", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary,

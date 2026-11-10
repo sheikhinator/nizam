@@ -125,7 +125,7 @@ private fun AccountsPane(c: Context, txns: List<Txn>, repo: com.nizam.app.featur
     Text("Net across accounts: ${rs(total)}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
     accounts.forEach { a ->
         val bal = MoneyDesk.balance(c, txns, a)
-        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(MaterialTheme.colorScheme.surfaceVariant).clickable { reconcileFor = if (reconcileFor == a) null else a }.padding(12.dp)) {
+        Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(MaterialTheme.colorScheme.surfaceVariant).clickable { reconcileFor = if (reconcileFor == a) null else a }.padding(12.dp)) {
             Row { Text(a, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge); Text(rs(bal), fontWeight = FontWeight.SemiBold) }
             if (reconcileFor == a) {
                 Text("Reconcile: what does your bank or wallet actually show?", style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 6.dp))
@@ -223,7 +223,7 @@ private fun FlightPane(c: Context, txns: List<Txn>) {
     val maxAbs = points.maxOf { kotlin.math.abs(it) }.coerceAtLeast(1.0)
     Row(Modifier.fillMaxWidth().height(120.dp), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.Bottom) {
         points.forEach { v ->
-            Box(Modifier.weight(1f).height((8 + 100 * kotlin.math.abs(v) / maxAbs).dp).clip(RoundedCornerShape(6.dp))
+            Box(Modifier.weight(1f).height((8 + 100 * kotlin.math.abs(v) / maxAbs).dp).clip(com.nizam.app.ui.design.labShape(6.dp))
                 .background(if (v >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error))
         }
     }

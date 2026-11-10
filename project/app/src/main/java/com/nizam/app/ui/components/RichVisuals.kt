@@ -95,9 +95,9 @@ internal fun fmt(v: Double, unit: String = ""): String {
 @Composable
 internal fun VisualCard(title: String?, icon: String = "", headline: String? = null, content: @Composable () -> Unit) {
     val cs = MaterialTheme.colorScheme
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp))
+    Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(20.dp))
         .background(Brush.verticalGradient(listOf(cs.primary.copy(alpha = 0.08f), cs.onSurface.copy(alpha = 0.03f))))
-        .border(1.dp, cs.outlineVariant.copy(alpha = 0.55f), RoundedCornerShape(20.dp)).padding(16.dp)) {
+        .border(1.dp, cs.outlineVariant.copy(alpha = 0.55f), com.nizam.app.ui.design.labShape(20.dp)).padding(16.dp)) {
         if (!title.isNullOrBlank() || headline != null) Row(Modifier.fillMaxWidth().padding(bottom = 14.dp), verticalAlignment = Alignment.CenterVertically) {
             if (icon.isNotEmpty()) Text(icon, modifier = Modifier.padding(end = 8.dp))
             Text(title.orEmpty(), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = cs.onSurface,
@@ -252,8 +252,8 @@ private fun Lines(d: ChartData) {
             }
             touch?.let { i ->
                 val frac = if (n <= 1) 0.5f else i / (n - 1).toFloat()
-                Column(Modifier.align(if (frac > 0.6f) Alignment.TopStart else Alignment.TopEnd).clip(RoundedCornerShape(10.dp))
-                    .background(cs.surface.copy(alpha = 0.95f)).border(1.dp, cs.outlineVariant, RoundedCornerShape(10.dp)).padding(8.dp)) {
+                Column(Modifier.align(if (frac > 0.6f) Alignment.TopStart else Alignment.TopEnd).clip(com.nizam.app.ui.design.labShape(10.dp))
+                    .background(cs.surface.copy(alpha = 0.95f)).border(1.dp, cs.outlineVariant, com.nizam.app.ui.design.labShape(10.dp)).padding(8.dp)) {
                     Text(d.labels.getOrNull(i) ?: "#${i + 1}", style = MaterialTheme.typography.labelSmall, color = cs.onSurfaceVariant)
                     d.series.forEachIndexed { si, (name, v) ->
                         v.getOrNull(i)?.let { Text((if (name.isNotBlank()) "$name: " else "") + fmt(it, d.unit), style = MaterialTheme.typography.labelMedium,
@@ -319,7 +319,7 @@ private fun Donut(d: ChartData, hole: Boolean) {
         }
         Column(Modifier.padding(start = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             values.forEachIndexed { i, v ->
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clip(RoundedCornerShape(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clip(com.nizam.app.ui.design.labShape(8.dp))
                     .background(if (picked == i) colors[i % colors.size].copy(alpha = 0.14f) else Color.Transparent)
                     .clickable { picked = if (picked == i) null else i }.padding(horizontal = 6.dp, vertical = 3.dp)) {
                     Box(Modifier.size(10.dp).clip(CircleShape).background(colors[i % colors.size]))
@@ -346,9 +346,9 @@ internal fun StatsBlock(items: List<JSONObject>) {
                     val col = colors[(r * 2 + c) % colors.size]
                     val note = o.optString("note")
                     val trend = when { note.trimStart().startsWith("+") || note.contains("up", true) -> "▲"; note.trimStart().startsWith("-") || note.contains("down", true) -> "▼"; else -> "" }
-                    Box(Modifier.weight(1f).fillMaxHeight().clip(RoundedCornerShape(18.dp))
+                    Box(Modifier.weight(1f).fillMaxHeight().clip(com.nizam.app.ui.design.labShape(18.dp))
                         .background(Brush.linearGradient(listOf(col.copy(alpha = 0.22f), col.copy(alpha = 0.06f))))
-                        .border(1.dp, col.copy(alpha = 0.35f), RoundedCornerShape(18.dp))) {
+                        .border(1.dp, col.copy(alpha = 0.35f), com.nizam.app.ui.design.labShape(18.dp))) {
                         Canvas(Modifier.size(70.dp).align(Alignment.TopEnd).offset(18.dp, (-18).dp)) { drawCircle(col.copy(alpha = 0.18f * grow)) }
                         Column(Modifier.padding(14.dp)) {
                             Text(o.optString("label").uppercase(), style = MaterialTheme.typography.labelSmall, color = cs.onSurfaceVariant, fontWeight = FontWeight.Bold,
@@ -381,7 +381,7 @@ internal fun TimelineBlock(items: List<JSONObject>) {
                     }
                     if (i < items.lastIndex) Box(Modifier.width(2.dp).weight(1f).background(Brush.verticalGradient(listOf(col.copy(alpha = 0.6f), colors[(i + 1) % colors.size].copy(alpha = 0.6f)))))
                 }
-                Column(Modifier.weight(1f).padding(start = 12.dp, bottom = if (i < items.lastIndex) 12.dp else 0.dp).clip(RoundedCornerShape(14.dp))
+                Column(Modifier.weight(1f).padding(start = 12.dp, bottom = if (i < items.lastIndex) 12.dp else 0.dp).clip(com.nizam.app.ui.design.labShape(14.dp))
                     .background(cs.onSurface.copy(alpha = 0.04f)).padding(12.dp)) {
                     o.optString("when").takeIf { it.isNotBlank() }?.let { Text(it.uppercase(), style = MaterialTheme.typography.labelSmall, color = col, fontWeight = FontWeight.Bold) }
                     Text(o.optString("title"), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)

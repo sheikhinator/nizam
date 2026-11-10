@@ -97,13 +97,9 @@ private fun adaptiveOrder(c: android.content.Context): List<Hub> {
 @Composable
 fun SpacesHome(container: AppContainer, open: (String) -> Unit) {
     // the Command Bridge is a dark cockpit whatever the theme; every other style follows your theme
-    if (com.nizam.app.ui.style.UiStyles.now() == com.nizam.app.ui.style.UiStyle.BRIDGE) {
-        val K = com.nizam.app.ui.style.StyleKit
-        MaterialTheme(colorScheme = androidx.compose.material3.darkColorScheme(primary = K.bridgeCyan, onPrimary = Color.Black, background = K.bridgeInk,
-            surface = K.bridgePanel, surfaceVariant = K.bridgePanel, onSurface = K.bridgeText, onBackground = K.bridgeText, onSurfaceVariant = K.bridgeDim,
-            outlineVariant = K.bridgeLine), typography = MaterialTheme.typography) {
-            Box(Modifier.fillMaxSize().background(K.bridgeInk)) { SpacesHomeBody(container, open) }
-        }
+    if (com.nizam.app.ui.style.UiStyles.now().sci) {
+        // Atlas Lab: flat panels in your own theme colours, its own top bar and dock
+        Box(Modifier.fillMaxSize().background(com.nizam.app.ui.style.LocalSci.current.bg)) { SpacesHomeBody(container, open) }
     } else SpacesHomeBody(container, open)
 }
 
@@ -140,25 +136,20 @@ private fun SpacesHomeBody(container: AppContainer, open: (String) -> Unit) {
     val spaceTint by animateColorAsState(accent, label = "spaceTint")
     Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(wash(spaceTint, 0.07f), MaterialTheme.colorScheme.background.copy(alpha = 0f))))) {
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars)) {
+            if (uiStyle.sci) com.nizam.app.ui.style.SciTopBar(spaces.map { it.name }, pager.currentPage, searching, { i -> scope.launch { pager.animateScrollToPage(i) } }, { searching = !searching; if (!searching) q = "" }) else {
             Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 12.dp, top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 // Today is home: everywhere else gets a real back arrow, not just a chip you have to notice.
                 if (pager.currentPage != 0) {
-                    Box(Modifier.size(40.dp).clip(RoundedCornerShape(20.dp)).pressable { scope.launch { pager.animateScrollToPage(0) } },
+                    Box(Modifier.size(40.dp).clip(com.nizam.app.ui.design.labShape(20.dp)).pressable { scope.launch { pager.animateScrollToPage(0) } },
                         contentAlignment = Alignment.Center) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Back to Today", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
                 Column(Modifier.weight(1f).padding(start = if (pager.currentPage != 0) 4.dp else 0.dp)) {
-                    when (uiStyle) {
-                        com.nizam.app.ui.style.UiStyle.BRIDGE -> Text(here.name.uppercase(), fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                            style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = accent, letterSpacing = androidx.compose.ui.unit.TextUnit(2f, androidx.compose.ui.unit.TextUnitType.Sp))
-                        com.nizam.app.ui.style.UiStyle.MAGAZINE -> Text(here.name, fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
-                            style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
-                        else -> Text(here.name, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = accent)
-                    }
+                    Text(here.name, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = accent)
                     Text(subtitle(here), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Box(Modifier.size(44.dp).clip(RoundedCornerShape(22.dp)).background(wash(accent, 0.16f)).pressable { searching = !searching; if (!searching) q = "" },
+                Box(Modifier.size(44.dp).clip(com.nizam.app.ui.design.labShape(22.dp)).background(wash(accent, 0.16f)).pressable { searching = !searching; if (!searching) q = "" },
                     contentAlignment = Alignment.Center) {
                     Icon(if (searching) Icons.Outlined.Close else Icons.Outlined.Search, "Search", tint = accent)
                 }
@@ -171,12 +162,13 @@ private fun SpacesHomeBody(container: AppContainer, open: (String) -> Unit) {
                     val s = spaces[i]; val on = i == pager.currentPage
                     val tint = (s as? Space.Life)?.hub?.tint() ?: MaterialTheme.colorScheme.primary
                     val bg by animateColorAsState(if (on) wash(tint, 0.24f) else wash(MaterialTheme.colorScheme.onSurface, 0.06f), label = "chip")
-                    Row(Modifier.clip(RoundedCornerShape(20.dp)).background(bg).pressable { scope.launch { pager.animateScrollToPage(i) } }
+                    Row(Modifier.clip(com.nizam.app.ui.design.labShape(20.dp)).background(bg).pressable { scope.launch { pager.animateScrollToPage(i) } }
                         .padding(horizontal = 14.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(s.icon, null, tint = if (on) tint else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
                         if (on) { Spacer(Modifier.size(6.dp)); Text(s.name, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold, color = tint) }
                     }
                 }
+            }
             }
             if (searching) {
                 OutlinedTextField(q, { q = it }, singleLine = true, placeholder = { Text("Search every tool in Atlas") },
@@ -191,8 +183,7 @@ private fun SpacesHomeBody(container: AppContainer, open: (String) -> Unit) {
                     when (val s = spaces[page]) {
                         Space.Today -> Box(Modifier.fillMaxSize().padding(bottom = 88.dp)) { TodayScreen(container) { openOrPeek(it) } }
                         Space.You -> Box(Modifier.fillMaxSize().padding(bottom = 88.dp)) { MeScreen(container) { openOrPeek(it) } }
-                        is Space.Life -> if (uiStyle == com.nizam.app.ui.style.UiStyle.CLASSIC) SpacePage(s.hub, ::openOrPeek)
-                            else com.nizam.app.ui.style.StyledSpacePage(uiStyle, s.hub, ::openOrPeek)
+                        is Space.Life -> if (uiStyle.sci) com.nizam.app.ui.style.LabHub(s.hub, container, ::openOrPeek) else SpacePage(s.hub, ::openOrPeek)
                     }
                 }
             }
@@ -264,7 +255,7 @@ private fun SpacePage(hub: Hub, open: (String) -> Unit) {
 
 @Composable
 private fun Hero(f: Feature, tint: Color, modifier: Modifier, onLongClick: () -> Unit = {}, onClick: () -> Unit) {
-    Column(modifier.height(116.dp).clip(RoundedCornerShape(24.dp))
+    Column(modifier.height(116.dp).clip(com.nizam.app.ui.design.labShape(24.dp))
         .background(Brush.linearGradient(listOf(wash(tint, 0.28f), wash(tint, 0.10f))))
         .pointerInput(f.route) { detectTapGestures(onTap = { onClick() }, onLongPress = { onLongClick() }) }.padding(14.dp),
         verticalArrangement = Arrangement.SpaceBetween) {
@@ -278,7 +269,7 @@ private fun Hero(f: Feature, tint: Color, modifier: Modifier, onLongClick: () ->
 
 @Composable
 private fun Tile(f: Feature, tint: Color, modifier: Modifier, onLongClick: () -> Unit = {}, onClick: () -> Unit) {
-    Column(modifier.height(92.dp).clip(RoundedCornerShape(20.dp)).background(wash(tint, 0.10f))
+    Column(modifier.height(92.dp).clip(com.nizam.app.ui.design.labShape(20.dp)).background(wash(tint, 0.10f))
         .pointerInput(f.route) { detectTapGestures(onTap = { onClick() }, onLongPress = { onLongClick() }) }.padding(10.dp),
         verticalArrangement = Arrangement.SpaceBetween) {
         com.nizam.app.ui.design.LivingIcon(f.icon, tint, size = 34.dp, iconSize = 20.dp)
@@ -288,7 +279,7 @@ private fun Tile(f: Feature, tint: Color, modifier: Modifier, onLongClick: () ->
 
 @Composable
 private fun Chip(f: Feature, tint: Color, modifier: Modifier, onLongClick: () -> Unit = {}, onClick: () -> Unit) {
-    Column(modifier.clip(RoundedCornerShape(16.dp)).background(wash(tint, 0.14f))
+    Column(modifier.clip(com.nizam.app.ui.design.labShape(16.dp)).background(wash(tint, 0.14f))
         .pointerInput(f.route) { detectTapGestures(onTap = { onClick() }, onLongPress = { onLongClick() }) }.padding(horizontal = 8.dp, vertical = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally) {
         com.nizam.app.ui.design.LivingIcon(f.icon, tint, size = 30.dp, iconSize = 18.dp)
@@ -299,7 +290,7 @@ private fun Chip(f: Feature, tint: Color, modifier: Modifier, onLongClick: () ->
 @Composable
 private fun Wide(f: Feature, onClick: () -> Unit) {
     val tint = f.hub.tint()
-    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(wash(tint, 0.10f)).pressable { onClick() }.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(18.dp)).background(wash(tint, 0.10f)).pressable { onClick() }.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
         Icon(f.icon, null, tint = tint, modifier = Modifier.size(24.dp))
         Spacer(Modifier.size(12.dp))
         Column(Modifier.weight(1f)) {
@@ -320,18 +311,15 @@ private fun Dock(modifier: Modifier, accent: Color, onAsk: () -> Unit, onTalk: (
     val expert by com.nizam.app.feature.expertise.Expertise.current.collectAsState()
     val mindState = when { halo.active -> OrbState.Working; expert != null -> OrbState.Thinking; else -> OrbState.Idle }
     val st = com.nizam.app.ui.style.UiStyles.now()
-    val shape = when (st) { com.nizam.app.ui.style.UiStyle.BRIDGE -> RoundedCornerShape(10.dp); com.nizam.app.ui.style.UiStyle.MAGAZINE -> RoundedCornerShape(4.dp); else -> RoundedCornerShape(32.dp) }
-    val dockHeight = when (st) { com.nizam.app.ui.style.UiStyle.DECK -> 72.dp; com.nizam.app.ui.style.UiStyle.MAGAZINE -> 58.dp; else -> 64.dp }
-    val skin = when (st) {
-        com.nizam.app.ui.style.UiStyle.BRIDGE -> Modifier.background(com.nizam.app.ui.style.StyleKit.bridgePanel, shape).border(1.dp, com.nizam.app.ui.style.StyleKit.bridgeCyan.copy(alpha = 0.5f), shape)
-        com.nizam.app.ui.style.UiStyle.MAGAZINE -> Modifier.background(MaterialTheme.colorScheme.surface, shape).border(1.dp, MaterialTheme.colorScheme.onSurface, shape)
-        else -> Modifier.liquidGlass(shape)
-    }
+    if (st.sci) { com.nizam.app.ui.style.SciDock(modifier.windowInsetsPadding(WindowInsets.navigationBars), onSearch, onAsk, onTalk, onLycho, onAll); return }
+    val shape = androidx.compose.foundation.shape.RoundedCornerShape(32.dp)
+    val dockHeight = 64.dp
+    val skin = Modifier.liquidGlass(shape)
     Row(modifier.windowInsetsPadding(WindowInsets.navigationBars).padding(bottom = 12.dp).height(dockHeight)
-        .shadow(if (st == com.nizam.app.ui.style.UiStyle.LAYERS) 30.dp else 16.dp, shape).then(skin).padding(horizontal = 14.dp),
+        .shadow(16.dp, shape).then(skin).padding(horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         if (container != null) com.nizam.app.feature.safe.RefreshButton(container, null, size = 40.dp)
-        Box(Modifier.size(44.dp).clip(RoundedCornerShape(22.dp)).pressable { onSearch() }, contentAlignment = Alignment.Center) {
+        Box(Modifier.size(44.dp).clip(com.nizam.app.ui.design.labShape(22.dp)).pressable { onSearch() }, contentAlignment = Alignment.Center) {
             Icon(Icons.Outlined.Search, "Search", tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Box(Modifier.size(56.dp).pointerInput(Unit) { detectTapGestures(onTap = { onAsk() }, onLongPress = { onTalk() }) }, contentAlignment = Alignment.Center) {
@@ -340,7 +328,7 @@ private fun Dock(modifier: Modifier, accent: Color, onAsk: () -> Unit, onTalk: (
         Box(Modifier.size(56.dp).pointerInput(Unit) { detectTapGestures(onTap = { onLycho() }, onLongPress = { onLychoHold() }) }, contentAlignment = Alignment.Center) {
             com.nizam.app.ui.design.LychoOrb(mindState, Modifier.parallax(0.6f), diameter = 50.dp)
         }
-        Box(Modifier.size(44.dp).clip(RoundedCornerShape(22.dp)).pressable { onAll() }, contentAlignment = Alignment.Center) {
+        Box(Modifier.size(44.dp).clip(com.nizam.app.ui.design.labShape(22.dp)).pressable { onAll() }, contentAlignment = Alignment.Center) {
             Icon(Icons.Outlined.Apps, "All tools", tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }

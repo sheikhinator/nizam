@@ -123,7 +123,7 @@ fun DrivingScreen(container: AppContainer) {
     }
     @Composable
     fun Big(label: String, colour: Color, modifier: Modifier, onClick: () -> Unit) {
-        Box(modifier.padding(6.dp).background(colour, RoundedCornerShape(24.dp)).clickable(role = Role.Button, onClick = onClick),
+        Box(modifier.padding(6.dp).background(colour, com.nizam.app.ui.design.labShape(24.dp)).clickable(role = Role.Button, onClick = onClick),
             contentAlignment = Alignment.Center) {
             Text(label, fontSize = 22.sp, color = Color(0xFF0B0F1A), textAlign = TextAlign.Center)
         }

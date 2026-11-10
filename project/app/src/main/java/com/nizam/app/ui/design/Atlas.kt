@@ -284,11 +284,11 @@ fun Segmented(options: List<String>, selected: String?, onSelect: (String) -> Un
     val index = options.indexOf(selected).coerceAtLeast(0)
     BoxWithConstraints(
         modifier.fillMaxWidth().padding(vertical = 6.dp).height(38.dp)
-            .clip(RoundedCornerShape(12.dp)).background(c.surfaceVariant).padding(3.dp)
+            .clip(com.nizam.app.ui.design.labShape(12.dp)).background(c.surfaceVariant).padding(3.dp)
     ) {
         val w = maxWidth / options.size
         val x by animateDpAsState(w * index, spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessMediumLow), label = "thumb")
-        Box(Modifier.offset(x = x).width(w).fillMaxHeight().clip(RoundedCornerShape(10.dp))
+        Box(Modifier.offset(x = x).width(w).fillMaxHeight().clip(com.nizam.app.ui.design.labShape(10.dp))
             .background(if (selected in options) c.surface else Color.Transparent))
         Row(Modifier.fillMaxWidth().fillMaxHeight()) {
             options.forEach { o ->

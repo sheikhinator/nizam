@@ -199,7 +199,7 @@ fun GymWeek(sets: List<WorkoutSet>) {
         perMuscle.forEach { (m, n) ->
             Row(Modifier.fillMaxWidth().padding(top = 5.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(m, Modifier.width(80.dp), style = MaterialTheme.typography.bodySmall)
-                Box(Modifier.weight(1f).height(8.dp).clip(RoundedCornerShape(4.dp)).background(cs.surfaceVariant)) {
+                Box(Modifier.weight(1f).height(8.dp).clip(com.nizam.app.ui.design.labShape(4.dp)).background(cs.surfaceVariant)) {
                     val col = when { n == 0 -> cs.surfaceVariant; n < 10 -> Color(0xFFE8A13A); n <= 20 -> Color(0xFF2E9E6A); else -> cs.error }
                     Box(Modifier.fillMaxWidth((n / 20f).coerceIn(0.02f, 1f)).height(8.dp).background(col))
                 }

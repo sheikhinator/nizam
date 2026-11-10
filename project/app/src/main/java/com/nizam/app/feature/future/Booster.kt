@@ -161,10 +161,10 @@ fun BoosterScreen() {
         }
         Label(if (games.isEmpty()) "No games found" else "Boost and play")
         games.forEach { g ->
-            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable { Feedback.show(Booster.start(c, g, silence, overlay)); on = true }.padding(vertical = 8.dp),
+            Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(12.dp)).clickable { Feedback.show(Booster.start(c, g, silence, overlay)); on = true }.padding(vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically) {
                 val icon = remember(g.pkg) { runCatching { c.packageManager.getApplicationIcon(g.pkg).toBitmap(96, 96).asImageBitmap() }.getOrNull() }
-                icon?.let { Image(it, null, Modifier.size(44.dp).clip(RoundedCornerShape(10.dp))) }
+                icon?.let { Image(it, null, Modifier.size(44.dp).clip(com.nizam.app.ui.design.labShape(10.dp))) }
                 Text(g.label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f).padding(start = 12.dp))
                 Text("Play", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
             }

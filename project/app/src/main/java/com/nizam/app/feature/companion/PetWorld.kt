@@ -199,7 +199,7 @@ fun PetRoom(room: String, modifier: Modifier) {
 @Composable
 private fun Bar(label: String, v: Int, c: Color) = Column(Modifier.padding(vertical = 4.dp)) {
     Row { Text(label, Modifier.weight(1f), style = MaterialTheme.typography.labelLarge); Text("$v%", style = MaterialTheme.typography.labelLarge) }
-    LinearProgressIndicator(progress = { v / 100f }, modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)), color = if (v < 25) MaterialTheme.colorScheme.error else c)
+    LinearProgressIndicator(progress = { v / 100f }, modifier = Modifier.fillMaxWidth().height(8.dp).clip(com.nizam.app.ui.design.labShape(4.dp)), color = if (v < 25) MaterialTheme.colorScheme.error else c)
 }
 
 // ─────────────────────────────── Pet home ───────────────────────────────
@@ -226,7 +226,7 @@ fun PetHomeScreen(container: AppContainer, open: (String) -> Unit) {
     AtlasScreen(title = pet.name, subtitle = "$stage ${pet.species.lowercase()} · level $lvl · ${pet.trait.lowercase()}", hub = Hub.Social) {
         if (!pet.hatched) { item("egg") { Text("Your egg hasn't hatched yet — tap it on the Today screen.", Modifier.padding(Space.page)) }; return@AtlasScreen }
         item("scene") {
-            Box(Modifier.fillMaxWidth().padding(horizontal = Space.page).aspectRatio(1.2f).clip(RoundedCornerShape(24.dp))) {
+            Box(Modifier.fillMaxWidth().padding(horizontal = Space.page).aspectRatio(1.2f).clip(com.nizam.app.ui.design.labShape(24.dp))) {
                 PetRoom(room, Modifier.fillMaxSize())
                 if (stage == "Adult" || stage == "Elder") Canvas(Modifier.fillMaxSize()) {
                     drawCircle(Brush.radialGradient(listOf(Color(0x55FFD166), Color.Transparent), center = Offset(size.width / 2, size.height * 0.58f), radius = size.width * 0.4f), size.width * 0.4f, Offset(size.width / 2, size.height * 0.58f))
@@ -313,7 +313,7 @@ private fun CatchGame(done: (Int) -> Unit) {
     Column {
         Text(if (left > 0) "Score $score · ${left}s" else if (score > 0) "Final score $score! Tap Start to play again" else "Tap the treats, avoid the bombs",
             style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-        Box(Modifier.fillMaxWidth().height(380.dp).clip(RoundedCornerShape(20.dp)).background(Color(0xFFE9F7FF))
+        Box(Modifier.fillMaxWidth().height(380.dp).clip(com.nizam.app.ui.design.labShape(20.dp)).background(Color(0xFFE9F7FF))
             .pointerInput(Unit) { detectTapGestures { o -> val w = size.width.toFloat(); val h = size.height.toFloat()
                 val hit = items.indexOfFirst { (x, y, _) -> kotlin.math.abs(o.x - x * w - 24) < 60 && kotlin.math.abs(o.y - y * h - 24) < 60 }
                 if (hit >= 0) { score += if (items[hit].third == "💣") -10 else 5; items.removeAt(hit) } } }) {
@@ -336,7 +336,7 @@ private fun MemoryGame(done: (Int) -> Unit) {
         Text(if (matched.size == cards.size) "All matched in $moves moves! 🎉" else "Moves: $moves", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         (0 until 4).forEach { r -> Row(Modifier.padding(top = Space.s), horizontalArrangement = Arrangement.spacedBy(Space.s)) {
             (0 until 4).forEach { col -> val i = r * 4 + col; val shown = i in open || i in matched
-                Box(Modifier.weight(1f).aspectRatio(1f).clip(RoundedCornerShape(14.dp)).background(if (shown) Color(0xFFFFF4E0) else Hub.Social.tint())
+                Box(Modifier.weight(1f).aspectRatio(1f).clip(com.nizam.app.ui.design.labShape(14.dp)).background(if (shown) Color(0xFFFFF4E0) else Hub.Social.tint())
                     .pressable { if (!shown && open.size < 2) { open = open + i; if (open.size == 2) moves++ } }, contentAlignment = Alignment.Center) {
                     if (shown) Text(cards[i], fontSize = 30.sp) else Text("?", color = Color.White, fontSize = 22.sp)
                 }

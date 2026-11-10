@@ -101,7 +101,7 @@ fun ModuleQualityInspectorSection(spec: ModuleSpec, entries: List<ModuleEntry>) 
     val report = remember(spec, entries) { ModuleQualityInspector.inspect(spec, entries) }
     var expanded by remember(spec.key) { mutableStateOf(false) }
     Surface(
-        shape = RoundedCornerShape(16.dp),
+        shape = com.nizam.app.ui.design.labShape(16.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
         modifier = Modifier.fillMaxWidth()
     ) {

@@ -290,6 +290,6 @@ fun CandidScreen() {
         list.forEach { e -> OCard { OMuted("${e.optString("date")}${if (e.optBoolean("late")) " · late" else ""}")
             Row { listOf(e.optString("back"), e.optString("front")).filter { it.isNotBlank() }.forEach { path ->
                 val bmp = remember(path) { loadBmp(File(path), 500) }
-                bmp?.let { Image(it.asImageBitmap(), null, Modifier.size(150.dp).clip(RoundedCornerShape(12.dp)), contentScale = ContentScale.Crop) } } } } }
+                bmp?.let { Image(it.asImageBitmap(), null, Modifier.size(150.dp).clip(com.nizam.app.ui.design.labShape(12.dp)), contentScale = ContentScale.Crop) } } } } }
     }
 }

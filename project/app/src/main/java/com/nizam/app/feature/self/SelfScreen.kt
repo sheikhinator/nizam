@@ -110,7 +110,7 @@ private fun CharacterTab(repository: SelfRepository, sheet: CharacterSheet?) {
                         .height(8.dp)
                         .background(
                             MaterialTheme.colorScheme.surfaceVariant,
-                            RoundedCornerShape(4.dp)
+                            com.nizam.app.ui.design.labShape(4.dp)
                         )
                 ) {
                     Box(
@@ -120,7 +120,7 @@ private fun CharacterTab(repository: SelfRepository, sheet: CharacterSheet?) {
                                     .coerceIn(0f, 1f)
                             )
                             .height(8.dp)
-                            .background(score.attribute.colour, RoundedCornerShape(4.dp))
+                            .background(score.attribute.colour, com.nizam.app.ui.design.labShape(4.dp))
                     )
                 }
                 Spacer(Modifier.height(4.dp))

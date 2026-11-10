@@ -80,11 +80,13 @@ fun AtlasScreen(
         LazyColumn(state = state, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = Space.xxl)) {
             item("atlas-title") {
               Box {
-                if (hub != null) HubScene(hub, Modifier.matchParentSize())
+                val lab = com.nizam.app.ui.style.UiStyles.now().sci
+                if (hub != null && !lab) HubScene(hub, Modifier.matchParentSize())
                 Column(Modifier.fillMaxWidth().padding(start = Space.page, end = Space.page, top = Space.s, bottom = Space.l)) {
-                    if (hub != null) HubMark(hub)
+                    if (lab) Text((hub?.name ?: "atlas").uppercase(), fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace, fontSize = 9.sp, letterSpacing = 1.4.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    else if (hub != null) HubMark(hub)
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(title, style = if (Style.s.expressive) MaterialTheme.typography.displaySmall.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Black, letterSpacing = (-0.5).sp)
+                        Text(title, style = if (lab) MaterialTheme.typography.headlineSmall.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold) else if (Style.s.expressive) MaterialTheme.typography.displaySmall.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Black, letterSpacing = (-0.5).sp)
                             else MaterialTheme.typography.displaySmall, modifier = Modifier.weight(1f),
                             maxLines = 2, overflow = TextOverflow.Ellipsis)
                         actions()

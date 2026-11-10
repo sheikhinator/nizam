@@ -274,7 +274,7 @@ private fun Home(container: AppContainer, open: (String) -> Unit) {
                 Text("Your coding agent: any repo, any language", color = MUTED, style = MaterialTheme.typography.bodySmall)
             }
             Text("❯_", color = GREEN, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold,
-                modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(PANEL).clickable { open(com.nizam.app.feature.nx.Nx.route("terminal")) }.padding(10.dp))
+                modifier = Modifier.clip(com.nizam.app.ui.design.labShape(10.dp)).background(PANEL).clickable { open(com.nizam.app.feature.nx.Nx.route("terminal")) }.padding(10.dp))
         }
         if (LinuxEnv.preferred(c) == null) Card {
             Text("Linux isn't installed yet", color = TEXT, fontWeight = FontWeight.SemiBold)
@@ -303,7 +303,7 @@ private fun Home(container: AppContainer, open: (String) -> Unit) {
             local.forEach { p ->
                 val n = p.optString("name")
                 val changes = remember(tick, n) { runCatching { Workspace.status(c, n).size }.getOrDefault(0) }
-                Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(PANEL).border(1.dp, LINE, RoundedCornerShape(14.dp))
+                Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(PANEL).border(1.dp, LINE, com.nizam.app.ui.design.labShape(14.dp))
                     .clickable { AtlasCode.start(c, container, n) }.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text("📁 $n", color = TEXT, fontWeight = FontWeight.SemiBold)
@@ -317,7 +317,7 @@ private fun Home(container: AppContainer, open: (String) -> Unit) {
         if (recent.isNotEmpty()) {
             Label("RECENT SESSIONS")
             recent.forEach { o ->
-                Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable { AtlasCode.restore(c, container, o.optString("id")) }.padding(vertical = 8.dp, horizontal = 4.dp)) {
+                Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(12.dp)).clickable { AtlasCode.restore(c, container, o.optString("id")) }.padding(vertical = 8.dp, horizontal = 4.dp)) {
                     Text(o.optString("title").ifBlank { "Session" }, color = TEXT, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     Text("${o.optString("project")} · ${com.nizam.app.feature.chats.ChatHistory.bucket(o.optLong("updated"))}", color = MUTED, style = MaterialTheme.typography.labelSmall)
                 }
@@ -371,7 +371,7 @@ private fun Home(container: AppContainer, open: (String) -> Unit) {
 }
 
 @Composable
-private fun Card(content: @Composable () -> Unit) = Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(PANEL).border(1.dp, LINE, RoundedCornerShape(16.dp)).padding(14.dp),
+private fun Card(content: @Composable () -> Unit) = Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(16.dp)).background(PANEL).border(1.dp, LINE, com.nizam.app.ui.design.labShape(16.dp)).padding(14.dp),
     verticalArrangement = Arrangement.spacedBy(4.dp)) { content() }
 
 @Composable
@@ -413,13 +413,13 @@ private fun SessionView(container: AppContainer, s: CodeSession, open: (String) 
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             listOf("files" to "Files", "changes" to "Changes${if (changed > 0) " · $changed" else ""}", "ci" to "CI", "terminal" to "Terminal").forEach { (k, l) ->
                 Text(l, color = if (k == "changes" && changed > 0) ACCENT else TEXT, style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(PANEL).border(1.dp, LINE, RoundedCornerShape(8.dp))
+                    modifier = Modifier.clip(com.nizam.app.ui.design.labShape(8.dp)).background(PANEL).border(1.dp, LINE, com.nizam.app.ui.design.labShape(8.dp))
                         .clickable { if (k == "terminal") { com.nizam.app.feature.linux.Terminals.nextCwd = "/root/projects/${s.project}"; com.nizam.app.feature.linux.Terminals.open(c, LinuxEnv.preferred(c)); open(com.nizam.app.feature.nx.Nx.route("terminal")) } else sheet = k }
                         .padding(horizontal = 10.dp, vertical = 6.dp))
             }
         }
         // the task list
-        if (s.todos.length() > 0) Column(Modifier.fillMaxWidth().padding(10.dp).clip(RoundedCornerShape(12.dp)).background(PANEL).padding(10.dp)) {
+        if (s.todos.length() > 0) Column(Modifier.fillMaxWidth().padding(10.dp).clip(com.nizam.app.ui.design.labShape(12.dp)).background(PANEL).padding(10.dp)) {
             for (i in 0 until s.todos.length()) s.todos.optJSONObject(i)?.let { t ->
                 val st = t.optString("status")
                 Text((when (st) { "done", "completed" -> "☑ "; "in_progress" -> "◐ "; else -> "☐ " }) + t.optString("content"),
@@ -433,7 +433,7 @@ private fun SessionView(container: AppContainer, s: CodeSession, open: (String) 
                     Text("Ask for a feature, a fix, a refactor, tests, or an explanation. Type / for commands.", color = MUTED, style = MaterialTheme.typography.bodySmall)
                     Row(Modifier.horizontalScroll(rememberScrollState()).padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         listOf("/init", "/explain", "/test", "/review", "/ci").forEach { cmd -> Text(cmd, color = ACCENT, fontFamily = FontFamily.Monospace,
-                            modifier = Modifier.clip(RoundedCornerShape(8.dp)).border(1.dp, LINE, RoundedCornerShape(8.dp)).clickable { AtlasCode.send(c, s, cmd) }.padding(horizontal = 10.dp, vertical = 6.dp)) }
+                            modifier = Modifier.clip(com.nizam.app.ui.design.labShape(8.dp)).border(1.dp, LINE, com.nizam.app.ui.design.labShape(8.dp)).clickable { AtlasCode.send(c, s, cmd) }.padding(horizontal = 10.dp, vertical = 6.dp)) }
                     }
                 }
             }
@@ -446,7 +446,7 @@ private fun SessionView(container: AppContainer, s: CodeSession, open: (String) 
             if (s.running) Text("■ Stop", color = RED, style = MaterialTheme.typography.labelMedium, modifier = Modifier.clickable { AtlasCode.stop(s) }.padding(6.dp))
         }
         // slash suggestions
-        if (input.startsWith("/") && !input.contains(' ')) Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp).clip(RoundedCornerShape(12.dp)).background(PANEL).heightIn(max = 220.dp).verticalScroll(rememberScrollState())) {
+        if (input.startsWith("/") && !input.contains(' ')) Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp).clip(com.nizam.app.ui.design.labShape(12.dp)).background(PANEL).heightIn(max = 220.dp).verticalScroll(rememberScrollState())) {
             (Slash.BUILT_IN + Slash.custom(c, s.project)).filter { it.first.startsWith(input) }.forEach { (cmd, what) ->
                 Row(Modifier.fillMaxWidth().clickable { input = "$cmd " }.padding(10.dp)) {
                     Text(cmd, color = ACCENT, fontFamily = FontFamily.Monospace, modifier = Modifier.width(90.dp)); Text(what, color = MUTED, style = MaterialTheme.typography.labelSmall)
@@ -455,7 +455,7 @@ private fun SessionView(container: AppContainer, s: CodeSession, open: (String) 
         }
         Row(Modifier.fillMaxWidth().padding(10.dp), verticalAlignment = Alignment.Bottom) {
             OutlinedTextField(input, { input = it }, placeholder = { Text("Ask Atlas Code… ( / for commands)") }, modifier = Modifier.weight(1f).heightIn(max = 200.dp),
-                textStyle = MaterialTheme.typography.bodyMedium.copy(color = TEXT), shape = RoundedCornerShape(16.dp))
+                textStyle = MaterialTheme.typography.bodyMedium.copy(color = TEXT), shape = com.nizam.app.ui.design.labShape(16.dp))
             Box(Modifier.padding(start = 8.dp).size(48.dp).clip(CircleShape).background(if (input.isBlank() || s.running) PANEL else ACCENT).clickable(enabled = input.isNotBlank() && !s.running) {
                 val t = input; input = ""; AtlasCode.send(c, s, t)
             }, contentAlignment = Alignment.Center) { Text("↑", color = if (input.isBlank() || s.running) MUTED else Color.Black, fontSize = 20.sp, fontWeight = FontWeight.Bold) }
@@ -480,7 +480,7 @@ private fun EntryView(c: Context, s: CodeSession, e: CodeSession.Entry, showDiff
         is CodeSession.Entry.Say -> SelectionContainer { androidx.compose.runtime.CompositionLocalProvider(androidx.compose.material3.LocalContentColor provides TEXT) { com.nizam.app.ui.components.RichText(e.text) } }
         is CodeSession.Entry.Tool -> {
             var openD by remember { mutableStateOf(false) }
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).background(PANEL).clickable {
+            Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(10.dp)).background(PANEL).clickable {
                 if (e.path != null) Changes.of(s.project).lastOrNull { it.path == e.path }?.let { showDiff(e.path, it.before, it.after) } ?: run { openD = !openD } else openD = !openD
             }.padding(horizontal = 10.dp, vertical = 7.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -493,12 +493,12 @@ private fun EntryView(c: Context, s: CodeSession, e: CodeSession.Entry, showDiff
                 }
             }
         }
-        is CodeSession.Entry.Ask -> Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(PANEL).border(1.dp, if (e.answer == null) ACCENT else LINE, RoundedCornerShape(14.dp)).padding(12.dp)) {
+        is CodeSession.Entry.Ask -> Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(PANEL).border(1.dp, if (e.answer == null) ACCENT else LINE, com.nizam.app.ui.design.labShape(14.dp)).padding(12.dp)) {
             Text(when (e.kind) { "edit" -> "Allow this change?"; "run" -> "Run this command?"; "commit" -> "Commit and push?"; else -> "Allow?" }, color = TEXT, fontWeight = FontWeight.SemiBold)
             Text(e.detail.take(1500), color = MUTED, fontFamily = FontFamily.Monospace, fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
             if (e.kind == "edit" && (e.before != null || e.after != null)) {
                 val h = remember(e) { Diff.hunks(e.before, e.after).take(60) }
-                Column(Modifier.padding(top = 6.dp).clip(RoundedCornerShape(8.dp)).background(INK).padding(6.dp).horizontalScroll(rememberScrollState())) { h.forEach { DiffLine(it) } }
+                Column(Modifier.padding(top = 6.dp).clip(com.nizam.app.ui.design.labShape(8.dp)).background(INK).padding(6.dp).horizontalScroll(rememberScrollState())) { h.forEach { DiffLine(it) } }
                 TextButton(onClick = { showDiff(e.path, e.before, e.after) }) { Text("See full diff") }
             }
             when (e.answer) {
@@ -513,7 +513,7 @@ private fun EntryView(c: Context, s: CodeSession, e: CodeSession.Entry, showDiff
         }
         is CodeSession.Entry.Question -> {
             var ans by remember { mutableStateOf("") }
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(PANEL).border(1.dp, if (e.answered) LINE else ACCENT, RoundedCornerShape(14.dp)).padding(12.dp)) {
+            Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(PANEL).border(1.dp, if (e.answered) LINE else ACCENT, com.nizam.app.ui.design.labShape(14.dp)).padding(12.dp)) {
                 Text("❓ " + e.text, color = TEXT)
                 if (!e.answered) Row(verticalAlignment = Alignment.CenterVertically) {
                     OutlinedTextField(ans, { ans = it }, modifier = Modifier.weight(1f), singleLine = true)
@@ -604,7 +604,7 @@ private fun ChangesSheet(container: AppContainer, s: CodeSession, close: () -> U
         changes.forEach { ch ->
             val now = File(Workspace.dir(c, s.project), ch.path).takeIf { it.isFile }?.let { runCatching { it.readText() }.getOrNull() }
             val was = Workspace.original(c, s.project, ch.path)
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).background(PANEL).clickable { openPath = if (openPath == ch.path) null else ch.path }.padding(10.dp)) {
+            Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(10.dp)).background(PANEL).clickable { openPath = if (openPath == ch.path) null else ch.path }.padding(10.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(when (ch.kind) { "added" -> "A"; "deleted" -> "D"; else -> "M" }, color = when (ch.kind) { "added" -> GREEN; "deleted" -> RED; else -> ACCENT }, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
                     Text("  " + ch.path, color = TEXT, fontFamily = FontFamily.Monospace, fontSize = 12.sp, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -648,7 +648,7 @@ private fun CiSheet(s: CodeSession, close: () -> Unit) {
     LaunchedEffect(Unit) { com.nizam.app.ui.design.guard { runs = runCatching { Workspace.runs(c, s.project, 8) }.getOrElse { err = it.message ?: ""; emptyList() }; apk = Workspace.latestApk(c, s.project) } }
     Column(Modifier.fillMaxWidth().fillMaxHeight(0.9f).padding(14.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text("CI · GitHub Actions", color = TEXT, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-        apk?.let { (tag, url) -> Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(PANEL).padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+        apk?.let { (tag, url) -> Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(12.dp)).background(PANEL).padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("📦 Latest release $tag", color = TEXT, modifier = Modifier.weight(1f))
             Button(enabled = pct !in 0..99, onClick = { scope.launch { pct = 0
                 runCatching { val f = Workspace.downloadAsset(c, url, File(File(c.cacheDir, "update").apply { mkdirs() }, "code-${s.project}.apk")) { pct = it }; pct = 100; com.nizam.app.feature.platform2.Updater.install(c, f) }
@@ -659,7 +659,7 @@ private fun CiSheet(s: CodeSession, close: () -> Unit) {
         runs.orEmpty().forEach { r ->
             val concl = r.optString("conclusion").ifBlank { "null" }
             val icon = when { r.optString("status") != "completed" -> "◐"; concl == "success" -> "✓"; concl == "failure" -> "✕"; else -> "•" }
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(PANEL).clickable { scope.launch { log = r.optLong("id") to "Loading…"; log = r.optLong("id") to runCatching { Workspace.runLog(c, s.project, r.optLong("id")) }.getOrElse { it.message ?: "" } } }.padding(12.dp)) {
+            Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(12.dp)).background(PANEL).clickable { scope.launch { log = r.optLong("id") to "Loading…"; log = r.optLong("id") to runCatching { Workspace.runLog(c, s.project, r.optLong("id")) }.getOrElse { it.message ?: "" } } }.padding(12.dp)) {
                 Text("$icon  ${r.optString("display_title").take(70)}", color = when (icon) { "✓" -> GREEN; "✕" -> RED; else -> ACCENT }, fontWeight = FontWeight.SemiBold, maxLines = 2)
                 Text("#${r.optInt("run_number")} · ${r.optString("name")} · ${r.optString("head_sha").take(7)} · ${com.nizam.app.feature.chats.ChatHistory.bucket(java.time.Instant.parse(r.optString("created_at")).toEpochMilli())}",
                     color = MUTED, style = MaterialTheme.typography.labelSmall)

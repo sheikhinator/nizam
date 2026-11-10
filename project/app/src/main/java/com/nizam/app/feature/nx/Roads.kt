@@ -236,7 +236,7 @@ internal fun RoadsScreen(container: AppContainer, open: (String) -> Unit) {
         }
         if (on && notices.isEmpty()) Text("Nothing needs attention right now.", color = MaterialTheme.colorScheme.onSurfaceVariant)
         notices.forEach { n ->
-            Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), RoundedCornerShape(14.dp)).padding(12.dp)) {
+            Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), com.nizam.app.ui.design.labShape(14.dp)).padding(12.dp)) {
                 Text(n.title, fontWeight = FontWeight.SemiBold)
                 Text(n.detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 TextButton(onClick = { open(n.route) }) { Text("Open the helper") }
@@ -250,7 +250,7 @@ internal fun RoadsScreen(container: AppContainer, open: (String) -> Unit) {
         Text("Last 7 days", fontWeight = FontWeight.SemiBold)
         Row(Modifier.fillMaxWidth().height(60.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.Bottom) {
             pulse.forEach { n ->
-                Box(Modifier.weight(1f).height((6 + 50 * n / max).dp).background(MaterialTheme.colorScheme.primary.copy(alpha = if (n == 0) 0.25f else 1f), RoundedCornerShape(4.dp)))
+                Box(Modifier.weight(1f).height((6 + 50 * n / max).dp).background(MaterialTheme.colorScheme.primary.copy(alpha = if (n == 0) 0.25f else 1f), com.nizam.app.ui.design.labShape(4.dp)))
             }
         }
         Text("${pulse.sum()} entries this week across ${sources.size} connected trackers.", style = MaterialTheme.typography.bodySmall,

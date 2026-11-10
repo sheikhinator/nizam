@@ -183,7 +183,7 @@ fun DynamicModuleScreen(
             Spacer(Modifier.height(14.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
-                    Modifier.size(44.dp).background(accent.copy(alpha = 0.16f), RoundedCornerShape(12.dp)),
+                    Modifier.size(44.dp).background(accent.copy(alpha = 0.16f), com.nizam.app.ui.design.labShape(12.dp)),
                     contentAlignment = Alignment.Center
                 ) { Text(spec.emoji, style = MaterialTheme.typography.titleLarge) }
                 Spacer(Modifier.width(12.dp))

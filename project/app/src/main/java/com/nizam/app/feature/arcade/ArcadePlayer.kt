@@ -257,14 +257,14 @@ fun ArcadePlayer(game: ArcadeGame, backTick: Int, onExit: () -> Unit) {
         FilledTonalIconButton(onClick = { menu = true }, modifier = Modifier.align(if (landscape) Alignment.TopCenter else Alignment.TopEnd).displayCutoutPadding().statusBarsPadding().padding(10.dp).size(40.dp).alpha(0.7f)) {
             androidx.compose.material3.Icon(Icons.Filled.Menu, "Menu")
         }
-        if (note.isNotEmpty()) Text(note, Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(top = 14.dp).clip(RoundedCornerShape(20.dp)).background(Color(0xCC000000)).padding(horizontal = 16.dp, vertical = 8.dp), color = Color.White, fontSize = 13.sp)
-        if (problem.isNotEmpty()) Column(Modifier.align(Alignment.Center).padding(32.dp).clip(RoundedCornerShape(20.dp)).background(Color(0xEE111111)).padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        if (note.isNotEmpty()) Text(note, Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(top = 14.dp).clip(com.nizam.app.ui.design.labShape(20.dp)).background(Color(0xCC000000)).padding(horizontal = 16.dp, vertical = 8.dp), color = Color.White, fontSize = 13.sp)
+        if (problem.isNotEmpty()) Column(Modifier.align(Alignment.Center).padding(32.dp).clip(com.nizam.app.ui.design.labShape(20.dp)).background(Color(0xEE111111)).padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(problem, color = Color.White); Spacer(Modifier.height(14.dp)); Button(onClick = { saveProgress(); onExit() }) { Text("Back to library") }
         }
     }
 
     if (menu) Box(Modifier.fillMaxSize().background(Color(0xAA000000)).clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) { menu = false }, contentAlignment = Alignment.Center) {
-      Surface(onClick = {}, color = Color(0xFF16161C), contentColor = Color.White, shape = RoundedCornerShape(24.dp), modifier = Modifier.widthIn(max = 440.dp).heightIn(max = (cfg.screenHeightDp - 16).dp).padding(8.dp)) {
+      Surface(onClick = {}, color = Color(0xFF16161C), contentColor = Color.White, shape = com.nizam.app.ui.design.labShape(24.dp), modifier = Modifier.widthIn(max = 440.dp).heightIn(max = (cfg.screenHeightDp - 16).dp).padding(8.dp)) {
         Column(Modifier.verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Text(game.title, fontWeight = FontWeight.Bold, fontSize = 18.sp)
             Button(onClick = { menu = false }, Modifier.fillMaxWidth()) { Text("Resume") }

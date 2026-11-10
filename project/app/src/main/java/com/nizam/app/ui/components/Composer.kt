@@ -133,9 +133,9 @@ fun Composer(
         modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
-            .clip(RoundedCornerShape(24.dp))
+            .clip(com.nizam.app.ui.design.labShape(24.dp))
             .background(MaterialTheme.colorScheme.surface)
-            .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.10f), RoundedCornerShape(24.dp))
+            .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.10f), com.nizam.app.ui.design.labShape(24.dp))
             .padding(horizontal = 10.dp, vertical = 8.dp)
     ) {
         AnimatedVisibility(attachments.isNotEmpty() || loading) {
@@ -235,7 +235,7 @@ fun Composer(
                         color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 10.dp))
                 }
                 Text("Manage connectors →", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(top = 12.dp).clip(RoundedCornerShape(8.dp)).clickable {
+                    modifier = Modifier.padding(top = 12.dp).clip(com.nizam.app.ui.design.labShape(8.dp)).clickable {
                         sheet = false; com.nizam.app.ui.screens.search.AtlasNav.go?.invoke("nx/connectors")
                     }.padding(vertical = 6.dp))
             }
@@ -256,7 +256,7 @@ private fun RoundButton(icon: ImageVector, description: String, filled: Boolean,
 @Composable
 private fun SheetTile(icon: ImageVector, label: String, modifier: Modifier, onClick: () -> Unit) {
     Column(
-        modifier.clip(RoundedCornerShape(16.dp))
+        modifier.clip(com.nizam.app.ui.design.labShape(16.dp))
             .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f))
             .clickable(role = Role.Button, onClick = onClick)
             .padding(vertical = 16.dp),
@@ -301,12 +301,12 @@ fun AttachmentChip(a: Attachment, onRemove: (() -> Unit)? = null) {
                     android.graphics.BitmapFactory.decodeFile(a.file.path, o)?.asImageBitmap()
                 }.getOrNull()
             }
-            Box(Modifier.size(56.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))) {
+            Box(Modifier.size(56.dp).clip(com.nizam.app.ui.design.labShape(12.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))) {
                 bmp?.let { Image(it, a.name, contentScale = ContentScale.Crop, modifier = Modifier.size(56.dp)) }
             }
         } else {
             Row(
-                Modifier.height(56.dp).widthIn(max = 200.dp).clip(RoundedCornerShape(12.dp))
+                Modifier.height(56.dp).widthIn(max = 200.dp).clip(com.nizam.app.ui.design.labShape(12.dp))
                     .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f))
                     .padding(horizontal = 10.dp),
                 verticalAlignment = Alignment.CenterVertically

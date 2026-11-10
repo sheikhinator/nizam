@@ -292,7 +292,7 @@ private fun SurahReader(c: Context, s: Int, onBack: () -> Unit, onGo: (Int) -> U
                     ay.texts.forEach { (p, t) -> if (p.lang == "Arabic" && !p.slug.contains("-la")) ArabicLine(t, null) else Body(t, rtl = p.rtl) }
                     if (open == ay.a) tafsirEd?.let { ed ->
                         val t = remember(ed, ay.s, ay.a) { DeenLibrary.tafsir(c, ed, ay.s, ay.a) }
-                        Box(Modifier.padding(top = 8.dp).background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(10.dp)).padding(10.dp)) {
+                        Box(Modifier.padding(top = 8.dp).background(MaterialTheme.colorScheme.surfaceVariant, com.nizam.app.ui.design.labShape(10.dp)).padding(10.dp)) {
                             if (t == null) Text("No tafsir for this ayah in this edition yet.", style = MaterialTheme.typography.bodySmall)
                             else Column {
                                 if (t.first != ay.a) Text("Explained with ayah ${t.first}:", style = MaterialTheme.typography.labelSmall)

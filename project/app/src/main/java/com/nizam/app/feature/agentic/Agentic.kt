@@ -129,7 +129,7 @@ fun HaloHost(modifier: Modifier = Modifier) {
     val pulse = rememberInfiniteTransition(label = "halo").animateFloat(0.35f, 1f, infiniteRepeatable(tween(700), RepeatMode.Reverse), label = "dot")
     AnimatedVisibility(show, modifier.statusBarsPadding().padding(top = 6.dp),
         enter = fadeIn() + slideInVertically { -it }, exit = fadeOut() + slideOutVertically { -it }) {
-        Column(Modifier.clip(RoundedCornerShape(22.dp)).background(Color(0xEE0F1419)).clickable { expanded = !expanded }
+        Column(Modifier.clip(com.nizam.app.ui.design.labShape(22.dp)).background(Color(0xEE0F1419)).clickable { expanded = !expanded }
             .padding(horizontal = 14.dp, vertical = 8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(8.dp).alpha(pulse.value).clip(CircleShape).background(Color(0xFF4CC9F0)))
@@ -151,7 +151,7 @@ fun HoldToConfirm(label: String = "Hold to confirm", modifier: Modifier = Modifi
     val scope = com.nizam.app.ui.design.rememberSafeScope()
     val progress = remember { Animatable(0f) }
     val haptic = LocalHapticFeedback.current
-    val shape = RoundedCornerShape(24.dp)
+    val shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp)
     val c = MaterialTheme.colorScheme
     Box(modifier.clip(shape).background(c.primaryContainer).semantics { onClick(label) { onConfirm(); true } }
         .pointerInput(Unit) {
@@ -252,7 +252,7 @@ private fun safeRoute(r: String): String? = when {
 
 @Composable
 internal fun Card(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
-    Column(modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surface).padding(14.dp),
+    Column(modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(16.dp)).background(MaterialTheme.colorScheme.surface).padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)) { content() }
 }
 
@@ -281,8 +281,8 @@ internal fun GenUi(comps: JSONArray, open: (String) -> Unit) {
                         val row = items.optJSONObject(j) ?: continue
                         val v = row.optDouble("value", 0.0)
                         Text("${row.optString("label")}  ${"%,.0f".format(v)}", style = MaterialTheme.typography.labelMedium)
-                        Box(Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)).background(MaterialTheme.colorScheme.surfaceVariant)) {
-                            Box(Modifier.fillMaxWidth((v / hi).toFloat().coerceIn(0.02f, 1f)).height(8.dp).clip(RoundedCornerShape(4.dp)).background(MaterialTheme.colorScheme.primary))
+                        Box(Modifier.fillMaxWidth().height(8.dp).clip(com.nizam.app.ui.design.labShape(4.dp)).background(MaterialTheme.colorScheme.surfaceVariant)) {
+                            Box(Modifier.fillMaxWidth((v / hi).toFloat().coerceIn(0.02f, 1f)).height(8.dp).clip(com.nizam.app.ui.design.labShape(4.dp)).background(MaterialTheme.colorScheme.primary))
                         }
                     }
                 }

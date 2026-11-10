@@ -44,7 +44,7 @@ fun ChatText(text: String, modifier: Modifier = Modifier) {
 @Composable
 private fun CodeBlock(body: String, bg: Color) {
     val clipboard = LocalClipboardManager.current
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).background(bg)) {
+    Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(10.dp)).background(bg)) {
         Text("copy", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.clickable(role = Role.Button) {
                 clipboard.setText(AnnotatedString(body)); Feedback.show("Copied")

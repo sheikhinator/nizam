@@ -129,7 +129,7 @@ private val RED = Color(0xFFD9534F)
 
 @Composable
 private fun DiffBox(diff: String) {
-    Column(Modifier.fillMaxWidth().background(Color(0x22000000), RoundedCornerShape(8.dp)).padding(8.dp)) {
+    Column(Modifier.fillMaxWidth().background(Color(0x22000000), com.nizam.app.ui.design.labShape(8.dp)).padding(8.dp)) {
         diff.lines().forEach { l -> Text(l, fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = if (l.startsWith("+")) GREEN else RED) }
     }
 }
@@ -290,7 +290,7 @@ fun ChiefScreen(container: AppContainer, open: (String) -> Unit = {}) {
         }
 
         // ---- setup ----
-        if (showSetup) Column(Modifier.fillMaxWidth().padding(vertical = 6.dp).background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), RoundedCornerShape(14.dp)).padding(12.dp),
+        if (showSetup) Column(Modifier.fillMaxWidth().padding(vertical = 6.dp).background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), com.nizam.app.ui.design.labShape(14.dp)).padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text("Setup", fontWeight = FontWeight.SemiBold)
             Text("A Claude Pro or Max subscription does not include API credit: the API is billed separately (console.anthropic.com, Billing). Or leave the key empty and Chief uses the other AIs you have connected in Atlas. They are weaker at code, so you review changes carefully.",
@@ -355,7 +355,7 @@ fun ChiefScreen(container: AppContainer, open: (String) -> Unit = {}) {
                         }
                     }
                     is Block.Note -> Text(b.text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 34.dp))
-                    is Block.Work -> Column(Modifier.fillMaxWidth().padding(start = 34.dp).background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f), RoundedCornerShape(10.dp)).padding(8.dp)) {
+                    is Block.Work -> Column(Modifier.fillMaxWidth().padding(start = 34.dp).background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f), com.nizam.app.ui.design.labShape(10.dp)).padding(8.dp)) {
                         val open = b.key in expanded
                         val edits = b.steps.count { it.name == "edit_file" || it.name == "create_file" }
                         Row(Modifier.fillMaxWidth().clickable { expanded = if (open) expanded - b.key else expanded + b.key }, verticalAlignment = Alignment.CenterVertically) {
@@ -390,7 +390,7 @@ fun ChiefScreen(container: AppContainer, open: (String) -> Unit = {}) {
             }
 
             if (pendingFiles.isNotEmpty()) item {
-                Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f), RoundedCornerShape(14.dp)).padding(12.dp)) {
+                Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f), com.nizam.app.ui.design.labShape(14.dp)).padding(12.dp)) {
                     Text("Ready for your OK", fontWeight = FontWeight.SemiBold)
                     Text(pendingSummary.orEmpty(), style = MaterialTheme.typography.bodySmall)
                     pendingFiles.forEach { f ->
@@ -407,7 +407,7 @@ fun ChiefScreen(container: AppContainer, open: (String) -> Unit = {}) {
             }
 
             if (phase != "idle") item {
-                Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f), RoundedCornerShape(14.dp)).padding(12.dp)) {
+                Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f), com.nizam.app.ui.design.labShape(14.dp)).padding(12.dp)) {
                     when (phase) {
                         "pushing" -> Text("Saving your change to GitHub…")
                         "building" -> { Text("Building your update. About ten minutes. You can leave this screen; I will tell you when it is ready.")
@@ -463,7 +463,7 @@ fun ChiefScreen(container: AppContainer, open: (String) -> Unit = {}) {
                 }
             }
             OutlinedTextField(input, { input = it }, placeholder = { Text("Message Chief…  (type / for commands)") }, modifier = Modifier.weight(1f),
-                maxLines = 5, shape = RoundedCornerShape(22.dp))
+                maxLines = 5, shape = com.nizam.app.ui.design.labShape(22.dp))
             IconButton(onClick = {
                 runCatching { speak.launch(Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)) }
             }) { Icon(Icons.Outlined.Mic, "Speak") }

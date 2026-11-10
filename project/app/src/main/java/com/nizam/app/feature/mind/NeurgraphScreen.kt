@@ -68,8 +68,8 @@ fun NeurgraphScreen() {
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(22.dp))
-                    .luminex(RoundedCornerShape(22.dp), Ascend.reactorAmber, 0.7f)
+                    .clip(com.nizam.app.ui.design.labShape(22.dp))
+                    .luminex(com.nizam.app.ui.design.labShape(22.dp), Ascend.reactorAmber, 0.7f)
                     .padding(18.dp)
             ) {
                 Text("WHAT YOU RETURN TO", color = Ascend.reactorAmber, fontSize = 9.sp, fontWeight = FontWeight.SemiBold)
@@ -175,8 +175,8 @@ private fun RowScope.Stat(label: String, value: String) {
     Column(
         Modifier
             .weight(1f)
-            .clip(RoundedCornerShape(18.dp))
-            .luminex(RoundedCornerShape(18.dp), Ascend.reactorCyan, 0.6f)
+            .clip(com.nizam.app.ui.design.labShape(18.dp))
+            .luminex(com.nizam.app.ui.design.labShape(18.dp), Ascend.reactorCyan, 0.6f)
             .padding(16.dp)
     ) {
         Text(label, color = Ascend.reactorCyan, fontSize = 9.sp, fontWeight = FontWeight.SemiBold)

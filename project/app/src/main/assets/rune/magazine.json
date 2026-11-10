@@ -1,0 +1,118 @@
+{
+ "v": 1,
+ "name": "Magazine",
+ "theme": {
+  "bg": "#F6F3EC",
+  "accent": "#B9602F",
+  "accent2": "#1E7A66"
+ },
+ "vars": {},
+ "root": {
+  "id": "root",
+  "t": "column",
+  "fillW": true,
+  "fillH": true,
+  "padding": 22,
+  "gap": 8,
+  "scroll": true,
+  "stagger": 100,
+  "kids": [
+   {
+    "id": "t94",
+    "t": "row",
+    "fillW": true,
+    "justify": "between",
+    "kids": [
+     {
+      "id": "t92",
+      "t": "text",
+      "text": "THE ATLAS DAILY",
+      "size": 12,
+      "spacing": 4,
+      "weight": 700
+     },
+     {
+      "id": "t93",
+      "t": "text",
+      "text": "{{date}}",
+      "size": 12,
+      "color": "@ink/60"
+     }
+    ]
+   },
+   {
+    "id": "t95",
+    "t": "divider",
+    "h": 2,
+    "fill": "@ink"
+   },
+   {
+    "id": "t96",
+    "t": "text",
+    "text": "{{greeting}}, here is your edition.",
+    "size": 40,
+    "font": "serif",
+    "weight": 700,
+    "lineH": 1.05,
+    "enter": "rise"
+   },
+   {
+    "id": "t97",
+    "t": "text",
+    "text": "{{m:tasks_open}} tasks are waiting, {{m:prayers}} of 5 prayers are done, and Rs {{m:spent}} has gone out today.",
+    "size": 17,
+    "font": "serif",
+    "color": "@ink/80",
+    "lineH": 1.45
+   },
+   {
+    "id": "t98",
+    "t": "divider",
+    "h": 1
+   },
+   {
+    "id": "t103",
+    "t": "row",
+    "fillW": true,
+    "gap": 14,
+    "kids": [
+     {
+      "id": "t101",
+      "t": "column",
+      "weightF": 1,
+      "gap": 4,
+      "kids": [
+       {
+        "id": "t99",
+        "t": "text",
+        "text": "IN BRIEF",
+        "size": 11,
+        "spacing": 3,
+        "weight": 700,
+        "color": "@primary"
+       },
+       {
+        "id": "t100",
+        "t": "text",
+        "text": "Small steps, kept daily, beat large plans left undone.",
+        "size": 19,
+        "font": "serif",
+        "italic": true
+       }
+      ]
+     },
+     {
+      "id": "t102",
+      "t": "shape",
+      "shape": "rect",
+      "radius": 6,
+      "w": 96,
+      "h": 120,
+      "fill": "lin:150:#B9602F,#E8A15F",
+      "enter": "scale"
+     }
+    ]
+   }
+  ]
+ }
+}

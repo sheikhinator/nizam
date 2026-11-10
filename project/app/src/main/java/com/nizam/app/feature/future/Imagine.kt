@@ -126,7 +126,7 @@ fun ImagineScreen(container: AppContainer) {
             SubcomposeAsyncImage(u, prompt, contentScale = ContentScale.Fit,
                 loading = { Thinking(label = "Painting — about 10 seconds") },
                 error = { Text("The image service is busy — tap Create again.", color = MaterialTheme.colorScheme.error) },
-                modifier = Modifier.padding(top = 16.dp).fillMaxWidth().aspectRatio(w.toFloat() / h).clip(RoundedCornerShape(16.dp)))
+                modifier = Modifier.padding(top = 16.dp).fillMaxWidth().aspectRatio(w.toFloat() / h).clip(com.nizam.app.ui.design.labShape(16.dp)))
             Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = { scope.launch { runCatching { Imagine.save(c, u) }.onSuccess { Feedback.show("Saved to Pictures/Atlas") }
                     .onFailure { Feedback.failed("Saving", it) } } }) { Text("Save") }
@@ -158,7 +158,7 @@ fun ImagineScreen(container: AppContainer) {
                 history.forEach { u ->
                     Box {
                         coil.compose.AsyncImage(u, null, contentScale = ContentScale.Crop,
-                            modifier = Modifier.size(96.dp).clip(RoundedCornerShape(12.dp))
+                            modifier = Modifier.size(96.dp).clip(com.nizam.app.ui.design.labShape(12.dp))
                                 .combinedClickable(
                                     onClick = { shown = u },
                                     onLongClick = {

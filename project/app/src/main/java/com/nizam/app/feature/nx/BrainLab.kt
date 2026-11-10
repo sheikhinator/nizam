@@ -343,7 +343,7 @@ fun GraphScreen(container: AppContainer) {
                 busy = false } }, enabled = !busy) { Text(if (busy) "Reading your life…" else if (nodes.isEmpty()) "Build my graph" else "Rebuild") }
         } }
         if (nodes.isNotEmpty()) item("g") {
-            Box(Modifier.padding(Space.page).fillMaxWidth().height(460.dp).clip(RoundedCornerShape(24.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f))) {
+            Box(Modifier.padding(Space.page).fillMaxWidth().height(460.dp).clip(com.nizam.app.ui.design.labShape(24.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f))) {
                 val on = MaterialTheme.colorScheme.onSurface
                 val labelPaint = remember { android.graphics.Paint().apply { isAntiAlias = true; textSize = 26f } }
                 Canvas(Modifier.fillMaxSize().pointerInput(nodes) { detectDragGestures { ch, d -> ch.consume(); pan += d } }

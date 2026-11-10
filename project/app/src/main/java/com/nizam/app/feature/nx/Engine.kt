@@ -527,7 +527,7 @@ fun ChatToolScreen(spec: ChatSpec, container: AppContainer) {
                 item("m$i") {
                     Box(Modifier.fillMaxWidth().padding(horizontal = Space.page, vertical = 4.dp), contentAlignment = if (me) Alignment.CenterEnd else Alignment.CenterStart) {
                         // your words in a bubble; Atlas's answer full width, so tables, charts and diagrams have room
-                        if (me) Box(Modifier.widthIn(max = 320.dp).background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(18.dp))
+                        if (me) Box(Modifier.widthIn(max = 320.dp).background(MaterialTheme.colorScheme.primaryContainer, com.nizam.app.ui.design.labShape(18.dp))
                             .padding(horizontal = 14.dp, vertical = 10.dp)) { Text(t, style = MaterialTheme.typography.bodyMedium) }
                         else Box(Modifier.fillMaxWidth().padding(vertical = 4.dp)) { Md(t) }
                     }
@@ -708,7 +708,7 @@ fun NxScreen(id: String, container: AppContainer, open: (String) -> Unit) {
     val spec = Nx.find(id)
     val ctx = LocalContext.current
     androidx.compose.runtime.LaunchedEffect(id) { com.nizam.app.ui.design.guard { Mind.opened(ctx, id) } }
-    val withMind = spec != null && id !in SELF_WRAPPED && !(spec is LogSpec && spec.sealed)
+    val withMind = spec != null && !isSelfWrapped(id) && !(spec is LogSpec && spec.sealed)
     Box(Modifier.fillMaxSize()) {
         NxBody(id, container, open)
         if (withMind && spec != null) MindDock(spec, open, Modifier.align(Alignment.BottomEnd).padding(end = 14.dp, bottom = 14.dp))
@@ -723,7 +723,7 @@ private fun NxBody(id: String, container: AppContainer, open: (String) -> Unit) 
         is LogSpec -> LogToolScreen(s, container)
         is CalcSpec -> CalcToolScreen(s, container)
         is LinkSpec -> LinkToolScreen(s)
-        is ScreenSpec -> if (s.id in SELF_WRAPPED) s.content(container, open)
+        is ScreenSpec -> if (isSelfWrapped(s.id)) s.content(container, open)
             else AtlasScreen(title = s.title, subtitle = s.blurb, hub = s.hub) {
                 item("screen-${s.id}") { Box(Modifier.fillMaxWidth().padding(horizontal = Space.page, vertical = Space.s)) { s.content(container, open) } }
                 item("screen-end") { androidx.compose.foundation.layout.Spacer(Modifier.height(Space.xxxl)) }

@@ -502,7 +502,7 @@ fun TodayScreen(container: AppContainer, onOpen: (String) -> Unit) {
                                     .background(
                                         if (day.active) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
                                         else MaterialTheme.colorScheme.surfaceVariant,
-                                        RoundedCornerShape(2.dp)
+                                        com.nizam.app.ui.design.labShape(2.dp)
                                     )
                             )
                         }
@@ -559,7 +559,7 @@ fun TodayScreen(container: AppContainer, onOpen: (String) -> Unit) {
                 orderedActions.forEach { (id, label, route) ->
                     val compact = id in modeState.compactTodayCards
                     Surface(
-                        shape = RoundedCornerShape(20.dp),
+                        shape = com.nizam.app.ui.design.labShape(20.dp),
                         color = if (compact) MaterialTheme.colorScheme.surfaceVariant
                             else MaterialTheme.colorScheme.surface,
                         modifier = Modifier.clickable(role = androidx.compose.ui.semantics.Role.Button) { onOpen(route) }

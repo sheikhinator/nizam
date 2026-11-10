@@ -279,7 +279,7 @@ private fun SketchTab(container: AppContainer) {
         palette.forEach { p -> Box(Modifier.size(32.dp).background(p, CircleShape).clickable(role = Role.Button) { colour = p }) }
     }
     ChipRow(listOf("3", "6", "12", "24"), "${width.toInt()}", { width = it.toFloat() }, labels = { "${it}px" })
-    Canvas(Modifier.fillMaxWidth().aspectRatio(0.8f).background(Color.White, RoundedCornerShape(16.dp))
+    Canvas(Modifier.fillMaxWidth().aspectRatio(0.8f).background(Color.White, com.nizam.app.ui.design.labShape(16.dp))
         .pointerInput(colour, width) {
             detectDragGestures(onDragStart = { current = listOf(it) }, onDragEnd = {
                 strokes += Stroke2(current, colour, width); current = emptyList()

@@ -75,7 +75,7 @@ class PauseActivity : ComponentActivity() {
                     ready = true
                 } }
                 Column(
-                    Modifier.fillMaxSize().background(Color(0xFF0B0F1A)).padding(28.dp),
+                    Modifier.fillMaxSize().background(com.nizam.app.ui.design.labBg(Color(0xFF0B0F1A))).padding(28.dp),
                     horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
                 ) {
                     Text(if (ready) (if (overtime) "Your time on $label is up. Another 15 minutes?" else "Still want to open $label?") else if (scale.value < 0.99f && !ready) "Breathe in…" else "…and out",

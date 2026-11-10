@@ -142,6 +142,12 @@ object Style {
             o.optDouble("cornerScale", d.cornerScale.toDouble()).toFloat(), o.optDouble("blur", d.blur.toDouble()).toFloat())
         applyMotion()
     }
+    private var beforeLab: S? = null
+    /** Atlas Lab flattens the surface language (no glass, no art, square corners) and gives it back when you leave. */
+    fun applyLab(on: Boolean) {
+        if (on && beforeLab == null) { beforeLab = s; s = s.copy(card = "Outline", glass = 0f, bg = "Plain", cornerScale = 0.12f, nav = "Solid", glow = false, tilt = false, art = false, expressive = false, hubIcons = "Flat") }
+        else if (!on && beforeLab != null) { s = beforeLab!!; beforeLab = null }
+    }
     fun set(c: Context, n: S) {
         s = n; applyMotion()
         p(c).edit().putString("s", org.json.JSONObject().put("kit", n.kit).put("corners", n.corners).put("card", n.card).put("glass", n.glass.toDouble())

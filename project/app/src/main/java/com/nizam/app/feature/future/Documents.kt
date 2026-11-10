@@ -191,7 +191,7 @@ fun DocumentsScreen(container: AppContainer) {
                     d.images.forEach { n ->
                         var bmp by remember(n) { mutableStateOf<Bitmap?>(null) }
                         LaunchedEffect(n) { com.nizam.app.ui.design.guard { bmp = withContext(Dispatchers.IO) { Documents.image(c, n) } } }
-                        bmp?.let { Image(it.asImageBitmap(), null, contentScale = ContentScale.Fit, modifier = Modifier.height(220.dp).clip(RoundedCornerShape(10.dp))) }
+                        bmp?.let { Image(it.asImageBitmap(), null, contentScale = ContentScale.Fit, modifier = Modifier.height(220.dp).clip(com.nizam.app.ui.design.labShape(10.dp))) }
                     }
                 }
                 if (d.number.isNotBlank()) Text("Number: ${d.number}", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 6.dp))
@@ -216,11 +216,11 @@ fun DocumentsScreen(container: AppContainer) {
         Label(if (docs.isEmpty()) "Nothing here yet" else "${docs.size} documents")
         docs.forEach { d ->
             val days = runCatching { ChronoUnit.DAYS.between(LocalDate.now(), LocalDate.parse(d.expiry)) }.getOrNull()
-            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable { viewing = d; renewal = "" }.padding(vertical = 10.dp),
+            Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(12.dp)).clickable { viewing = d; renewal = "" }.padding(vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically) {
                 var thumb by remember(d.id) { mutableStateOf<Bitmap?>(null) }
                 LaunchedEffect(d.id) { com.nizam.app.ui.design.guard { thumb = withContext(Dispatchers.IO) { d.images.firstOrNull()?.let { Documents.image(c, it, 200) } } } }
-                thumb?.let { Image(it.asImageBitmap(), null, contentScale = ContentScale.Crop, modifier = Modifier.size(56.dp).clip(RoundedCornerShape(8.dp))) }
+                thumb?.let { Image(it.asImageBitmap(), null, contentScale = ContentScale.Crop, modifier = Modifier.size(56.dp).clip(com.nizam.app.ui.design.labShape(8.dp))) }
                     ?: Text("🪪", style = MaterialTheme.typography.headlineMedium)
                 Column(Modifier.weight(1f).padding(start = 12.dp)) {
                     Text(d.title.ifBlank { d.type }, style = MaterialTheme.typography.bodyLarge)

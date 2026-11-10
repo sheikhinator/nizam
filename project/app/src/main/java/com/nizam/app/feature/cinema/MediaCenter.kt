@@ -75,7 +75,7 @@ import org.json.JSONObject
 @Composable
 private fun PosterCard(title: String, poster: String?, sub: String, width: androidx.compose.ui.unit.Dp? = null, onClick: () -> Unit) {
     Column((if (width != null) Modifier.width(width) else Modifier).clickable(role = Role.Button, onClick = onClick)) {
-        Box(Modifier.fillMaxWidth().aspectRatio(2f / 3f).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surface),
+        Box(Modifier.fillMaxWidth().aspectRatio(2f / 3f).clip(com.nizam.app.ui.design.labShape(12.dp)).background(MaterialTheme.colorScheme.surface),
             contentAlignment = Alignment.Center) {
             if (poster != null) AsyncImage(poster, title, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
             else Text(title, style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(6.dp))
@@ -247,7 +247,7 @@ private fun DownloadRow(d: VideoDownload, onPlay: () -> Unit) {
     Row(Modifier.fillMaxWidth().clickable(enabled = d.done, role = Role.Button) {
         CinemaNav.play(VideoDownloads.playable(d), d.label, d.id, null, d.subs, headers = d.headers, cached = d.kind == "hls"); onPlay()
     }.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.width(44.dp).aspectRatio(2f / 3f).clip(RoundedCornerShape(6.dp)).background(MaterialTheme.colorScheme.surface)) {
+        Box(Modifier.width(44.dp).aspectRatio(2f / 3f).clip(com.nizam.app.ui.design.labShape(6.dp)).background(MaterialTheme.colorScheme.surface)) {
             if (d.poster.isNotBlank()) AsyncImage(d.poster, null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
         }
         Column(Modifier.weight(1f).padding(horizontal = 12.dp)) {
@@ -459,7 +459,7 @@ fun MetaScreen(onPlay: () -> Unit) {
                                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                     qualityOf(s).takeIf { it.isNotBlank() }?.let { q ->
                                         Text(q, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimary,
-                                            modifier = Modifier.clip(RoundedCornerShape(4.dp)).background(MaterialTheme.colorScheme.primary).padding(horizontal = 5.dp, vertical = 1.dp))
+                                            modifier = Modifier.clip(com.nizam.app.ui.design.labShape(4.dp)).background(MaterialTheme.colorScheme.primary).padding(horizontal = 5.dp, vertical = 1.dp))
                                     }
                                     Text(s.addon, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
                                     listOfNotNull(sizeOf(s).ifBlank { null }, seedsOf(s)?.let { "$it seeds" }, if (s.magnet != null) "torrent" else null)

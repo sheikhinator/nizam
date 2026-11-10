@@ -135,8 +135,8 @@ fun CapsulesScreen() {
                 Column(
                     Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(22.dp))
-                        .luminex(RoundedCornerShape(22.dp), Ascend.reactorIce, 0.7f)
+                        .clip(com.nizam.app.ui.design.labShape(22.dp))
+                        .luminex(com.nizam.app.ui.design.labShape(22.dp), Ascend.reactorIce, 0.7f)
                         .padding(16.dp)
                 ) {
                     OutlinedTextField(
@@ -187,8 +187,8 @@ fun CapsulesScreen() {
                 Column(
                     Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp))
-                        .luminex(RoundedCornerShape(20.dp), if (isReady) Ascend.reactorEmerald else Ascend.reactorViolet, 0.6f)
+                        .clip(com.nizam.app.ui.design.labShape(20.dp))
+                        .luminex(com.nizam.app.ui.design.labShape(20.dp), if (isReady) Ascend.reactorEmerald else Ascend.reactorViolet, 0.6f)
                         .clickable {
                             if (isReady) {
                                 revealed = if (isRevealed) null else cap.id

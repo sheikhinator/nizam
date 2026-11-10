@@ -155,7 +155,7 @@ class WakeActivity : ComponentActivity() {
         }
         setContent {
             NizamTheme(darkTheme = true) {
-                Column(Modifier.fillMaxSize().background(Color(0xFF0B0F1A)).padding(28.dp),
+                Column(Modifier.fillMaxSize().background(com.nizam.app.ui.design.labBg(Color(0xFF0B0F1A))).padding(28.dp),
                     horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                     Text("☀️", fontSize = 80.sp)
                     Text(LocalTime.now().let { "%02d:%02d".format(it.hour, it.minute) }, color = Color.White, fontSize = 64.sp)

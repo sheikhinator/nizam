@@ -103,7 +103,7 @@ fun XRayOverlay(route: String?) {
                         "The user dropped an X-ray lens on this part of their Atlas app screen (${route?.let { com.nizam.app.ui.design.Feel.label(it) } ?: "a screen"}): \"$text\".\n" +
                             "Explain in under 80 words: what this is, where the number or word comes from in their own records, how it has changed lately, and what it means for them.", "Be specific to their data. Plain text.", 300)
                     busy = false } }) { ch, d -> ch.consume(); x += d.x; y += d.y; out = "" } }, contentAlignment = Alignment.Center) { Text("🔍", fontSize = 26.sp) }
-        if (busy || out.isNotBlank()) Column(Modifier.align(Alignment.BottomCenter).padding(16.dp, 16.dp, 16.dp, 110.dp).widthIn(max = 420.dp).clip(RoundedCornerShape(18.dp)).background(Color(0xF0101422)).padding(14.dp)) {
+        if (busy || out.isNotBlank()) Column(Modifier.align(Alignment.BottomCenter).padding(16.dp, 16.dp, 16.dp, 110.dp).widthIn(max = 420.dp).clip(com.nizam.app.ui.design.labShape(18.dp)).background(Color(0xF0101422)).padding(14.dp)) {
             Text(if (busy) "X-raying…" else out, color = Color.White, fontSize = 14.sp)
             if (!busy) Text("Close lens", Modifier.padding(top = 8.dp).androidxClick { XRay.on = false; out = "" }, color = Color(0xFF8BE9FD))
         }
@@ -282,7 +282,7 @@ fun MonthMovieScreen() {
             val bmp = remember(uri) { uri?.let { u -> runCatching { c.contentResolver.openInputStream(u)?.use { android.graphics.BitmapFactory.decodeStream(it, null, android.graphics.BitmapFactory.Options().apply { inSampleSize = 4 }) } }.getOrNull() } }
             val zoom = remember(at) { Animatable(1f) }
             LaunchedEffect(at) { com.nizam.app.ui.design.guard { zoom.animateTo(1.15f, tween(8000, easing = LinearEasing)) } }
-            Box(Modifier.fillMaxWidth().height(420.dp).clip(RoundedCornerShape(20.dp)).background(Color.Black)) {
+            Box(Modifier.fillMaxWidth().height(420.dp).clip(com.nizam.app.ui.design.labShape(20.dp)).background(Color.Black)) {
                 if (bmp != null) Image(bmp.asImageBitmap(), null, Modifier.fillMaxSize().graphicsLayer { scaleX = zoom.value; scaleY = zoom.value }, contentScale = ContentScale.Crop)
                 else Text("✦", Modifier.align(Alignment.Center), color = Color.White, fontSize = 64.sp)
                 Box(Modifier.fillMaxWidth().align(Alignment.BottomCenter).background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(Color.Transparent, Color(0xDD000000)))).padding(18.dp)) {

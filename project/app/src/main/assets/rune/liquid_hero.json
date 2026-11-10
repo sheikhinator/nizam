@@ -1,0 +1,91 @@
+{
+ "v": 1,
+ "name": "Liquid Hero",
+ "theme": {
+  "bg": "#0A0A0F",
+  "accent": "#C9D4FF",
+  "accent2": "#FF7AB6"
+ },
+ "vars": {},
+ "root": {
+  "id": "root",
+  "t": "column",
+  "fillW": true,
+  "fillH": true,
+  "padding": 18,
+  "gap": 14,
+  "kids": [
+   {
+    "id": "t108",
+    "t": "box",
+    "fillW": true,
+    "h": 300,
+    "radius": 34,
+    "fill": "liquid:#1B1F3A,#9DB4FF,#FFFFFF",
+    "fx": "gloss",
+    "enter": "scale",
+    "boxAlign": "bottomstart",
+    "kids": [
+     {
+      "id": "t107",
+      "t": "column",
+      "padding": 22,
+      "gap": 2,
+      "kids": [
+       {
+        "id": "t105",
+        "t": "text",
+        "text": "Liquid",
+        "size": 46,
+        "weight": 700,
+        "color": "#0A0A12"
+       },
+       {
+        "id": "t106",
+        "t": "text",
+        "text": "GPU surface, drifting live",
+        "size": 15,
+        "color": "#0A0A12/70"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "t111",
+    "t": "row",
+    "fillW": true,
+    "gap": 12,
+    "kids": [
+     {
+      "id": "t109",
+      "t": "box",
+      "weightF": 1,
+      "h": 120,
+      "radius": 26,
+      "fill": "liquid:#3B0D2B,#FF7AB6,#FFE1C2",
+      "enter": "rise",
+      "enterDelay": 150
+     },
+     {
+      "id": "t110",
+      "t": "box",
+      "weightF": 1,
+      "h": 120,
+      "radius": 26,
+      "fill": "liquid:#05231F,#31D0D0,#D9FFF6",
+      "enter": "rise",
+      "enterDelay": 300
+     }
+    ]
+   },
+   {
+    "id": "t112",
+    "t": "text",
+    "text": "Liquid fills use a GPU shader on Android 13+, and a soft mesh on older phones.",
+    "size": 13,
+    "color": "@ink/60"
+   }
+  ]
+ }
+}

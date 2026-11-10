@@ -49,7 +49,7 @@ fun AtlasPicks(container: AppContainer, onOpen: (String) -> Unit, modifier: Modi
         }
     } }
     if (notice == null && usual.isEmpty()) return
-    Column(modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), RoundedCornerShape(16.dp)).padding(12.dp)) {
+    Column(modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), com.nizam.app.ui.design.labShape(16.dp)).padding(12.dp)) {
         if (notice != null) {
             Text("Atlas noticed", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(notice.title, fontWeight = FontWeight.SemiBold)

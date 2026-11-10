@@ -148,7 +148,7 @@ fun LanguageScreen(container: AppContainer) {
         }
         Row(
             Modifier.fillMaxWidth().padding(vertical = 10.dp)
-                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(28.dp)).padding(6.dp),
+                .background(MaterialTheme.colorScheme.surface, com.nizam.app.ui.design.labShape(28.dp)).padding(6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(Modifier.size(40.dp).background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)

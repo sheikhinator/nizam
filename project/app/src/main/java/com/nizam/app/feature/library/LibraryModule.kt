@@ -277,7 +277,7 @@ fun LibraryScreen(container: AppContainer) {
 /** A book cover, or a tidy spine-coloured placeholder when there isn't one. */
 @Composable
 private fun Cover(url: String?, title: String, modifier: Modifier = Modifier) {
-    Box(modifier.aspectRatio(2f / 3f).clip(RoundedCornerShape(10.dp)).background(MaterialTheme.colorScheme.surface),
+    Box(modifier.aspectRatio(2f / 3f).clip(com.nizam.app.ui.design.labShape(10.dp)).background(MaterialTheme.colorScheme.surface),
         contentAlignment = Alignment.Center) {
         if (url != null) coil.compose.AsyncImage(url, title, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
         else Text(title.take(40), style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(8.dp))

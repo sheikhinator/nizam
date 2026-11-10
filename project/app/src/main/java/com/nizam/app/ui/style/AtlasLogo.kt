@@ -205,7 +205,7 @@ fun LogoStudioScreen() {
     fun changed() = L.save(c)
     var demo by androidx.compose.runtime.remember { mutableStateOf(PulseState.IDLE) }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        Box(Modifier.fillMaxWidth().height(200.dp).clip(RoundedCornerShape(28.dp)).background(Brush.radialGradient(listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), MaterialTheme.colorScheme.surface))),
+        Box(Modifier.fillMaxWidth().height(200.dp).clip(com.nizam.app.ui.design.labShape(28.dp)).background(Brush.radialGradient(listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), MaterialTheme.colorScheme.surface))),
             contentAlignment = Alignment.Center) { AtlasLogo(demo, Modifier.clickable { com.nizam.app.ui.design.EasterEggs.logoTap(c) }, diameter = 130.dp) }
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             listOf(PulseState.IDLE to "Idle", PulseState.THINKING to "Thinking", PulseState.LISTENING to "Listening", PulseState.UNPROMPTED to "Prayer near", PulseState.PROTECTIVE to "Protective").forEach { (s, n) ->
@@ -214,9 +214,9 @@ fun LogoStudioScreen() {
         Label("SHAPE")
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             LogoStudio.Shape.values().forEach { s ->
-                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clip(RoundedCornerShape(16.dp))
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clip(com.nizam.app.ui.design.labShape(16.dp))
                     .background(if (L.shape == s) MaterialTheme.colorScheme.primary.copy(alpha = 0.16f) else Color.Transparent)
-                    .border(1.dp, if (L.shape == s) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
+                    .border(1.dp, if (L.shape == s) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant, com.nizam.app.ui.design.labShape(16.dp))
                     .clickable { L.shape = s; changed() }.padding(10.dp)) {
                     Box(Modifier.size(48.dp)) { MiniLogo(s) }
                     Text(s.title, style = MaterialTheme.typography.labelSmall)

@@ -94,7 +94,7 @@ fun QuranHome(open: (Int) -> Unit) {
     val last = QuranPlus.lastSurah(c)
     Column(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         if (last > 0) SURAHS.firstOrNull { it.number == last }?.let { s ->
-            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(cs.primary.copy(alpha = 0.12f)).clickable { open(s.number) }.padding(14.dp),
+            Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(16.dp)).background(cs.primary.copy(alpha = 0.12f)).clickable { open(s.number) }.padding(14.dp),
                 verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text("Continue reading", style = MaterialTheme.typography.labelLarge, color = cs.primary)
@@ -117,7 +117,7 @@ fun QuranHome(open: (Int) -> Unit) {
             val elapsed = java.time.temporal.ChronoUnit.DAYS.between(LocalDate.parse(QuranPlus.khatmStart(c)), LocalDate.now()).toInt() + 1
             val left = (days - elapsed + 1).coerceAtLeast(1)
             val perDay = ((QuranPlus.TOTAL - read).coerceAtLeast(0) + left - 1) / left
-            Box(Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)).background(cs.surfaceVariant)) {
+            Box(Modifier.fillMaxWidth().height(8.dp).clip(com.nizam.app.ui.design.labShape(4.dp)).background(cs.surfaceVariant)) {
                 Box(Modifier.fillMaxWidth((read.toFloat() / QuranPlus.TOTAL).coerceIn(0.005f, 1f)).height(8.dp).background(cs.primary))
             }
             Text("$read of ${QuranPlus.TOTAL} ayat · ${"%.1f".format(read * 100f / QuranPlus.TOTAL)}% · day $elapsed of $days", style = MaterialTheme.typography.bodySmall)

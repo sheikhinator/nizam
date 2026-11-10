@@ -1,0 +1,66 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;overflow:hidden;font-family:system-ui,-apple-system,Roboto,sans-serif;color:#fff;touch-action:none;user-select:none}
+  body.day{background:linear-gradient(180deg,#5fb4ff 0%,#a8d8ff 45%,#ffe2bd 100%)}
+  body.dawn{background:linear-gradient(180deg,#6f9bd8 0%,#ffd3a0 60%,#ffb48a 100%)}
+  body.dusk{background:linear-gradient(180deg,#2a2f55 0%,#6b4a7a 45%,#f2a477 100%)}
+  body.night{background:linear-gradient(180deg,#070a1c 0%,#161c40 55%,#2a2f66 100%)}
+  #gl{position:absolute;inset:0}
+  canvas{display:block}
+  .glass{background:rgba(20,24,44,.55);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.22);border-radius:18px}
+  #top{position:absolute;top:calc(env(safe-area-inset-top,0px) + 10px);left:10px;right:10px;display:flex;justify-content:space-between;align-items:center;gap:6px}
+  .pill{padding:8px 12px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px;color:#fff}
+  .speed{display:flex;gap:4px;padding:5px}
+  .speed b{width:28px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.14);font-size:11px}
+  .speed b.on{background:#3DF2B0;color:#07120F}
+  #nm{position:absolute;left:10px;top:calc(env(safe-area-inset-top,0px) + 58px);padding:7px 12px;font-size:12px;font-weight:700}
+  #ticker{position:absolute;left:10px;right:10px;top:calc(env(safe-area-inset-top,0px) + 98px);padding:8px 12px;font-size:12px;opacity:0;transition:opacity .4s;pointer-events:none}
+  #speech{position:absolute;display:none;width:230px;padding:10px 13px;font-size:14px;line-height:1.35;background:#fff;color:#14161c;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.35);transform:translate(-50%,-100%);pointer-events:none}
+  #speech:after{content:"";position:absolute;left:50%;bottom:-9px;margin-left:-9px;border:9px solid transparent;border-top-color:#fff;border-bottom:0}
+  #think{position:absolute;display:none;padding:6px 12px;background:#fff;border-radius:20px;box-shadow:0 8px 20px rgba(0,0,0,.35);font-size:20px;transform:translate(-50%,-100%);pointer-events:none;color:#000}
+  #pie{position:absolute;display:none;transform:translate(-50%,-50%);width:150px;height:150px;touch-action:manipulation}
+  #pie .a,#pie .c{position:absolute;width:52px;height:52px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:18px;background:rgba(255,255,255,.96);color:#14161c;box-shadow:0 6px 16px rgba(0,0,0,.35)}
+  #pie small{font-size:9px;font-weight:700;margin-top:1px}
+  #pie .c{left:49px;top:49px;background:#7A6CFF;color:#fff;font-size:10px;font-weight:700;text-align:center;padding:2px}
+  #wants{position:absolute;left:10px;right:10px;bottom:218px;display:flex;gap:8px}
+  #wants div{flex:1;padding:8px 10px;font-size:11px;font-weight:600;border-radius:14px;line-height:1.25}
+  #panel{position:absolute;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 62px);padding:10px 12px;display:flex;flex-direction:column;gap:5px}
+  .n{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600}
+  .n em{font-style:normal;width:64px;opacity:.9}.n u{flex:1;height:8px;border-radius:8px;background:rgba(255,255,255,.18);overflow:hidden;text-decoration:none}
+  .n s{display:block;height:100%;border-radius:8px;text-decoration:none;transition:width .6s}
+  #bar{position:absolute;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);display:flex;gap:8px;align-items:center}
+  #bar input{flex:1;height:42px;border-radius:21px;border:1px solid rgba(255,255,255,.25);background:rgba(20,24,44,.65);color:#fff;padding:0 14px;font-size:14px;outline:none;min-width:0;user-select:text}
+  #bar .btn{height:42px;min-width:42px;padding:0 12px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;border-radius:21px}
+  #send{background:linear-gradient(120deg,#3DF2B0,#7A6CFF);color:#07120F}
+</style></head>
+<body class="day">
+<div id="gl"></div>
+<div id="top">
+  <div class="glass pill" id="back">←</div>
+  <div class="glass pill"><span id="clock">16:12</span></div>
+  <div class="glass speed"><b>⏸</b><b class="on">▶</b><b>▶▶</b><b>▶▶▶</b></div>
+</div>
+<div id="nm" class="glass">Atlas</div>
+<div id="ticker" class="glass"></div>
+<div id="think"></div>
+<div id="speech"></div>
+<div id="pie"></div>
+<div id="wants"></div>
+<div id="panel" class="glass">
+  <div class="n"><em>Mood</em><u><s id="b_mood" style="width:60%;background:#3DF2B0"></s></u></div>
+  <div class="n"><em>Energy</em><u><s id="b_energy" style="width:60%;background:#FFC86B"></s></u></div>
+  <div class="n"><em>Curiosity</em><u><s id="b_cur" style="width:60%;background:#7A6CFF"></s></u></div>
+  <div class="n"><em>Fed (mind)</em><u><s id="b_hun" style="width:60%;background:#31D0D0"></s></u></div>
+  <div class="n"><em>Bond</em><u><s id="b_bond" style="width:60%;background:#FF7AB6"></s></u></div>
+</div>
+<div id="bar">
+  <input id="ask" type="text" placeholder="Talk to it, or tell it what to do…" autocomplete="off">
+  <div class="glass btn" id="send">Go</div>
+  <div class="glass btn" id="free">Freedom</div>
+</div>
+<script src="three.min.js"></script>
+<script src="roundedbox.js"></script>
+<script src="world.js"></script>
+</body></html>

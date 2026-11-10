@@ -115,7 +115,7 @@ fun PrayerNow(times: PrayerTimes.Times, statuses: List<String>) {
             val start = if (i == 0) times.fajr else t[i]
             val end = if (i == 0) times.sunrise else nextHour
             val frac = ((now - start) / (end - start)).toFloat().coerceIn(0f, 1f)
-            Box(Modifier.fillMaxWidth().padding(top = 8.dp).height(6.dp).clip(RoundedCornerShape(3.dp)).background(cs.surfaceVariant)) {
+            Box(Modifier.fillMaxWidth().padding(top = 8.dp).height(6.dp).clip(com.nizam.app.ui.design.labShape(3.dp)).background(cs.surfaceVariant)) {
                 Box(Modifier.fillMaxWidth(frac.coerceAtLeast(0.01f)).height(6.dp).background(if (frac > 0.8f) Color(0xFFE8A13A) else cs.primary))
             }
             val mins = ((end - now) * 60).toInt()
@@ -199,7 +199,7 @@ fun PrayerDepth(month: List<PrayerDay>) {
         Row(Modifier.fillMaxWidth().padding(top = 6.dp), horizontalArrangement = Arrangement.SpaceBetween) {
             PrayerPlus.KEYS.forEachIndexed { i, k ->
                 val v = remember(tickJ) { PrayerPlus.jamaatHour(c, k) }
-                Column(Modifier.clip(RoundedCornerShape(10.dp)).clickable { editing = i }.padding(6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(Modifier.clip(com.nizam.app.ui.design.labShape(10.dp)).clickable { editing = i }.padding(6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(v?.let { hourToClock(it) } ?: "Set", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold,
                         color = if (v == null) cs.primary else cs.onSurface)
                     Text(PrayerPlus.NAMES[i], style = MaterialTheme.typography.labelSmall, color = cs.onSurfaceVariant)

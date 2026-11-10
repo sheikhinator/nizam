@@ -151,7 +151,7 @@ private fun Wrapped(days: List<DayVector>, s: ProgressSummary?) {
         }
         HorizontalPager(pager, Modifier.weight(1f).padding(vertical = 8.dp)) { i ->
             val sl = slides[i]
-            Column(Modifier.fillMaxSize().background(sl.colour, RoundedCornerShape(28.dp)).padding(28.dp),
+            Column(Modifier.fillMaxSize().background(sl.colour, com.nizam.app.ui.design.labShape(28.dp)).padding(28.dp),
                 verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("${i + 1}/${slides.size}", color = Color.White.copy(alpha = 0.6f))
                 Text(sl.big, color = Color.White, fontSize = 88.sp, style = MaterialTheme.typography.displaySmall.copy(fontFamily = DisplayFamily))
@@ -204,7 +204,7 @@ private fun Newspaper(container: AppContainer, days: List<DayVector>) {
             }
         }) { Text(if (busy) "Printing…" else "Print this week's paper") }
         if (paper.isNotBlank()) {
-            Column(Modifier.fillMaxWidth().padding(vertical = 10.dp).background(Color(0xFFF3EEE2), RoundedCornerShape(6.dp)).padding(18.dp)) {
+            Column(Modifier.fillMaxWidth().padding(vertical = 10.dp).background(Color(0xFFF3EEE2), com.nizam.app.ui.design.labShape(6.dp)).padding(18.dp)) {
                 Text("THE ATLAS GAZETTE", color = Color(0xFF1A1814), fontSize = 26.sp, textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.headlineSmall.copy(fontFamily = DisplayFamily), modifier = Modifier.fillMaxWidth())
                 Text("Week ending ${LocalDate.now()}", color = Color(0xFF6B6459), textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())

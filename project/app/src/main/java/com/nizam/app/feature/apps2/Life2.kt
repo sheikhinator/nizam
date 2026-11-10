@@ -171,7 +171,7 @@ fun CalendarScreen() {
             (0 until 6).forEach { w -> Row {
                 (0 until 7).forEach { d -> val date = start.plusDays((w * 7 + d).toLong()); val inMonth = date.month == month.month
                     val sel = date == day; val today = date == LocalDate.now(); val n = byDay[date]?.size ?: 0
-                    Column(Modifier.weight(1f).aspectRatio(1f).padding(2.dp).clip(RoundedCornerShape(10.dp))
+                    Column(Modifier.weight(1f).aspectRatio(1f).padding(2.dp).clip(com.nizam.app.ui.design.labShape(10.dp))
                         .background(if (sel) Hub.Work.tint() else Color.Transparent).pressable { day = date }, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                         Text("${date.dayOfMonth}", color = when { sel -> Color.White; !inMonth -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f); else -> MaterialTheme.colorScheme.onSurface },
                             fontWeight = if (today) FontWeight.Bold else FontWeight.Normal)

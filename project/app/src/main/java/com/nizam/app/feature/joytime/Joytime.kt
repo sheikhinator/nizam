@@ -162,7 +162,7 @@ private fun Bar(title: String, onBack: (() -> Unit)?, onExit: () -> Unit, action
 
 @Composable
 private fun Card(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, content: @Composable () -> Unit) {
-    Column(modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(MaterialTheme.colorScheme.surface)
+    Column(modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(MaterialTheme.colorScheme.surface)
         .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier).padding(14.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) { content() }
 }
 

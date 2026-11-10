@@ -127,8 +127,8 @@ fun AletheiaScreen() {
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(22.dp))
-                    .luminex(RoundedCornerShape(22.dp), Ascend.reactorAmber, 0.7f)
+                    .clip(com.nizam.app.ui.design.labShape(22.dp))
+                    .luminex(com.nizam.app.ui.design.labShape(22.dp), Ascend.reactorAmber, 0.7f)
                     .padding(16.dp)
             ) {
                 OutlinedTextField(
@@ -189,7 +189,7 @@ fun AletheiaScreen() {
                     Column(
                         Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(18.dp))
+                            .clip(com.nizam.app.ui.design.labShape(18.dp))
                             .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
                             .padding(16.dp)
                     ) {
@@ -233,8 +233,8 @@ private fun BeliefCard(belief: Belief, onStatus: (String) -> Unit) {
     Column(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .luminex(RoundedCornerShape(20.dp), Ascend.reactorAmber, 0.6f)
+            .clip(com.nizam.app.ui.design.labShape(20.dp))
+            .luminex(com.nizam.app.ui.design.labShape(20.dp), Ascend.reactorAmber, 0.6f)
             .padding(16.dp)
     ) {
         Text(

@@ -123,7 +123,7 @@ private fun ThreadsTab(container: AppContainer, open: (String) -> Unit) {
     val threads = remember(v) { Crew.threads(c).all().sortedByDescending { it.optLong("updated", it.optLong("created")) } }
     LazyColumn(contentPadding = PaddingValues(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         item {
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(Brush.linearGradient(listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.16f),
+            Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(24.dp)).background(Brush.linearGradient(listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.16f),
                 MaterialTheme.colorScheme.tertiary.copy(alpha = 0.10f)))).padding(16.dp)) {
                 Text("Give the team a goal", style = MaterialTheme.typography.titleMedium)
                 OutlinedTextField(goal, { goal = it }, Modifier.fillMaxWidth().padding(top = 8.dp), minLines = 2,
@@ -141,7 +141,7 @@ private fun ThreadsTab(container: AppContainer, open: (String) -> Unit) {
             val msgs = t.optJSONArray("messages") ?: JSONArray()
             val last = if (msgs.length() > 0) msgs.getJSONObject(msgs.length() - 1) else null
             val st = t.optString("status"); val who = Crew.working[t.optString("id")]
-            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f))
+            Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(20.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f))
                 .clickable { open(t.optString("id")) }.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(10.dp).clip(CircleShape).background(statusColor(st)))
                 Column(Modifier.weight(1f).padding(horizontal = 12.dp)) {
@@ -198,7 +198,7 @@ private fun ThreadScreen(container: AppContainer, id: String, back: () -> Unit) 
             }
         }
         val cs = MaterialTheme.colorScheme
-        Row(Modifier.padding(12.dp).fillMaxWidth().clip(RoundedCornerShape(26.dp)).background(cs.onSurface.copy(alpha = 0.06f)).padding(start = 16.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
+        Row(Modifier.padding(12.dp).fillMaxWidth().clip(com.nizam.app.ui.design.labShape(26.dp)).background(cs.onSurface.copy(alpha = 0.06f)).padding(start = 16.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.weight(1f).padding(vertical = 8.dp)) {
                 if (text.isEmpty()) Text("Steer the team, or @Name someone", color = cs.onSurfaceVariant)
@@ -278,7 +278,7 @@ fun ApprovalCard(container: AppContainer, item: JSONObject?, risk: String, why: 
     val state = item?.optString("state") ?: "done"
     val rc = when (risk) { "high" -> cs.error; "medium" -> Color(0xFFF59E0B); else -> Color(0xFF16A34A) }
     var busy by remember { mutableStateOf(false) }
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).border(1.5.dp, rc.copy(alpha = 0.5f), RoundedCornerShape(18.dp)).padding(12.dp)) {
+    Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(18.dp)).border(1.5.dp, rc.copy(alpha = 0.5f), com.nizam.app.ui.design.labShape(18.dp)).padding(12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(item?.optString("action")?.replace('_', ' ')?.replaceFirstChar { it.uppercase() } ?: "Action", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
             Text("${risk.uppercase()} RISK", style = MaterialTheme.typography.labelSmall, color = rc, fontWeight = FontWeight.Bold)
@@ -302,7 +302,7 @@ private fun ApprovalsTab(container: AppContainer) {
     val all = remember(v) { ApprovalInbox.store(c).all().sortedByDescending { it.optLong("at") } }
     LazyColumn(contentPadding = PaddingValues(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         item {
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f)).padding(14.dp)) {
+            Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(20.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f)).padding(14.dp)) {
                 Text("Auto-review", style = MaterialTheme.typography.titleSmall)
                 Text("A reviewer model checks every action that changes something outside Atlas. Choose what may run without asking:",
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -338,7 +338,7 @@ private fun TeamTab(container: AppContainer) {
             OutlinedButton(onClick = { Crew.resetTeam(c) }) { Text("Reset team") }
             OutlinedButton(onClick = { com.nizam.app.feature.nx.Share.text(c, "My Atlas agent team — open Atlas → Atlas-to-Atlas → Receive:\n" + Crew.exportTeam(c)) }) { Text("Share team") }
         } }
-        item { Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)).padding(14.dp)) {
+        item { Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(20.dp)).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)).padding(14.dp)) {
             Text("Hire specialists for a kind of work", style = MaterialTheme.typography.titleSmall)
             OutlinedTextField(purpose, { purpose = it }, Modifier.fillMaxWidth().padding(top = 6.dp), placeholder = { Text("Running my online clothing shop") }, singleLine = true)
             Button(onClick = { busy = true; scope.launch { runCatching { Crew.design(container, purpose) }.onSuccess { Feedback.show("${it.size} agents joined") }
@@ -346,7 +346,7 @@ private fun TeamTab(container: AppContainer) {
                 Text(if (busy) "Hiring…" else "Design them") }
         } }
         items(agents, key = { it.id }) { a ->
-            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Color(a.color).copy(alpha = 0.08f)).clickable { edit = a }.padding(14.dp),
+            Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(20.dp)).background(Color(a.color).copy(alpha = 0.08f)).clickable { edit = a }.padding(14.dp),
                 verticalAlignment = Alignment.CenterVertically) {
                 Avatar(a.emoji, a.color, 46)
                 Column(Modifier.weight(1f).padding(horizontal = 12.dp)) {
@@ -377,7 +377,7 @@ private fun AgentEditor(a: Crew.Agent, onSave: (Crew.Agent) -> Unit, onDelete: (
         item { OutlinedTextField(ins, { ins = it }, Modifier.fillMaxWidth(), label = { Text("How they work") }, minLines = 3) }
         item { Text("What they may use", style = MaterialTheme.typography.titleSmall) }
         item { Column(verticalArrangement = Arrangement.spacedBy(6.dp)) { Crew.TOOLS.forEach { (k, l) ->
-            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(if (k in tools) Color(a.color).copy(alpha = 0.14f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f))
+            Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(if (k in tools) Color(a.color).copy(alpha = 0.14f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f))
                 .clickable { tools = if (k in tools) tools - k else tools + k }.padding(12.dp)) { Text(if (k in tools) "✓  $l" else "    $l") } } } }
         item { Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
             Button(onClick = { onSave(a.copy(name = name.trim(), emoji = emoji.ifBlank { "✨" }, role = role.trim(), instructions = ins.trim(), tools = tools)) }, enabled = name.isNotBlank()) { Text("Save") }

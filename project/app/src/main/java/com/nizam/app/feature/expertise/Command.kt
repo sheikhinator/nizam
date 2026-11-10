@@ -99,12 +99,12 @@ fun CommandRoom(container: AppContainer, open: (String) -> Unit) {
                 else -> CommandHome(container, open) { tab = it }
             }
         }
-        Row(Modifier.fillMaxWidth().background(Color(0xFF0F0F10)).border(BorderStroke(0.5.dp, Cmd.line)).navigationBarsPadding()
+        Row(Modifier.fillMaxWidth().background(com.nizam.app.ui.design.labBg(Color(0xFF0F0F10))).border(BorderStroke(0.5.dp, Cmd.line)).navigationBarsPadding()
             .padding(vertical = 10.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
             listOf(Triple("command", "COMMAND", Icons.Outlined.Hexagon), Triple("agents", "AGENTS", Icons.Outlined.Memory),
                 Triple("chats", "CHATS", Icons.Outlined.ChatBubbleOutline), Triple("settings", "SETTINGS", Icons.Outlined.Tune)).forEach { (k, l, ic) ->
                 val on = tab == k
-                Column(Modifier.clip(RoundedCornerShape(12.dp)).clickable { tab = k }.padding(horizontal = 14.dp, vertical = 4.dp),
+                Column(Modifier.clip(com.nizam.app.ui.design.labShape(12.dp)).clickable { tab = k }.padding(horizontal = 14.dp, vertical = 4.dp),
                     horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(ic, l, tint = if (on) Cmd.gold else Cmd.muted.copy(alpha = 0.6f), modifier = Modifier.size(26.dp))
                     Text(l, style = Cmd.label.copy(fontSize = 10.sp, letterSpacing = 2.sp), color = if (on) Cmd.gold else Cmd.muted.copy(alpha = 0.6f),
@@ -160,7 +160,7 @@ private fun CommandHome(container: AppContainer, open: (String) -> Unit, go: (St
         }
 
         // Ask: routed to the best model, thinking with the right expertise
-        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(Color(0xFF14130F)).border(1.dp, Cmd.goldLine, RoundedCornerShape(22.dp))
+        Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(22.dp)).background(com.nizam.app.ui.design.labBg(Color(0xFF14130F))).border(1.dp, Cmd.goldLine, com.nizam.app.ui.design.labShape(22.dp))
             .padding(20.dp)) {
             Text("ASK LYCHO PRIME", style = Cmd.label, color = Cmd.gold)
             Box(Modifier.fillMaxWidth().padding(top = 14.dp, bottom = 14.dp).heightIn(min = 34.dp)) {
@@ -191,7 +191,7 @@ private fun CommandHome(container: AppContainer, open: (String) -> Unit, go: (St
 
         Row(Modifier.padding(top = 20.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             listOf("$experts" to "AGENTS", "$chats" to "CHATS", "$repliesToday" to "REPLIES TODAY").forEachIndexed { i, (v, l) ->
-                Column(Modifier.weight(1f).clip(RoundedCornerShape(18.dp)).background(Cmd.card).border(1.dp, Cmd.line, RoundedCornerShape(18.dp))
+                Column(Modifier.weight(1f).clip(com.nizam.app.ui.design.labShape(18.dp)).background(Cmd.card).border(1.dp, Cmd.line, com.nizam.app.ui.design.labShape(18.dp))
                     .clickable { go(if (i == 0) "agents" else "chats") }.padding(16.dp)) {
                     Text(v, color = Cmd.gold, fontSize = 34.sp, fontWeight = FontWeight.Bold)
                     Text(l, style = Cmd.label.copy(fontSize = 10.sp, letterSpacing = 2.sp), color = Cmd.muted, maxLines = 1, modifier = Modifier.padding(top = 6.dp))
@@ -202,8 +202,8 @@ private fun CommandHome(container: AppContainer, open: (String) -> Unit, go: (St
         if (recent.isNotEmpty()) {
             Text("RECENT", style = Cmd.label, color = Cmd.muted, modifier = Modifier.padding(top = 28.dp, bottom = 10.dp))
             recent.forEach { (asked, answer) ->
-                Column(Modifier.fillMaxWidth().padding(bottom = 8.dp).clip(RoundedCornerShape(18.dp)).background(Cmd.card)
-                    .border(1.dp, Cmd.line, RoundedCornerShape(18.dp)).clickable { go("chats") }.padding(16.dp)) {
+                Column(Modifier.fillMaxWidth().padding(bottom = 8.dp).clip(com.nizam.app.ui.design.labShape(18.dp)).background(Cmd.card)
+                    .border(1.dp, Cmd.line, com.nizam.app.ui.design.labShape(18.dp)).clickable { go("chats") }.padding(16.dp)) {
                     Text(asked, color = Cmd.ink, fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     if (answer.isNotBlank()) Text(answer.replace(Regex("[#*_`>]"), "").replace('\n', ' '), color = Cmd.muted, fontSize = 14.sp,
                         maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 4.dp))
@@ -235,8 +235,8 @@ private fun TileGrid(tiles: List<Tile>) {
     tiles.chunked(2).forEach { row ->
         Row(Modifier.fillMaxWidth().padding(bottom = 10.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             row.forEach { t ->
-                Column(Modifier.weight(1f).heightIn(min = 132.dp).clip(RoundedCornerShape(20.dp)).background(Cmd.card)
-                    .border(1.dp, Cmd.line, RoundedCornerShape(20.dp)).pressable(onClick = t.onClick).padding(18.dp)) {
+                Column(Modifier.weight(1f).heightIn(min = 132.dp).clip(com.nizam.app.ui.design.labShape(20.dp)).background(Cmd.card)
+                    .border(1.dp, Cmd.line, com.nizam.app.ui.design.labShape(20.dp)).pressable(onClick = t.onClick).padding(18.dp)) {
                     Icon(t.icon, null, tint = Cmd.gold, modifier = Modifier.size(28.dp))
                     Text(t.title, color = Cmd.ink, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 14.dp))
                     Text(t.blurb, color = Cmd.muted, fontSize = 14.sp, maxLines = 3, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 4.dp))
@@ -255,7 +255,7 @@ private fun CommandSettings(container: AppContainer, open: (String) -> Unit) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).statusBarsPadding().padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text("SETTINGS", style = Cmd.label, color = Cmd.gold, modifier = Modifier.padding(bottom = 8.dp))
         @Composable fun toggle(title: String, body: String, on: Boolean, set: (Boolean) -> Unit) {
-            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Cmd.card).border(1.dp, Cmd.line, RoundedCornerShape(18.dp)).padding(16.dp),
+            Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(18.dp)).background(Cmd.card).border(1.dp, Cmd.line, com.nizam.app.ui.design.labShape(18.dp)).padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text(title, color = Cmd.ink, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
@@ -272,7 +272,7 @@ private fun CommandSettings(container: AppContainer, open: (String) -> Unit) {
             Triple(Icons.Outlined.Gavel, "Life laws", "nx/lifelaws"), Triple(Icons.Outlined.TheaterComedy, "Personas", "nx/personas"),
             Triple(Icons.Outlined.TaskAlt, "Approvals", "nx/approvalinbox"), Triple(Icons.Outlined.Healing, "Heal", "nx/heal"),
         ).forEach { (ic, t, r) ->
-            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Cmd.card).border(1.dp, Cmd.line, RoundedCornerShape(18.dp))
+            Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(18.dp)).background(Cmd.card).border(1.dp, Cmd.line, com.nizam.app.ui.design.labShape(18.dp))
                 .clickable { open(r) }.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(ic, null, tint = Cmd.gold, modifier = Modifier.size(22.dp))
                 Text(t, color = Cmd.ink, fontSize = 16.sp, modifier = Modifier.weight(1f).padding(start = 14.dp))

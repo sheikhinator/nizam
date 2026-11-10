@@ -52,7 +52,7 @@ class Shots(private val route: String, private val dark: Boolean) {
         val container = AppContainer(app)
         // "style:deck" etc: the home in that UI style
         val styled = route.startsWith("style:")
-        com.nizam.app.ui.style.UiStyles.set(app, if (styled) com.nizam.app.ui.style.UiStyle.valueOf(route.removePrefix("style:").uppercase()) else com.nizam.app.ui.style.UiStyle.CLASSIC)
+        com.nizam.app.ui.style.UiStyles.set(app, if (styled) com.nizam.app.ui.style.UiStyle.valueOf(route.removePrefix("style:").uppercase()) else (System.getenv("SHOT_STYLE")?.let { runCatching { com.nizam.app.ui.style.UiStyle.valueOf(it) }.getOrNull() } ?: com.nizam.app.ui.style.UiStyle.CLASSIC))
         if (route == "nx/being" || route == "today" || route == "robots") app.getSharedPreferences("being", 0).edit().putLong("born", System.currentTimeMillis() - 5 * 86_400_000L).putLong("seed", 42L)
             .putString("persona", org.json.JSONObject().put("name", "Bix").put("personality", "cheeky, nosy and kind").put("interests", org.json.JSONArray(listOf("black holes", "pixel art"))).toString())
             .putString("activity", "Studying pixel art").putLong("activity_t", System.currentTimeMillis()).putBoolean("robot_body", true).putLong("seen", System.currentTimeMillis())

@@ -240,7 +240,7 @@ private fun Composer(social: SocialEngine, close: () -> Unit) {
         Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 28.dp).navigationBarsPadding(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("New post", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             OutlinedTextField(text, { text = it.take(2000) }, placeholder = { Text("What's on your mind?") }, minLines = 3, modifier = Modifier.fillMaxWidth())
-            photo?.let { Pic(it, Modifier.fillMaxWidth().heightIn(max = 240.dp).clip(RoundedCornerShape(16.dp)), ContentScale.Crop) }
+            photo?.let { Pic(it, Modifier.fillMaxWidth().heightIn(max = 240.dp).clip(com.nizam.app.ui.design.labShape(16.dp)), ContentScale.Crop) }
             if (err.isNotEmpty()) Text(err, color = MaterialTheme.colorScheme.error)
             Text("Posts are public to everyone on Atlas Social. For private talk use Messenger.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -285,7 +285,7 @@ private fun StoryViewer(social: SocialEngine, author: String, close: () -> Unit)
         val s = list.getOrNull(i)
         Box(Modifier.fillMaxSize().background(Color.Black).clickable { if (i < list.lastIndex) i++ else close() }) {
             if (s?.img != null) Pic(s.img, Modifier.fillMaxSize(), ContentScale.Fit)
-            if (s != null && s.text.isNotBlank()) Text(s.text, Modifier.align(Alignment.Center).padding(32.dp).background(Color(0x66000000), RoundedCornerShape(12.dp)).padding(12.dp), color = Color.White, fontSize = 22.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+            if (s != null && s.text.isNotBlank()) Text(s.text, Modifier.align(Alignment.Center).padding(32.dp).background(Color(0x66000000), com.nizam.app.ui.design.labShape(12.dp)).padding(12.dp), color = Color.White, fontSize = 22.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
             Column(Modifier.fillMaxWidth().statusBarsPadding().padding(12.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) { list.forEachIndexed { k, _ -> LinearProgressIndicator(progress = { if (k < i) 1f else if (k == i) progress else 0f }, Modifier.weight(1f).height(3.dp), color = Color.White, trackColor = Color(0x55FFFFFF)) } }
                 Row(Modifier.padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {

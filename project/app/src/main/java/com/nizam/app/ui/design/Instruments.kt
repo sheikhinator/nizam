@@ -164,7 +164,7 @@ fun KpiTile(label: String, value: Double, modifier: Modifier = Modifier, decimal
             delta: Double? = null, higherIsBetter: Boolean = true, trend: List<Double> = emptyList(), accent: Color = MaterialTheme.colorScheme.primary, onClick: (() -> Unit)? = null) {
     val c = MaterialTheme.colorScheme
     val lab = Instruments.style(LocalContext.current) == Instruments.StyleLevel.Lab
-    val shape = RoundedCornerShape(16.dp)
+    val shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
     Box(modifier.clip(shape).background(c.surface).then(if (onClick != null) Modifier.pressable(onClick = onClick) else Modifier)) {
         if (trend.size > 1 && (trend.maxOrNull() ?: 0.0) != (trend.minOrNull() ?: 0.0)) Sparkline(trend, Modifier.align(Alignment.TopEnd).padding(12.dp).size(width = 56.dp, height = 22.dp), accent.copy(alpha = 0.55f))
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -243,7 +243,7 @@ fun DonutChart(slices: List<Slice>, centerLabel: String, centerValue: String, mo
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             slices.take(6).forEachIndexed { i, s ->
                 Row(Modifier.pressable { picked = if (picked == i) null else i }.padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.size(9.dp).clip(RoundedCornerShape(3.dp)).background(s.color)); Spacer(Modifier.width(7.dp))
+                    Box(Modifier.size(9.dp).clip(com.nizam.app.ui.design.labShape(3.dp)).background(s.color)); Spacer(Modifier.width(7.dp))
                     Text("${s.label} ${(s.value / total * 100).roundToInt()}%", style = MaterialTheme.typography.bodySmall, color = c.onSurface, maxLines = 1)
                 }
             }
@@ -348,7 +348,7 @@ fun InsightLine(text: String, modifier: Modifier = Modifier) =
 @Composable
 fun Panel(title: String, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     val c = MaterialTheme.colorScheme
-    Column(modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(c.surface).padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(18.dp)).background(c.surface).padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         InstrumentLabel(title); content()
     }
 }

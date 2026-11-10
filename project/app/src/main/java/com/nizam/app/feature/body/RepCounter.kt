@@ -152,7 +152,7 @@ fun RepCounterScreen(container: AppContainer) {
         }, modifier = Modifier.fillMaxSize())
 
         Column(Modifier.align(Alignment.TopCenter).fillMaxWidth().padding(14.dp)
-            .background(Color(0xCC0B0F1A), RoundedCornerShape(18.dp)).padding(12.dp)) {
+            .background(Color(0xCC0B0F1A), com.nizam.app.ui.design.labShape(18.dp)).padding(12.dp)) {
             ChipRow(MOVES.map { it.name }, move.name, { n -> move = MOVES.first { it.name == n }; reps = 0; shallow = 0 })
             Row(verticalAlignment = Alignment.Bottom) {
                 Text("$reps", color = Color.White, fontSize = 72.sp)
@@ -165,7 +165,7 @@ fun RepCounterScreen(container: AppContainer) {
             Text(cue, color = Color(0xFF4FC3A1))
         }
         Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(14.dp)
-            .background(Color(0xCC0B0F1A), RoundedCornerShape(18.dp)).padding(12.dp)) {
+            .background(Color(0xCC0B0F1A), com.nizam.app.ui.design.labShape(18.dp)).padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(weight, { weight = it.filter { ch -> ch.isDigit() || ch == '.' } }, label = { Text("kg (0 = bodyweight)") },
                     singleLine = true, modifier = Modifier.weight(1f))

@@ -86,11 +86,11 @@ fun schemeFor(p: AtlasPalette): ColorScheme {
 
 // Soft, even corners: one language for fields, cards and sheets.
 val NizamShapes = Shapes(
-    extraSmall = RoundedCornerShape(8.dp),
-    small = RoundedCornerShape(12.dp),
-    medium = RoundedCornerShape(16.dp),
-    large = RoundedCornerShape(20.dp),
-    extraLarge = RoundedCornerShape(28.dp)
+    extraSmall = com.nizam.app.ui.design.labShape(8.dp),
+    small = com.nizam.app.ui.design.labShape(12.dp),
+    medium = com.nizam.app.ui.design.labShape(16.dp),
+    large = com.nizam.app.ui.design.labShape(20.dp),
+    extraLarge = com.nizam.app.ui.design.labShape(28.dp)
 )
 
 @Composable
@@ -132,10 +132,22 @@ fun NizamTheme(
     var type = (if (comfort.textScale == 1f) NizamTypography else NizamTypography.scaled(comfort.textScale)).styled(look.font, look.expressive)
     if (comfort.easyRead) type = type.easyReading()
     if (comfort.boldText) type = type.bolder()
+    // Atlas Lab: the scientific look reaches every screen through the theme itself: its colours, square corners and mono labels
+    val lab = com.nizam.app.ui.style.UiStyles.now().sci
+    com.nizam.app.ui.design.Style.applyLab(lab)
+    if (lab) {
+        // keep the colours you chose (palette, accent, wallpaper colours); only flatten the surfaces into panels
+        val S = com.nizam.app.ui.style.sciFrom(scheme)
+        scheme = scheme.copy(surface = S.panel, surfaceVariant = S.panel, surfaceContainerLowest = S.bg, surfaceContainerLow = S.panel, surfaceContainer = S.panel,
+            surfaceContainerHigh = S.text.copy(alpha = 0.07f).compositeOver(S.bg), surfaceContainerHighest = S.text.copy(alpha = 0.09f).compositeOver(S.bg), outlineVariant = S.line)
+        val mono = androidx.compose.ui.text.font.FontFamily.Monospace
+        type = type.copy(labelSmall = type.labelSmall.copy(fontFamily = mono, letterSpacing = 1.sp), labelMedium = type.labelMedium.copy(fontFamily = mono, letterSpacing = 0.8.sp),
+            labelLarge = type.labelLarge.copy(fontFamily = mono, letterSpacing = 0.6.sp))
+    }
     MaterialTheme(
         colorScheme = scheme,
         typography = type,
-        shapes = NizamShapes
+        shapes = if (lab) Shapes(com.nizam.app.ui.design.labShape(2.dp), com.nizam.app.ui.design.labShape(2.dp), com.nizam.app.ui.design.labShape(2.dp), com.nizam.app.ui.design.labShape(2.dp), com.nizam.app.ui.design.labShape(2.dp)) else NizamShapes
     ) {
         val view = androidx.compose.ui.platform.LocalView.current
         androidx.compose.runtime.DisposableEffect(comfort.keepAwake) {

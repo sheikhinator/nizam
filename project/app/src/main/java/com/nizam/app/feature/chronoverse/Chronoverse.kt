@@ -106,8 +106,8 @@ private fun TimelineRow(n: Neuron) {
         Column(
             Modifier
                 .weight(1f)
-                .clip(RoundedCornerShape(18.dp))
-                .luminex(RoundedCornerShape(18.dp), color, 0.5f)
+                .clip(com.nizam.app.ui.design.labShape(18.dp))
+                .luminex(com.nizam.app.ui.design.labShape(18.dp), color, 0.5f)
                 .padding(horizontal = 14.dp, vertical = 12.dp)
         ) {
             Text(

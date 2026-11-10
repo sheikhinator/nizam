@@ -95,7 +95,7 @@ fun CompanionMemoriesScreen() {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Column(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp))
+            Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(18.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant).padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -117,7 +117,7 @@ fun CompanionMemoriesScreen() {
         }
         memories.forEach { memory ->
             Column(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
+                Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(16.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant).padding(14.dp)
             ) {
                 Text(memory.optString("title"), fontWeight = FontWeight.Bold)

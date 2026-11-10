@@ -96,12 +96,12 @@ fun ThemeStudio(settings: SettingsRepository, currentKey: String, customJson: St
 
     Column(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
         // Live preview: a tiny Atlas screen in the palette being built
-        Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(preview.surface).padding(14.dp)) {
+        Box(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(preview.surface).padding(14.dp)) {
             Column {
                 Text("Today", style = MaterialTheme.typography.titleLarge, color = preview.ink)
                 Text("How your theme will look", style = MaterialTheme.typography.labelMedium, color = preview.inkMuted)
                 Spacer(Modifier.height(10.dp))
-                Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).background(preview.card).padding(12.dp)) {
+                Box(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(10.dp)).background(preview.card).padding(12.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(Modifier.size(10.dp).clip(CircleShape).background(preview.accent))
                         Spacer(Modifier.width(8.dp))
@@ -176,7 +176,7 @@ fun ThemeStudio(settings: SettingsRepository, currentKey: String, customJson: St
 
 @Composable
 private fun GradientBar(brush: Brush) {
-    Canvas(Modifier.fillMaxWidth().height(6.dp).padding(horizontal = 10.dp).clip(RoundedCornerShape(3.dp))) {
+    Canvas(Modifier.fillMaxWidth().height(6.dp).padding(horizontal = 10.dp).clip(com.nizam.app.ui.design.labShape(3.dp))) {
         drawRect(brush)
     }
 }

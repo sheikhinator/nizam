@@ -193,7 +193,7 @@ fun PhotoSearchScreen() {
             }
         }
         items(hits, key = { it.id }) { h ->
-            AsyncImage(h.uri, h.labels.joinToString(), contentScale = ContentScale.Crop, modifier = Modifier.aspectRatio(1f).clip(RoundedCornerShape(6.dp)).clickable {
+            AsyncImage(h.uri, h.labels.joinToString(), contentScale = ContentScale.Crop, modifier = Modifier.aspectRatio(1f).clip(com.nizam.app.ui.design.labShape(6.dp)).clickable {
                 runCatching { c.startActivity(Intent(Intent.ACTION_VIEW).setDataAndType(h.uri, "image/*").addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)) }
             })
         }

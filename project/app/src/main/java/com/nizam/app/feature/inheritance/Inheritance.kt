@@ -128,8 +128,8 @@ fun InheritanceScreen() {
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(22.dp))
-                    .luminex(RoundedCornerShape(22.dp), Ascend.reactorEmerald, 0.7f)
+                    .clip(com.nizam.app.ui.design.labShape(22.dp))
+                    .luminex(com.nizam.app.ui.design.labShape(22.dp), Ascend.reactorEmerald, 0.7f)
                     .padding(16.dp)
             ) {
                 OutlinedTextField(
@@ -177,8 +177,8 @@ fun InheritanceScreen() {
                 Column(
                     Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp))
-                        .luminex(RoundedCornerShape(20.dp), accent, 0.6f)
+                        .clip(com.nizam.app.ui.design.labShape(20.dp))
+                        .luminex(com.nizam.app.ui.design.labShape(20.dp), accent, 0.6f)
                         .padding(18.dp)
                 ) {
                     Text(

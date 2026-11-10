@@ -165,7 +165,7 @@ fun HqScreen(container: AppContainer, open: (String) -> Unit) {
         }
     }
 
-    Box(Modifier.fillMaxSize().background(Color(0xFF0B1020))) {
+    Box(Modifier.fillMaxSize().background(com.nizam.app.ui.design.labBg(Color(0xFF0B1020)))) {
         // the office itself, drawn by Atlas's own 3D renderer
         Canvas(Modifier.fillMaxSize()
             .pointerInput(Unit) {
@@ -233,7 +233,7 @@ fun HqScreen(container: AppContainer, open: (String) -> Unit) {
                 Text(hud.first, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp, style = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(Color.Black, blurRadius = 6f)))
                 Text(hud.second, color = Color(0xFFE2E8F0), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, style = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(Color.Black, blurRadius = 6f)))
                 if (hud.third.isNotBlank()) Text(hud.third, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 2,
-                    modifier = Modifier.padding(top = 6.dp).clip(RoundedCornerShape(10.dp)).background(Color(0xCCB45309)).padding(horizontal = 8.dp, vertical = 5.dp))
+                    modifier = Modifier.padding(top = 6.dp).clip(com.nizam.app.ui.design.labShape(10.dp)).background(Color(0xCCB45309)).padding(horizontal = 8.dp, vertical = 5.dp))
                 val team = live.agents.count { a -> scene.agents[a.id]?.away == false }
                 Text("👥 $team in · ${live.approvals} waiting · 🫙 ${(live.jar * 100).toInt()}%", color = Color(0xFFCBD5E1), fontSize = 11.sp, modifier = Modifier.padding(top = 6.dp),
                     style = androidx.compose.ui.text.TextStyle(shadow = androidx.compose.ui.graphics.Shadow(Color.Black, blurRadius = 6f)))
@@ -294,7 +294,7 @@ fun HqScreen(container: AppContainer, open: (String) -> Unit) {
                 Box(Modifier.offset((knob.x * 40).dp, (knob.y * 40).dp).size(52.dp).clip(CircleShape).background(Color(0xAAFFFFFF)))
             }
             if (kotlin.math.hypot(knob.x, knob.y) > 0.88f) Text("RUN", color = Color.White, fontWeight = FontWeight.Black, fontSize = 11.sp,
-                modifier = Modifier.align(Alignment.BottomStart).padding(start = 64.dp, bottom = 218.dp).clip(RoundedCornerShape(6.dp)).background(Color(0xCCEF4444)).padding(horizontal = 6.dp, vertical = 2.dp))
+                modifier = Modifier.align(Alignment.BottomStart).padding(start = 64.dp, bottom = 218.dp).clip(com.nizam.app.ui.design.labShape(6.dp)).background(Color(0xCCEF4444)).padding(horizontal = 6.dp, vertical = 2.dp))
             Column(Modifier.align(Alignment.BottomEnd).padding(end = 20.dp, bottom = 84.dp), horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     RoundButton("📣", "Meeting", small = true) { sheet = "table" to "" }
@@ -321,14 +321,14 @@ fun HqScreen(container: AppContainer, open: (String) -> Unit) {
         if (live.log.isEmpty() && chatLine.isNotBlank() && !explore) {
             Text("💬 $chatLine", color = Color(0xFFE2E8F0), fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.align(Alignment.BottomCenter).padding(start = 12.dp, end = 70.dp, bottom = 72.dp).fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp)).background(Color(0xCC0F172A)).clickable { sheet = "company" to "chat" }.padding(horizontal = 12.dp, vertical = 7.dp))
+                    .clip(com.nizam.app.ui.design.labShape(12.dp)).background(Color(0xCC0F172A)).clickable { sheet = "company" to "chat" }.padding(horizontal = 12.dp, vertical = 7.dp))
         }
         if (live.log.isNotEmpty() && !explore) {
             Column(Modifier.align(Alignment.BottomCenter).padding(start = 12.dp, end = 70.dp, bottom = 70.dp).fillMaxWidth()
-                .shadow(8.dp, RoundedCornerShape(16.dp)).clip(RoundedCornerShape(16.dp)).background(Color(0xE60F172A))
+                .shadow(8.dp, com.nizam.app.ui.design.labShape(16.dp)).clip(com.nizam.app.ui.design.labShape(16.dp)).background(Color(0xE60F172A))
                 .clickable { open("nx/crew") }.padding(horizontal = 12.dp, vertical = 8.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.size(7.dp).clip(CircleShape).background(Color(0xFF22C55E)))
+                    Box(Modifier.size(7.dp).clip(CircleShape).background(com.nizam.app.ui.design.labBg(Color(0xFF22C55E))))
                     Spacer(Modifier.width(6.dp))
                     Text("Live · " + live.topic.ifBlank { "Team at work" }, color = Color(0xFFA5B4FC), fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
@@ -465,7 +465,7 @@ fun HqScreen(container: AppContainer, open: (String) -> Unit) {
                         Spacer(Modifier.height(10.dp))
                         Hq.ROOMS.forEachIndexed { i, r ->
                             val here = views.filter { it.room == i }
-                            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).clickable { room = i; scene.goFloor(i); sheet = null }.padding(12.dp),
+                            Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).clickable { room = i; scene.goFloor(i); sheet = null }.padding(12.dp),
                                 verticalAlignment = Alignment.CenterVertically) {
                                 Text("${r.emoji}  ${r.name}", fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
                                 Text(here.joinToString(" ") { it.emoji }, fontSize = 16.sp)
@@ -491,7 +491,7 @@ fun HqScreen(container: AppContainer, open: (String) -> Unit) {
 /** A game-style minimap: the floor turns with you, people are dots, and a marker shows where to go. */
 @Composable
 private fun MiniMapView(scene: HqScene, tick: Long, modifier: Modifier) {
-    val shape = RoundedCornerShape(18.dp)
+    val shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp)
     Canvas(modifier.shadow(8.dp, shape).clip(shape).background(Color(0xE60B1220)).border(2.dp, Color(0x66FFFFFF), shape)) {
         @Suppress("UNUSED_VARIABLE") val t = tick
         val mm = scene.minimap()
@@ -540,8 +540,8 @@ private fun HqLabelChip(l: HqLabel, onClick: () -> Unit) {
     when (l.kind) {
         "agent" -> {
             val dot = Color(0xFF000000.toInt() or (HqScene.STATUS[l.status] ?: 0x9CA3AF))
-            Column(Modifier.widthIn(max = 170.dp).shadow(4.dp, RoundedCornerShape(12.dp)).clip(RoundedCornerShape(12.dp)).background(Color(0xEEFFFFFF))
-                .border(if (l.status == "needs") 2.dp else 0.dp, if (l.status == "needs") Color(0xFFEF4444) else Color.Transparent, RoundedCornerShape(12.dp))
+            Column(Modifier.widthIn(max = 170.dp).shadow(4.dp, com.nizam.app.ui.design.labShape(12.dp)).clip(com.nizam.app.ui.design.labShape(12.dp)).background(Color(0xEEFFFFFF))
+                .border(if (l.status == "needs") 2.dp else 0.dp, if (l.status == "needs") Color(0xFFEF4444) else Color.Transparent, com.nizam.app.ui.design.labShape(12.dp))
                 .clickable(onClick = onClick).padding(horizontal = 8.dp, vertical = 4.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(Modifier.size(7.dp).clip(CircleShape).background(dot)); Spacer(Modifier.width(5.dp))
@@ -558,16 +558,16 @@ private fun HqLabelChip(l: HqLabel, onClick: () -> Unit) {
             }
         }
         "say" -> Column(Modifier.widthIn(max = 220.dp)) {
-            Column(Modifier.shadow(6.dp, RoundedCornerShape(14.dp)).clip(RoundedCornerShape(14.dp)).background(Color.White)
-                .border(2.dp, Color(0xFF000000.toInt() or l.color), RoundedCornerShape(14.dp)).clickable(onClick = onClick).padding(horizontal = 10.dp, vertical = 6.dp)) {
+            Column(Modifier.shadow(6.dp, com.nizam.app.ui.design.labShape(14.dp)).clip(com.nizam.app.ui.design.labShape(14.dp)).background(Color.White)
+                .border(2.dp, Color(0xFF000000.toInt() or l.color), com.nizam.app.ui.design.labShape(14.dp)).clickable(onClick = onClick).padding(horizontal = 10.dp, vertical = 6.dp)) {
                 Text(l.text, color = Color(0xFF000000.toInt() or l.color), fontSize = 10.sp, fontWeight = FontWeight.Bold, maxLines = 1)
                 Text(l.line, color = Color(0xFF0F172A), fontSize = 12.sp, maxLines = 3, overflow = TextOverflow.Ellipsis, lineHeight = 15.sp)
             }
             Box(Modifier.padding(start = 18.dp).size(10.dp).graphicsLayer { rotationZ = 45f; translationY = -6f }.background(Color.White))
         }
         "sign" -> Text(l.text, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold,
-            modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(Color(0xFF000000.toInt() or l.color)).padding(horizontal = 8.dp, vertical = 3.dp))
-        "board" -> Column(Modifier.widthIn(max = 220.dp).clip(RoundedCornerShape(8.dp)).background(Color(0xE61E1B4B)).padding(horizontal = 8.dp, vertical = 4.dp)) {
+            modifier = Modifier.clip(com.nizam.app.ui.design.labShape(8.dp)).background(Color(0xFF000000.toInt() or l.color)).padding(horizontal = 8.dp, vertical = 3.dp))
+        "board" -> Column(Modifier.widthIn(max = 220.dp).clip(com.nizam.app.ui.design.labShape(8.dp)).background(Color(0xE61E1B4B)).padding(horizontal = 8.dp, vertical = 4.dp)) {
             Text(l.text, color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
             if (l.sub.isNotBlank()) Text(l.sub, color = Color(0xFFCBD5E1), fontSize = 9.sp, maxLines = 1)
         }
@@ -619,7 +619,7 @@ private fun AgentSheet(container: AppContainer, id: String, views: List<Hq.View>
 
     approvals.forEach { ap ->
         Spacer(Modifier.height(10.dp))
-        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color(0x22EF4444)).padding(12.dp)) {
+        Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(Color(0x22EF4444)).padding(12.dp)) {
             Text("Approve: ${ap.optString("action").replace('_', ' ')}", fontWeight = FontWeight.Bold)
             Text("${ap.optString("risk")} risk · ${ap.optString("why")}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             ap.optString("purpose").takeIf { it.isNotBlank() }?.let { Text(it, fontSize = 12.sp, maxLines = 3, overflow = TextOverflow.Ellipsis) }
@@ -680,7 +680,7 @@ private fun TableSheet(container: AppContainer, views: List<Hq.View>, close: () 
     }
     Spacer(Modifier.height(8.dp))
     Hq.PATTERNS.forEach { p ->
-        Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(if (p == pattern) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
+        Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(if (p == pattern) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
             .clickable { pattern = p }.padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(p.emoji, fontSize = 22.sp); Spacer(Modifier.width(10.dp))
             Column { Text(p.name, fontWeight = FontWeight.SemiBold); Text(p.blurb, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
@@ -712,7 +712,7 @@ private fun InboxSheet(container: AppContainer) {
         item { Text("Approvals · ${pending.size}", fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 10.dp)) }
         if (pending.isEmpty()) item { Text("Nothing waiting for your OK.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
         pending.forEach { ap -> item(ap.optString("id")) {
-            Column(Modifier.fillMaxWidth().padding(top = 8.dp).clip(RoundedCornerShape(14.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(12.dp)) {
+            Column(Modifier.fillMaxWidth().padding(top = 8.dp).clip(com.nizam.app.ui.design.labShape(14.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(12.dp)) {
                 Text("${ap.optString("source")}: ${ap.optString("action").replace('_', ' ')}", fontWeight = FontWeight.SemiBold)
                 Text("${ap.optString("risk")} risk · ${ap.optString("why")}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 6.dp)) {

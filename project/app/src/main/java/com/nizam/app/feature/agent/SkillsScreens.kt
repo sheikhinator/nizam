@@ -81,7 +81,7 @@ fun SkillsProScreen(container: AppContainer) {
             Art3D("magic_wand", 60.dp)
         } }
         // teach by showing
-        item { Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(Brush.linearGradient(listOf(Color(0xFFDC2626).copy(alpha = 0.16f), MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)))).padding(16.dp)) {
+        item { Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(24.dp)).background(Brush.linearGradient(listOf(Color(0xFFDC2626).copy(alpha = 0.16f), MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)))).padding(16.dp)) {
             Text("🎬 Teach by showing", style = MaterialTheme.typography.titleMedium)
             Text("Tap Record, do the task once in any app, then tap the red pill. Atlas learns the steps, turns names and messages into inputs, and marks sends and payments for approval. Passwords and banking apps are never recorded.",
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -95,7 +95,7 @@ fun SkillsProScreen(container: AppContainer) {
                 else Button(onClick = { recorded = DemoRecorder.stop(); DemoRecorder.count = 0 }) { Text("■ Stop (${DemoRecorder.count} steps)") }
             }
         } }
-        recorded?.let { r -> item { Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f), RoundedCornerShape(20.dp)).padding(14.dp)) {
+        recorded?.let { r -> item { Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(20.dp)).border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f), com.nizam.app.ui.design.labShape(20.dp)).padding(14.dp)) {
             Text("Recorded ${r.size} steps", style = MaterialTheme.typography.titleSmall)
             r.take(8).forEach { Text("• " + SkillsPro.describe(it), style = MaterialTheme.typography.bodySmall) }
             if (r.size > 8) Text("… and ${r.size - 8} more", style = MaterialTheme.typography.labelSmall)
@@ -107,7 +107,7 @@ fun SkillsProScreen(container: AppContainer) {
             }
         } } }
         // write it in words, or keep what the agent just did
-        item { Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f)).padding(14.dp)) {
+        item { Column(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(20.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f)).padding(14.dp)) {
             Text("✍️ Describe a skill", style = MaterialTheme.typography.titleSmall)
             OutlinedTextField(describe, { describe = it }, Modifier.fillMaxWidth().padding(top = 6.dp), minLines = 2,
                 placeholder = { Text("Every time I say 'leaving office': message Ammi on WhatsApp, set a 30-min reminder to buy bread, open Careem to home") })
@@ -124,7 +124,7 @@ fun SkillsProScreen(container: AppContainer) {
         if (skills.isNotEmpty()) item { Text("Your skills", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp)) }
         itemsIndexed(skills, key = { _, s -> s.optString("id") }) { _, s ->
             val ok = s.optInt("okRuns"); val runs = s.optInt("runs")
-            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f)).clickable { open = s }.padding(14.dp),
+            Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(20.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f)).clickable { open = s }.padding(14.dp),
                 verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(44.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)), contentAlignment = Alignment.Center) {
                     Text(when (s.optString("source")) { "demo" -> "🎬"; "agent" -> "🤖"; "written" -> "✍️"; else -> "⚡" }) }
@@ -183,7 +183,7 @@ private fun SkillDetail(container: AppContainer, s0: JSONObject, back: () -> Uni
         item { Text("Steps", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 8.dp)) }
         itemsIndexed(steps) { i, st ->
             val cur = i == at
-            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(if (cur) MaterialTheme.colorScheme.primary.copy(alpha = 0.14f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f))
+            Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(if (cur) MaterialTheme.colorScheme.primary.copy(alpha = 0.14f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f))
                 .padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text("${i + 1}", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(end = 10.dp))
                 Text(SkillsPro.describe(st), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
@@ -221,7 +221,7 @@ private fun SkillEditor(container: AppContainer, d: JSONObject, onDone: () -> Un
         if (SkillsPro.params(d).isNotEmpty()) item { Text("Inputs: " + SkillsPro.params(d).joinToString { "{{${it.optString("key")}}}" }, style = MaterialTheme.typography.labelMedium) }
         item { Text("Steps — tap 🔒 to require your OK, ✕ to drop", style = MaterialTheme.typography.titleSmall) }
         itemsIndexed(steps) { i, st ->
-            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f)).padding(10.dp),
+            Row(Modifier.fillMaxWidth().clip(com.nizam.app.ui.design.labShape(14.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f)).padding(10.dp),
                 verticalAlignment = Alignment.CenterVertically) {
                 Text("${i + 1}. " + SkillsPro.describe(st).substringBefore("  ·  needs"), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
                 Text(if (st.optBoolean("approve")) "🔒" else "🔓", modifier = Modifier.clickable {
