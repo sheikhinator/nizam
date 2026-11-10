@@ -1,1 +1,1 @@
-New: nine scientific views of Today you can pick in Atlas styles (Lab Notebook, Instrument Panel, Paper Report, Heat Grid, Terminal, Git Log, Notebook Cells, Process Monitor, System Graph). Your current look stays the default.
+Atlas Lab: one scientific dashboard look for the whole app (pick it in Atlas styles; Classic is unchanged). KPIs against your own week, a day ring, live charts, a heat grid, system graph, flat panels on every screen, in your own theme colours.
